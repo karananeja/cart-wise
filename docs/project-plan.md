@@ -36,6 +36,11 @@ Loading / empty / error / offline states (STATE-1) and analytics events (ANL-1) 
 
 ## Phase 2 — Next (brief §24)
 
+| # | Feature | Brief §24 items | Depends on | Status |
+|---|---|---|---|---|
+| F-012 | Product discovery: related products, frequently bought together, continue shopping, discovery homepage | 14, 15, 16, 20 | F-003, F-004, F-010 | Specified — awaiting Gate 1 |
+
+
 Reviews, related products, frequently bought together, continue shopping, order tracking timeline, notifications, price-drop / back-in-stock, improved discovery homepage. To be sequenced after MVP acceptance.
 
 ## Phase 3 — Optional / experimental AI

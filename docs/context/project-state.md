@@ -8,7 +8,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## Current feature
 
-None. MVP wrap-up (user choice, 2026-10-06): requirements audit, fixes, backlog triage, then Phase 2 sequencing.
+**F-012 Product discovery (Phase 2) — specification and intent drafted, awaiting Gate 1.** MVP wrap-up complete (`docs/mvp-wrap-up.md`).
 
 ## Completed
 
@@ -19,7 +19,7 @@ None. MVP wrap-up (user choice, 2026-10-06): requirements audit, fixes, backlog 
 
 ## In progress
 
-MVP wrap-up: present audit findings and the product decisions it raised.
+F-012 Gate 1.
 
 ## Remaining
 
@@ -100,4 +100,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Draft F-012 Product discovery (Phase 2, user choice 2026-10-06): related products, frequently bought together, continue shopping, `recommendation_clicked`, deterministic rules (brief §17). Gather any product decisions, then present spec + intent for Gate 1.
+Wait for Gate 1 on F-012 (`docs/features/F-012-product-discovery/`). Open: confirm the complementary category map (spec §9). On approval: technical-design.md, test-plan.md, implement.

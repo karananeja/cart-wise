@@ -75,3 +75,5 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | Next step after Phase 1 | MVP wrap-up first: journey/requirements audit, backlog triage, payment E2E flake investigation, bundle code-splitting | User choice |
 | 2026-10-06 | MVP wrap-up | Audit done; history-removal, error/offline-state and event fixes; stale docs corrected; code-splitting; backlog triaged (`docs/mvp-wrap-up.md`) | Decisions pending: analytics identity, demo-notice copy, Phase 2 order |
 | 2026-10-06 | MVP wrap-up decisions | Analytics: add account id and product ids to server events (differs from recommendation); demo notice mentions simulated stock; Phase 2 starts with product discovery | |
+| 2026-10-06 | F-012 decisions | Honest pairing labels with ≥2-order threshold; one-tap bundle add for unsized items; home continue-shopping sections; cart pairing rail | |
+| 2026-10-06 | F-012 | Spec and intent presented for Gate 1 | Confirm complementary category map |
