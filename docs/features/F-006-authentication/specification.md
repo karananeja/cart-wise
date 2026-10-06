@@ -4,7 +4,7 @@
 
 **ID:** F-006
 **Name:** Sign-up, sign-in and guest state merge
-**Status:** Proposed (awaiting Gate 1)
+**Status:** Approved — In Progress (Gate 1 approved 2026-10-06)
 **Requirements:** AUTH-1..4, STATE-2
 **User decisions applied (2026-10-06):**
 - verification by simulated mobile OTP;
@@ -261,13 +261,10 @@ F-004 (cart) and F-005 (wishlist), both complete. ADR-003 (to be accepted with t
 
 ## 21. Assumptions
 
-- **Sign-in interpretation:** "Mobile + OTP (passwordless)" is read as OTP being the default sign-in, with password sign-in available as an alternative (since a password is set at sign-up and "Forgot password" was chosen). Please confirm.
+- **Sign-in:** OTP is the default, with password sign-in as an alternative (confirmed by the user at Gate 1).
 - **Phone numbers:** Indian mobile numbers only, matching the ₹ store.
 - **Account existence:** revealing that a number has no account (OTP route only) is acceptable for this shop.
 
 ## 22. Decisions Required From User
 
-Confirm when approving:
-1. The sign-in interpretation in §21.
-2. 6-digit codes, 5-minute validity, 5 attempts, 30-second resend, 5 codes per hour.
-3. After sign-out the device returns to an empty guest state, and the account keeps its items.
+None outstanding. Confirmed 2026-10-06: OTP-default sign-in with a password alternative; code rules; sign-out returns the device to an empty guest.

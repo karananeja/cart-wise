@@ -1,8 +1,8 @@
 # Feature Intent
 
 **Feature:** F-006 — Sign-up, sign-in and guest state merge
-**Status:** Awaiting Approval
-**Approved by / date:** —
+**Status:** Approved
+**Approved by / date:** User, 2026-10-06
 
 ---
 
@@ -49,10 +49,8 @@ Acceptance criteria 1–14 in `specification.md` §17.
 
 ## 6. Decisions needed before implementation
 
-1. Confirm the sign-in reading: OTP by default, with password sign-in as an alternative.
-2. Confirm the code rules: 6 digits, 5 minutes, 5 attempts, resend after 30 seconds, 5 per hour.
-3. Confirm the sign-out behaviour: the device becomes an empty guest; the account keeps its items.
+Resolved 2026-10-06: OTP-default sign-in with a password alternative; code rules as proposed; sign-out returns the device to an empty guest.
 
 ## 7. Approval
 
-- [ ] Approved for implementation (Gate 1)
+- [x] Approved for implementation (Gate 1) — 2026-10-06

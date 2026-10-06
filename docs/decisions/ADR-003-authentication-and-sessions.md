@@ -1,6 +1,6 @@
 # ADR-003: Authentication and Sessions
 
-**Status:** Proposed (with F-006, 2026-10-06)
+**Status:** Accepted (with F-006 Gate 1, 2026-10-06)
 **Date:** 2026-10-06
 
 ## Decision
