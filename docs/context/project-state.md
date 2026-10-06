@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-006 Sign-up, sign-in and guest merge — implemented and tested, awaiting Gate 2.** F-001 to F-005 complete (accepted 2026-10-06).
+**Next: F-007 Address management — awaiting Q7 (map provider) before specification.** F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -21,7 +21,7 @@ Phase 1 — MVP.
 
 ## In progress
 
-None. Waiting for Gate 2 acceptance of F-006.
+None.
 
 ## Remaining
 
@@ -68,6 +68,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 ## Pending questions for the user
 
 - Q16 delivery OTP details (for F-010/F-011).
+- Q7 map provider (for F-007).
+- Currency corrected to ₹96 = $1 (2026-10-06); card offers (PAY-5, fictional banks) and simulated UPI (PAY-6) added to F-009.
 
 - Store name: "Cartwise" kept as placeholder (user did not address it).
 - Q4 (add sizes), Q5 (show reviews, unlabelled — corrected after a misread), Q15 (rating = review average) resolved. Q6–Q14 open for later features.
@@ -90,7 +92,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 1 F-005: 2026-10-06 (product-level, 100 items, 90 days, hearts on cards).
 - Gate 2 F-005: 2026-10-06.
 - Gate 1 F-006: 2026-10-06 (OTP-default sign-in + password alternative; code rules; sign-out → empty guest). ADR-003 accepted.
+- Gate 2 F-006: 2026-10-06.
 
 ## Exact next action
 
-Wait for Gate 2 acceptance of F-006. On acceptance: mark complete, then prepare F-007 (Address management) specification and intent for Gate 1. F-007 needs Q7 (map provider: OpenStreetMap/Leaflet/Nominatim recommended, or manual-only first).
+Get the user's answer to Q7 (map provider for addresses), then write the F-007 (Address management) specification and intent for Gate 1.

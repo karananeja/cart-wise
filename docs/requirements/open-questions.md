@@ -54,7 +54,7 @@ Recommendation: import all categories except `vehicle` and `motorcycle` (~184 pr
 | Q11 | Taxes: tax-inclusive prices (Indian MRP convention) with GST shown informationally, or tax added at checkout? | F-008 | Tax-inclusive |
 | Q12 | **Resolved 2026-10-06 (user):** cart merge takes the larger quantity, capped by stock and 10 | F-006 | — |
 | Q13 | **Resolved 2026-10-06 (user):** simulated mobile OTP verification; sign-in by mobile + OTP; forgot password via simulated code | F-006 | — |
-| Q17 | Card offers: offer catalogue (fictional issuers, e.g. "Aurora Bank Credit Card — 10% off up to ₹1,500 on ₹5,000+"), whether offers stack, and when to build the product-page banner (now vs with payment) | F-009 | Fictional issuers only (no real bank names — brief §13 demo behaviour); one offer per order; build the offers engine + banner with F-009 |
+| Q17 | **Resolved 2026-10-06 (user):** card offers use fictional banks; the offers engine, product-page banner and discount at payment are built together in F-009. Stacking rule to confirm in the F-009 spec (recommendation: one offer per order) | F-009 | — |
 | Q16 | Delivery OTP details: when the code is generated (on Out for Delivery), where the customer sees it (order page and order list), length (4 digits), wrong-code behaviour (message + limited attempts), regeneration | F-010 / F-011 | Generate a 4-digit code on Out for Delivery; show it on the order page; 3 wrong attempts lock delivery for that attempt until a new code is issued; confirm in F-010 spec |
 | Q14 | Simulation console access control | F-011 | Local demo route with a visible "Demo operator" label, no separate admin auth |
 
