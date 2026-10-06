@@ -4,6 +4,7 @@ import { createCatalogRepository } from './catalog/repository.js';
 import { catalogRouter } from './catalog/routes.js';
 import type { Db } from './db/database.js';
 import { errorHandler, notFoundHandler } from './http/errors.js';
+import { createSearchIndex } from './search/searchIndex.js';
 
 export function createApp(db: Db) {
   const app = express();
@@ -16,7 +17,9 @@ export function createApp(db: Db) {
   api.get('/health', (_req, res) => {
     res.json({ ok: true });
   });
-  api.use(catalogRouter(createCatalogRepository(db)));
+  const catalog = createCatalogRepository(db);
+  // Built once from the seeded catalog; holds only ids, so prices and stock stay live.
+  api.use(catalogRouter(catalog, createSearchIndex(catalog.listSearchDocuments())));
   api.use(analyticsRouter(db));
   app.use('/api', api);
 

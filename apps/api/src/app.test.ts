@@ -60,6 +60,54 @@ describe('GET /api/products', () => {
   });
 });
 
+describe('search', () => {
+  it('searches with q, sorts by relevance and reports the match mode', async () => {
+    const res = await request(app).get('/api/products?q=lapotp').expect(200);
+    const body = res.body as ListingResponse;
+    expect(body.total).toBe(5);
+    expect(body.search).toEqual({ query: 'lapotp', matchMode: 'all' });
+    expect(body.items.every((i) => i.categorySlug === 'laptops')).toBe(true);
+  });
+
+  it('combines q with filters, sort and pagination', async () => {
+    const res = await request(app).get('/api/products?q=phone&brand=apple&sort=price_asc&pageSize=2&page=2').expect(200);
+    const body = res.body as ListingResponse;
+    expect(body.page).toBe(2);
+    expect(body.items).toHaveLength(2);
+    expect(body.items.every((i) => i.brand === 'Apple')).toBe(true);
+    expect(body.facets.brands.find((b) => b.value === 'samsung')?.count).toBeGreaterThan(0);
+  });
+
+  it('marks partial matches and returns zero results for nonsense', async () => {
+    expect((await request(app).get('/api/products?q=red+leather+office+chair')).body.search.matchMode).toBe('partial');
+    const none = (await request(app).get('/api/products?q=qwxzv')).body as ListingResponse;
+    expect(none.total).toBe(0);
+  });
+
+  it('ignores a relevance sort without a query', async () => {
+    const res = await request(app).get('/api/products?sort=relevance').expect(200);
+    expect(res.body).not.toHaveProperty('search');
+    expect(res.body.total).toBe(194);
+  });
+
+  it('suggests categories and up to five products', async () => {
+    const res = await request(app).get('/api/search/suggestions?q=lap').expect(200);
+    expect(res.body.categories).toEqual([{ slug: 'laptops', name: 'Laptops' }]);
+    expect(res.body.products).toHaveLength(5);
+    expect(res.body.products[0]).toHaveProperty('pricePaise');
+
+    const many = await request(app).get('/api/search/suggestions?q=apple').expect(200);
+    expect(many.body.products).toHaveLength(5);
+  });
+
+  it('returns empty suggestions for short queries and caps long ones', async () => {
+    expect((await request(app).get('/api/search/suggestions?q=l')).body).toEqual({ categories: [], products: [] });
+    await request(app).get(`/api/search/suggestions?q=${'a'.repeat(5000)}`).expect(200);
+    const long = await request(app).get(`/api/products?q=laptop${'%20x'.repeat(200)}`).expect(200);
+    expect(long.body.search.query.length).toBeLessThanOrEqual(100);
+  });
+});
+
 describe('GET /api/products/:slug', () => {
   it('returns product details', async () => {
     const res = await request(app).get('/api/products/essence-mascara-lash-princess').expect(200);

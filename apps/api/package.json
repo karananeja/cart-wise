@@ -22,6 +22,7 @@
     "@store/shared": "workspace:*",
     "better-sqlite3": "^13.0.3",
     "express": "^5.2.1",
+    "minisearch": "^7.2.0",
     "zod": "^4.6.5"
   }
 }

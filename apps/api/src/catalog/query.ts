@@ -38,7 +38,9 @@ function buildPredicates(params: ListingParams): Partial<Record<FilterGroup, Pre
   return predicates;
 }
 
-const SORTERS: Record<SortOption, (a: CatalogItem, b: CatalogItem) => number> = {
+type Sorter = (a: CatalogItem, b: CatalogItem) => number;
+
+const SORTERS: Record<Exclude<SortOption, 'relevance'>, Sorter> = {
   featured: () => 0,
   price_asc: (a, b) => a.summary.pricePaise - b.summary.pricePaise,
   price_desc: (a, b) => b.summary.pricePaise - a.summary.pricePaise,
@@ -47,20 +49,26 @@ const SORTERS: Record<SortOption, (a: CatalogItem, b: CatalogItem) => number> = 
 };
 
 /** Available items always come before out-of-stock items, whatever the sort (FR-12). */
-function compare(sort: SortOption) {
-  return (a: CatalogItem, b: CatalogItem) =>
-    Number(a.available === 0) - Number(b.available === 0) || SORTERS[sort](a, b) || a.catalogOrder - b.catalogOrder;
+function compare(sort: SortOption, relevance: Map<number, number> | undefined): Sorter {
+  const byKey: Sorter =
+    sort === 'relevance'
+      ? (a, b) => (relevance?.get(b.summary.id) ?? 0) - (relevance?.get(a.summary.id) ?? 0)
+      : SORTERS[sort];
+  return (a, b) => Number(a.available === 0) - Number(b.available === 0) || byKey(a, b) || a.catalogOrder - b.catalogOrder;
 }
 
 /**
  * Filters, facets, sorts and paginates the catalog in memory. The catalog is ~200 products,
  * so this is cheap; facet counts use disjunctive faceting (each facet ignores its own filter).
+ * With `relevance` (search scores by product id), only matching products are considered.
  */
 export function queryCatalog(
-  items: CatalogItem[],
+  allItems: CatalogItem[],
   params: ListingParams,
   categories: { slug: string; name: string }[],
+  relevance?: Map<number, number>,
 ): ListingResponse {
+  const items = relevance ? allItems.filter((item) => relevance.has(item.summary.id)) : allItems;
   const predicates = buildPredicates(params);
   const groups = Object.keys(predicates) as FilterGroup[];
   const matchesExcept = (item: CatalogItem, excluded?: FilterGroup) =>
@@ -68,7 +76,7 @@ export function queryCatalog(
   const countExcept = (excluded: FilterGroup, extra: Predicate = () => true) =>
     items.filter((item) => matchesExcept(item, excluded) && extra(item)).length;
 
-  const matched = items.filter((item) => matchesExcept(item)).sort(compare(params.sort));
+  const matched = items.filter((item) => matchesExcept(item)).sort(compare(params.sort, relevance));
   const total = matched.length;
   const lastPage = Math.max(1, Math.ceil(total / params.pageSize));
   const page = Math.min(params.page, lastPage);

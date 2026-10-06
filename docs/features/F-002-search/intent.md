@@ -1,8 +1,8 @@
 # Feature Intent
 
 **Feature:** F-002 — Search and search history
-**Status:** Awaiting Approval
-**Approved by / date:** —
+**Status:** Approved
+**Approved by / date:** User, 2026-10-06
 
 ---
 
@@ -45,4 +45,4 @@ None beyond approving this intent.
 
 ## 7. Approval
 
-- [ ] Approved for implementation (Gate 1)
+- [x] Approved for implementation (Gate 1) — 2026-10-06

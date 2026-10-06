@@ -1,6 +1,7 @@
 import type { Category, ProductDetail, ProductSpecification } from '@store/shared';
 import type { Db } from '../db/database.js';
 import { deriveAvailability } from '../inventory/inventory.js';
+import type { SearchDocument } from '../search/searchIndex.js';
 import type { CatalogItem } from './query.js';
 
 interface ProductRow {
@@ -59,11 +60,19 @@ export function createCatalogRepository(db: Db) {
     FROM categories c LEFT JOIN products p ON p.category_slug = c.slug
     GROUP BY c.slug ORDER BY c.name`);
   const categoryExists = db.prepare('SELECT 1 FROM categories WHERE slug = ?');
+  const searchDocuments = db.prepare(`
+    SELECT p.id, p.title, p.brand, p.description, p.tags, p.category_slug AS categorySlug, c.name AS categoryName
+    FROM products p JOIN categories c ON c.slug = p.category_slug`);
 
   return {
     listItems: (): CatalogItem[] => (allProducts.all() as ProductRow[]).map(toItem),
     listCategories: (): Category[] => categories.all() as Category[],
     categoryExists: (slug: string): boolean => categoryExists.get(slug) !== undefined,
+    listSearchDocuments: (): SearchDocument[] =>
+      (searchDocuments.all() as (Omit<SearchDocument, 'tags'> & { tags: string })[]).map((row) => ({
+        ...row,
+        tags: JSON.parse(row.tags) as string[],
+      })),
     findProduct(slug: string): ProductDetail | undefined {
       const row = productBySlug.get(slug) as ProductRow | undefined;
       if (!row) return undefined;

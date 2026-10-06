@@ -1,9 +1,10 @@
 import { RATING_FILTERS, type RatingFilter } from './types.js';
 
-export const SORT_OPTIONS = ['featured', 'price_asc', 'price_desc', 'rating', 'discount'] as const;
+export const SORT_OPTIONS = ['relevance', 'featured', 'price_asc', 'price_desc', 'rating', 'discount'] as const;
 export type SortOption = (typeof SORT_OPTIONS)[number];
 
 export const SORT_LABELS: Record<SortOption, string> = {
+  relevance: 'Relevance',
   featured: 'Featured',
   price_asc: 'Price: low to high',
   price_desc: 'Price: high to low',
@@ -12,9 +13,12 @@ export const SORT_LABELS: Record<SortOption, string> = {
 };
 
 export const DEFAULT_PAGE_SIZE = 24;
+export const MAX_QUERY_LENGTH = 100;
 export const MAX_PAGE_SIZE = 48;
 
 export interface ListingParams {
+  /** Search query; absent when not searching. */
+  q?: string;
   category?: string;
   /** Brand slugs, sorted and de-duplicated. */
   brands: string[];
@@ -37,6 +41,21 @@ export const DEFAULT_LISTING_PARAMS: ListingParams = {
 };
 
 type ParamSource = URLSearchParams | Record<string, unknown>;
+
+/** Trims, collapses whitespace and caps length. Returns undefined for a blank query. */
+export function normalizeQuery(value: string | undefined): string | undefined {
+  const q = value?.replace(/\s+/g, ' ').trim().slice(0, MAX_QUERY_LENGTH).trim();
+  return q ? q : undefined;
+}
+
+/** Relevance only makes sense for a search; it is then the default. */
+export function defaultSort(params: Pick<ListingParams, 'q'>): SortOption {
+  return params.q ? 'relevance' : 'featured';
+}
+
+export function sortOptionsFor(params: Pick<ListingParams, 'q'>): readonly SortOption[] {
+  return params.q ? SORT_OPTIONS : SORT_OPTIONS.filter((s) => s !== 'relevance');
+}
 
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const MAX_BRANDS = 50;
@@ -68,6 +87,7 @@ function parsePrice(value: string | undefined): Pick<ListingParams, 'priceMin' |
  * so a hand-edited or stale link still renders a sensible listing.
  */
 export function parseListingParams(source: ParamSource): ListingParams {
+  const q = normalizeQuery(read(source, 'q'));
   const category = read(source, 'category');
   const brands = [
     ...new Set(
@@ -85,12 +105,13 @@ export function parseListingParams(source: ParamSource): ListingParams {
   const pageSize = parsePositiveInt(read(source, 'pageSize'));
 
   return {
+    ...(q ? { q } : {}),
     ...(category && SLUG.test(category) ? { category } : {}),
     brands,
     ...parsePrice(read(source, 'price')),
     ...((RATING_FILTERS as readonly number[]).includes(rating) ? { rating: rating as RatingFilter } : {}),
     inStock: read(source, 'inStock') === '1',
-    sort: SORT_OPTIONS.includes(sort as SortOption) ? (sort as SortOption) : 'featured',
+    sort: sortOptionsFor({ q }).includes(sort as SortOption) ? (sort as SortOption) : defaultSort({ q }),
     page: page && page >= 1 ? page : 1,
     pageSize: pageSize && pageSize >= 1 ? Math.min(pageSize, MAX_PAGE_SIZE) : DEFAULT_PAGE_SIZE,
   };
@@ -102,6 +123,7 @@ export function serializeListingParams(
   options: { omitCategory?: boolean } = {},
 ): URLSearchParams {
   const out = new URLSearchParams();
+  if (params.q) out.set('q', params.q);
   if (params.category && !options.omitCategory) out.set('category', params.category);
   if (params.brands?.length) out.set('brand', [...new Set(params.brands)].sort().join(','));
   if (params.priceMin !== undefined || params.priceMax !== undefined) {
@@ -109,7 +131,7 @@ export function serializeListingParams(
   }
   if (params.rating) out.set('rating', String(params.rating));
   if (params.inStock) out.set('inStock', '1');
-  if (params.sort && params.sort !== 'featured') out.set('sort', params.sort);
+  if (params.sort && params.sort !== defaultSort(params)) out.set('sort', params.sort);
   if (params.page && params.page > 1) out.set('page', String(params.page));
   if (params.pageSize && params.pageSize !== DEFAULT_PAGE_SIZE) out.set('pageSize', String(params.pageSize));
   return out;

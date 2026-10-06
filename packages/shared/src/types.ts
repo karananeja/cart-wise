@@ -64,6 +64,8 @@ export interface Relaxation {
   total: number;
 }
 
+export type SearchMatchMode = 'all' | 'partial';
+
 export interface ListingResponse {
   items: ProductSummary[];
   page: number;
@@ -72,6 +74,13 @@ export interface ListingResponse {
   facets: ListingFacets;
   /** Populated only when `total` is 0. Sorted by `total`, largest first. */
   relaxations: Relaxation[];
+  /** Present when the request had a search query. `partial`: no product matched every word. */
+  search?: { query: string; matchMode: SearchMatchMode };
+}
+
+export interface SearchSuggestions {
+  categories: { slug: string; name: string }[];
+  products: ProductSummary[];
 }
 
 export interface ApiErrorBody {

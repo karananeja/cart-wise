@@ -143,3 +143,26 @@ describe('relaxations', () => {
     expect(query('category=laptops').relaxations).toEqual([]);
   });
 });
+
+describe('relevance', () => {
+  const relevance = new Map([
+    [3, 1],
+    [1, 5],
+    [2, 9],
+  ]);
+  const search = (qs: string) => queryCatalog(items, parseListingParams(new URLSearchParams(qs)), categories, relevance);
+
+  it('limits results and facets to matching products', () => {
+    const result = search('q=x');
+    expect(result.total).toBe(3);
+    expect(result.facets.categories.find((c) => c.value === 'phones')?.count).toBe(0);
+  });
+
+  it('orders by score, still putting out-of-stock last', () => {
+    expect(search('q=x').items.map((i) => i.id)).toEqual([1, 3, 2]);
+  });
+
+  it('allows other sorts on search results', () => {
+    expect(search('q=x&sort=price_asc').items.map((i) => i.id)).toEqual([3, 1, 2]);
+  });
+});

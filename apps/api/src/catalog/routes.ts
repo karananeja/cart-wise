@@ -1,10 +1,15 @@
 import { Router } from 'express';
-import { parseListingParams } from '@store/shared';
+import { normalizeQuery, parseListingParams, type SearchSuggestions } from '@store/shared';
 import { HttpError } from '../http/errors.js';
+import type { SearchIndex } from '../search/searchIndex.js';
 import { queryCatalog } from './query.js';
 import type { CatalogRepository } from './repository.js';
 
-export function catalogRouter(catalog: CatalogRepository): Router {
+const SUGGESTED_PRODUCTS = 5;
+const SUGGESTED_CATEGORIES = 3;
+const MIN_SUGGESTION_LENGTH = 2;
+
+export function catalogRouter(catalog: CatalogRepository, search: SearchIndex): Router {
   const router = Router();
 
   router.get('/categories', (_req, res) => {
@@ -16,13 +21,37 @@ export function catalogRouter(catalog: CatalogRepository): Router {
     if (params.category && !catalog.categoryExists(params.category)) {
       throw new HttpError(404, 'CATEGORY_NOT_FOUND', 'Category not found');
     }
-    res.json(queryCatalog(catalog.listItems(), params, catalog.listCategories()));
+    if (!params.q) {
+      res.json(queryCatalog(catalog.listItems(), params, catalog.listCategories()));
+      return;
+    }
+    const { matchMode, scores } = search.search(params.q);
+    res.json({
+      ...queryCatalog(catalog.listItems(), params, catalog.listCategories(), scores),
+      search: { query: params.q, matchMode },
+    });
   });
 
   router.get('/products/:slug', (req, res) => {
     const product = catalog.findProduct(req.params.slug);
     if (!product) throw new HttpError(404, 'PRODUCT_NOT_FOUND', 'Product not found');
     res.json({ product });
+  });
+
+  router.get('/search/suggestions', (req, res) => {
+    const q = normalizeQuery(typeof req.query.q === 'string' ? req.query.q : undefined);
+    const empty: SearchSuggestions = { categories: [], products: [] };
+    if (!q || q.length < MIN_SUGGESTION_LENGTH) {
+      res.json(empty);
+      return;
+    }
+    const { matchMode, scores } = search.search(q);
+    // Suggestions only show products matching every word; partial matches belong on the results page.
+    const products =
+      matchMode === 'all'
+        ? queryCatalog(catalog.listItems(), parseListingParams({ q, pageSize: String(SUGGESTED_PRODUCTS) }), [], scores).items
+        : [];
+    res.json({ categories: search.suggestCategories(q, SUGGESTED_CATEGORIES), products } satisfies SearchSuggestions);
   });
 
   return router;

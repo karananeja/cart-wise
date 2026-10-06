@@ -72,3 +72,22 @@ describe('countActiveFilters', () => {
     expect(countActiveFilters(params, { includeCategory: false })).toBe(5);
   });
 });
+
+describe('search query', () => {
+  it('normalises whitespace and caps length', () => {
+    expect(parse('q=%20%20red%20%20%20shoes%20').q).toBe('red shoes');
+    expect(parse(`q=${'a'.repeat(150)}`).q).toHaveLength(100);
+    expect(parse('q=%20%20')).not.toHaveProperty('q');
+  });
+
+  it('defaults to relevance when searching, and allows it only then', () => {
+    expect(parse('q=shoes').sort).toBe('relevance');
+    expect(parse('q=shoes&sort=price_asc').sort).toBe('price_asc');
+    expect(parse('sort=relevance').sort).toBe('featured');
+  });
+
+  it('serialises q first and omits the default relevance sort', () => {
+    expect(serializeListingParams(parse('q=red shoes&sort=relevance&brand=nike')).toString()).toBe('q=red+shoes&brand=nike');
+    expect(serializeListingParams(parse('q=shoes&sort=featured')).toString()).toBe('q=shoes&sort=featured');
+  });
+});

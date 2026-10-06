@@ -14,3 +14,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-001 Gate 2 | **Accepted** ("proceed") | |
 | 2026-10-06 | Store name | No answer; "Cartwise" kept as placeholder | Easy to change: `apps/web/src/app/store.ts` |
 | 2026-10-06 | F-002 | Spec and intent presented for Gate 1 | |
+| 2026-10-06 | F-002 Gate 1 | **Approved** | |
