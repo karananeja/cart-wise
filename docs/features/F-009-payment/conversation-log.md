@@ -8,3 +8,4 @@
 | 2026-10-06 | Cards | Any Luhn-valid number; outcome by last 4 (0002 declined, 9995 insufficient funds) | Differs from recommendation; only the first 6 and last 4 digits are sent |
 | 2026-10-06 | Bank OTP | Included | As recommended |
 | 2026-10-06 | UPI | In-page demo app, 5-minute window, no PIN | As recommended |
+| 2026-10-06 | Gate 1 | **Approved** | |

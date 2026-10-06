@@ -4,7 +4,7 @@
 
 **ID:** F-009
 **Name:** Simulated payment — card, UPI and card offers
-**Status:** Draft — decisions recorded, awaiting Gate 1 approval
+**Status:** Approved (Gate 1, 2026-10-06)
 **Requirements:** PAY-1, PAY-2, PAY-3, PAY-4, PAY-5, PAY-6, ORD-1, CHK-1 (Payment → Confirmation), NFR-5, NFR-8, STATE-1, ANL-1 (`payment_started`, `payment_failed`, `payment_completed`, `order_created`)
 
 **User decisions already applied:**

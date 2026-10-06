@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-009 Simulated payment — specification and intent drafted, awaiting Gate 1.** F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+**F-009 Simulated payment — Gate 1 approved 2026-10-06; in implementation.** F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -96,7 +96,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 2 F-006: 2026-10-06.
 - Gate 1 F-007: 2026-10-06; Gate 2 F-007: 2026-10-06. ADR-004 accepted.
 - Gate 1 F-008: 2026-10-06; Gate 2 F-008: 2026-10-06.
+- Gate 1 F-009: 2026-10-06 (customer-chosen offer, any Luhn-valid card with first 6/last 4 only, bank OTP, in-page demo UPI app).
 
 ## Exact next action
 
-Wait for Gate 1 approval on F-009 (`docs/features/F-009-payment/`). Decisions recorded 2026-10-06: customer chooses offer; any Luhn-valid card (only first 6 + last 4 sent; outcome by last 4); bank OTP step; in-page demo UPI app, 5 min, no PIN. On approval: write technical-design.md and test-plan.md, implement.
+Implement F-009 per `docs/features/F-009-payment/technical-design.md`: shared `payment.ts` → API `payments/` → web `features/payment/` + confirmation + product-page banner → tests → E2E → acceptance.md → Gate 2.
