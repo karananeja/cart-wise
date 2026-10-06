@@ -99,6 +99,8 @@ describe('sign-in', () => {
     await user.type(await screen.findByLabelText('Mobile number'), '9000000000');
     await user.click(screen.getByRole('button', { name: 'Send code' }));
     await user.click(await screen.findByRole('link', { name: 'Sign up?' }));
+    // Sign-up loads on first visit, so wait for its form.
+    expect(await screen.findByLabelText('Full name')).toBeInTheDocument();
     expect(location().pathname).toBe('/signup');
     expect(screen.getByLabelText('Mobile number')).toHaveValue('9000000000');
   });
@@ -198,7 +200,9 @@ describe('signed in', () => {
     // Removals reach the account too, so the next merge can't bring them back.
     act(() => removeRecentSearch('Watch'));
     act(() => recentlyViewedStore.clear());
-    await waitFor(() => expect(historyRemovals).toEqual([{ list: 'recentSearches', key: 'watch' }, { list: 'recentlyViewed' }]));
+    // Sent independently, so they may arrive in either order.
+    await waitFor(() => expect(historyRemovals).toHaveLength(2));
+    expect(historyRemovals).toEqual(expect.arrayContaining([{ list: 'recentSearches', key: 'watch' }, { list: 'recentlyViewed' }]));
   });
 
   it('shows account details, and sends guests to sign in first', async () => {

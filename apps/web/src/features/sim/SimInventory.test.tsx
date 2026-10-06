@@ -16,9 +16,10 @@ describe('simulation console', () => {
     signInOperator();
     const nav = screen.getByRole('navigation', { name: 'Simulation console' });
     await user.click(within(nav).getByRole('link', { name: 'Inventory' }));
+    // The Inventory page loads on first visit, so wait for it before checking the tab state.
+    expect(await screen.findByRole('heading', { level: 1, name: 'Inventory' })).toBeInTheDocument();
     expect(location().pathname).toBe('/sim/inventory');
     expect(within(nav).getByRole('link', { name: 'Inventory' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('heading', { level: 1, name: 'Inventory' })).toBeInTheDocument();
   });
 });
 
