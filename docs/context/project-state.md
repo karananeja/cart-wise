@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-010 Orders — Gate 1 approved 2026-10-06; in implementation.** F-001 to F-009 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+**F-010 Orders — implemented and tested, awaiting Gate 2.** F-001 to F-009 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -53,11 +53,12 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 - `apps/api/src/addresses/`, `apps/api/src/geo/` (Nominatim proxy), `apps/web/src/features/addresses/` (LocationPicker, lazy MapView)
 - `apps/api/src/orders/` (quote, atomic holds, expiry sweep), `apps/web/src/features/checkout/` (CheckoutPage, PaymentPage, HoldCountdown)
 - `packages/shared/src/payment.ts` (offers, card ranges, outcome rule, UPI), `apps/api/src/payments/` (attempts, OTP, completion), `apps/api/src/analytics/record.ts` (server events), `apps/web/src/features/payment/`, `apps/web/src/features/orders/ConfirmationPage.tsx`
+- `packages/shared/src/orders.ts` (lifecycle, reasons, `allocatePaise`), `apps/api/src/orders/lifecycle.ts` (list, cancel, returns, operator steps), `apps/api/src/sim/` (operator password session, routes), `apps/web/src/features/orders/`, `apps/web/src/features/sim/`
 - `apps/web/src/features/search/SearchBox.tsx` — header combobox; `apps/web/src/lib/recentSearches.ts` — history store
 
 ## Tests
 
-- `pnpm test`: 349 passing (shared 35, api 188, web 126). `pnpm e2e`: 39 passing (stable over 3 repeats). Typecheck clean. Build succeeds.
+- `pnpm test`: 380 passing (shared 38, api 203, web 139). `pnpm e2e`: 42 passing (stable over 3 repeats). Typecheck clean. Build succeeds.
 - No failing tests.
 
 ## Known bugs / limitations
@@ -101,4 +102,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Implement F-010 per `docs/features/F-010-orders/technical-design.md`: shared `orders.ts` (done) → API lifecycle + sim operator → web orders pages + `/sim/orders` → tests → E2E → acceptance.md → Gate 2.
+Wait for Gate 2 acceptance of F-010 (`docs/features/F-010-orders/acceptance.md`). On acceptance: mark complete, then prepare F-011 (Store Simulation Console — inventory simulation: stock +/−, auto decrease/restock with interval; SIM-1, SIM-2), reusing the operator session from F-010.

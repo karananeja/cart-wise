@@ -11,3 +11,4 @@
 | 2026-10-06 | Operator access (Q14) | Demo operator password, separate operator session | Differs from recommendation (open page) |
 | 2026-10-06 | Delivery charge on returns | Not refunded | As recommended |
 | 2026-10-06 | Gate 1 | **Approved** | |
+| 2026-10-06 | Implementation complete | Presented for Gate 2 | See acceptance.md |

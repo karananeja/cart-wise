@@ -49,3 +49,6 @@
 
 | Run date | Command | Result | Notes |
 |---|---|---|---|
+| 2026-10-06 | `pnpm test` | 380 passed (shared 38, api 203, web 139) | |
+| 2026-10-06 | `pnpm e2e` ×3 | 42 passed each run | |
+| 2026-10-06 | `pnpm typecheck`, `pnpm build` | Clean | |
