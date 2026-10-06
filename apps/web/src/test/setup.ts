@@ -5,7 +5,9 @@ import { resetAddresses } from './addressServer';
 import { resetAuth } from './authServer';
 import { resetCart } from './cartServer';
 import { resetCheckout } from './checkoutServer';
+import { resetOrders } from './ordersServer';
 import { resetPayments } from './paymentServer';
+import { resetSim } from './simServer';
 import { resetWishlist } from './wishlistServer';
 import { server } from './server';
 
@@ -26,6 +28,8 @@ afterEach(() => {
   resetCart();
   resetCheckout();
   resetPayments();
+  resetOrders();
+  resetSim();
   resetAuth();
   resetAddresses();
   resetWishlist();

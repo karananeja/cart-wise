@@ -1,4 +1,4 @@
-import { Loader2, LogOut, MapPin } from 'lucide-react';
+import { Loader2, LogOut, MapPin, Package } from 'lucide-react';
 import { Link, Navigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -22,6 +22,11 @@ export function AccountPage() {
         <dt className="text-muted-foreground">Mobile</dt>
         <dd>{user.maskedMobile}</dd>
       </dl>
+      <Button asChild variant="outline" className="w-fit">
+        <Link to="/account/orders">
+          <Package aria-hidden /> Your orders
+        </Link>
+      </Button>
       <Button asChild variant="outline" className="w-fit">
         <Link to="/account/addresses">
           <MapPin aria-hidden /> Addresses

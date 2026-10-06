@@ -28,7 +28,7 @@ export function ConfirmationPage() {
 
   const o = order.data;
   // Not paid (yet): the payment page shows the right state for pending, expired and cancelled orders.
-  if (o.status !== 'confirmed' || !o.payment) return <Navigate to={`/checkout/pay/${o.id}`} replace />;
+  if (!o.payment) return <Navigate to={`/checkout/pay/${o.id}`} replace />;
 
   const savings = o.totals.discountPaise + o.payment.offerDiscountPaise;
   return (
@@ -83,7 +83,7 @@ export function ConfirmationPage() {
         </h2>
         <ul className="flex flex-col divide-y">
           {o.lines.map((line) => (
-            <li key={`${line.productId}-${line.size}`} className="flex items-center gap-3 py-3">
+            <li key={line.id} className="flex items-center gap-3 py-3">
               <ProductImage src={line.thumbnailUrl} alt="" className="size-14 shrink-0" />
               <div className="min-w-0 flex-1 text-sm">
                 <p className="truncate font-medium">{line.title}</p>
@@ -97,9 +97,14 @@ export function ConfirmationPage() {
         </ul>
       </section>
 
-      <Button asChild size="lg" className="h-12 w-full sm:w-fit sm:self-center">
-        <Link to="/">Continue shopping</Link>
-      </Button>
+      <div className="flex flex-col gap-3 sm:flex-row sm:self-center">
+        <Button asChild size="lg" className="h-12 w-full sm:w-fit">
+          <Link to="/">Continue shopping</Link>
+        </Button>
+        <Button asChild size="lg" variant="outline" className="h-12 w-full sm:w-fit">
+          <Link to={`/orders/${o.id}`}>View order</Link>
+        </Button>
+      </div>
     </div>
   );
 }

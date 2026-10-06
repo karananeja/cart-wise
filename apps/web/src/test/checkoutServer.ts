@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw';
 import { deliveryOptions, isDeliveryOption, PAYMENT_HOLD_MS, type CheckoutBlocker, type CheckoutQuote, type Order } from '@store/shared';
 import { addressList } from './addressServer';
 import { view as cartView } from './cartServer';
+import { derive, orderDefaults } from './orderState';
 
 /** Mock checkout and orders using the shared delivery rules; holds and stock are covered by API tests. */
 let orders = new Map<string, Order>();
@@ -13,6 +14,7 @@ export function resetCheckout() {
 }
 
 export const getOrder = (id: string) => orders.get(id);
+export const allOrders = () => [...orders.values()];
 export const saveOrder = (order: Order) => orders.set(order.id, order);
 
 /** Lets tests simulate the hold running out. */
@@ -55,7 +57,8 @@ export const checkoutHandlers = [
     const order: Order = {
       id: `ORD-TEST000${nextId++}`,
       status: 'pending_payment',
-      lines: q.cart.lines.map((l) => ({
+      lines: q.cart.lines.map((l, i) => ({
+        id: nextId * 100 + i,
         productId: l.product.id,
         slug: l.product.slug,
         title: l.product.title,
@@ -72,17 +75,13 @@ export const checkoutHandlers = [
       holdExpiresAt: new Date(Date.now() + PAYMENT_HOLD_MS).toISOString(),
       payment: null,
       history: [],
+      ...orderDefaults,
     };
     orders.set(order.id, order);
     return HttpResponse.json({ order }, { status: 201 });
   }),
   http.get('*/api/orders/:id', ({ params }) => {
     const order = orders.get(String(params.id));
-    return order ? HttpResponse.json({ order }) : HttpResponse.json({ error: { code: 'ORDER_NOT_FOUND', message: 'x' } }, { status: 404 });
-  }),
-  http.post('*/api/orders/:id/cancel', ({ params }) => {
-    const order = { ...orders.get(String(params.id))!, status: 'cancelled' as const };
-    orders.set(order.id, order);
-    return HttpResponse.json({ order });
+    return order ? HttpResponse.json({ order: derive(order) }) : HttpResponse.json({ error: { code: 'ORDER_NOT_FOUND', message: 'x' } }, { status: 404 });
   }),
 ];

@@ -36,7 +36,8 @@ export function PaymentPage() {
       <Link to="/cart">Back to cart</Link>
     </Button>
   );
-  if (o.status === 'confirmed') return <Navigate to={`/orders/${o.id}/confirmation`} replace />;
+  // Paid: the confirmation right after payment, the order page once it has moved on.
+  if (o.payment) return <Navigate to={o.status === 'confirmed' ? `/orders/${o.id}/confirmation` : `/orders/${o.id}`} replace />;
   if (o.status === 'payment_expired') {
     return <StatusMessage icon={<TimerOff />} title="Your hold expired" description="The items are back on sale. Your cart is still here." actions={backToCart} />;
   }

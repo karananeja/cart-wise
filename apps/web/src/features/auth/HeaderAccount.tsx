@@ -48,6 +48,9 @@ export function HeaderAccount() {
           <Link to="/account">My account</Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
+          <Link to="/account/orders">Your orders</Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
           <Link to="/account/addresses">Addresses</Link>
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => logout.mutate()}>

@@ -15,6 +15,9 @@ import { AddressesPage } from '@/features/addresses/AddressesPage';
 import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { SignupPage } from '@/features/auth/SignupPage';
+import { OrderPage } from '@/features/orders/OrderPage';
+import { OrdersPage } from '@/features/orders/OrdersPage';
+import { SimOrdersPage } from '@/features/sim/SimOrdersPage';
 import { RootLayout } from './RootLayout';
 import { RouteError } from './RouteError';
 
@@ -36,10 +39,13 @@ export const routes: RouteObject[] = [
       { path: 'signup', element: <SignupPage /> },
       { path: 'forgot-password', element: <ForgotPasswordPage /> },
       { path: 'account', element: <AccountPage /> },
+      { path: 'account/orders', element: <OrdersPage /> },
       { path: 'account/addresses', element: <AddressesPage /> },
       { path: 'account/addresses/new', element: <AddressEditorPage /> },
       { path: 'account/addresses/:id/edit', element: <AddressEditorPage /> },
       { path: 'p/:productSlug', element: <ProductPage /> },
+      { path: 'orders/:orderId', element: <OrderPage /> },
+      { path: 'sim/orders', element: <SimOrdersPage /> },
       { path: '*', element: <NotFound /> },
     ],
   },

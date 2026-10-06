@@ -5,7 +5,9 @@ import { addressHandlers } from './addressServer';
 import { authHandlers } from './authServer';
 import { cartHandlers } from './cartServer';
 import { checkoutHandlers } from './checkoutServer';
+import { ordersHandlers } from './ordersServer';
 import { paymentHandlers } from './paymentServer';
+import { simHandlers } from './simServer';
 import { wishlistHandlers } from './wishlistServer';
 import { categories, listing, productDetails, products } from './fixtures';
 
@@ -21,7 +23,9 @@ export const handlers = [
   ...addressHandlers,
   ...cartHandlers,
   ...paymentHandlers,
+  ...ordersHandlers,
   ...checkoutHandlers,
+  ...simHandlers,
   ...wishlistHandlers,
   http.get('*/api/categories', () => HttpResponse.json({ categories })),
   http.get('*/api/products', ({ request }) => {
