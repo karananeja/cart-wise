@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**Next: F-009 Simulated payment — drafting specification and intent for Gate 1.** F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+**F-009 Simulated payment — specification and intent drafted, awaiting Gate 1.** F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -99,4 +99,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Prepare F-009 (Simulated payment: card, UPI, card offers with fictional banks and product-page best-offer banner). F-009 needs: offer catalogue and stacking rule (Q17), test-card behaviours (success/failure), UPI flow details.
+Wait for Gate 1 on F-009 (`docs/features/F-009-payment/`). Open decisions (spec §22): offer catalogue + one offer per order; demo cards only; bank OTP step; UPI in-page demo app with 5-minute window. On approval: record decisions, write technical-design.md and test-plan.md, implement.
