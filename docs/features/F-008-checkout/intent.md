@@ -1,8 +1,8 @@
 # Feature Intent
 
 **Feature:** F-008 — Checkout (address, delivery, summary, stock hold)
-**Status:** Awaiting Approval
-**Approved by / date:** —
+**Status:** Approved
+**Approved by / date:** User, 2026-10-06
 
 ---
 
@@ -50,8 +50,8 @@ Acceptance criteria 1–13 in `specification.md` §17.
 
 ## 6. Decisions needed before implementation
 
-Confirm: one-page checkout with three visible sections; starting checkout again cancels the previous unpaid hold.
+Resolved 2026-10-06: one-page checkout with three visible sections; restarting checkout cancels the previous unpaid hold.
 
 ## 7. Approval
 
-- [ ] Approved for implementation (Gate 1)
+- [x] Approved for implementation (Gate 1) — 2026-10-06

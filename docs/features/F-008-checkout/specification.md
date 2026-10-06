@@ -4,7 +4,7 @@
 
 **ID:** F-008
 **Name:** Checkout — address, delivery, summary and stock hold
-**Status:** Proposed (awaiting Gate 1)
+**Status:** Approved — In Progress (Gate 1 approved 2026-10-06)
 **Requirements:** CHK-1, CHK-2, CHK-3, INV-2, AUTH-4, STATE-1, ANL-1 (`checkout_started`)
 
 **User decisions applied (2026-10-06):**
@@ -229,4 +229,4 @@ F-004 (cart), F-006 (accounts) and F-007 (addresses), all complete. F-009 builds
 
 ## 22. Decisions Required From User
 
-None blocking. Confirm when approving: the one-page checkout with three visible sections, and starting checkout again cancelling the previous unpaid hold.
+None outstanding. Confirmed 2026-10-06.

@@ -7,3 +7,4 @@
 | 2026-10-06 | Q11 Taxes | Prices inclusive of GST; "Inclusive of all taxes" note | User choice |
 | 2026-10-06 | Scope | Two features in order (F-008 checkout, F-009 payment); interim payment page offers cancel only | User choice |
 | 2026-10-06 | Spec + intent drafted | Presented for Gate 1 | |
+| 2026-10-06 | Gate 1 | **Approved** | |

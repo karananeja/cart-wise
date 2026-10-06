@@ -52,3 +52,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-007 Gate 2 | **Accepted** | |
 | 2026-10-06 | F-008 decisions | Delivery Standard/Express; hold at payment 10 min; inclusive taxes; checkout and payment as two features | |
 | 2026-10-06 | F-008 | Spec and intent presented for Gate 1 | |
+| 2026-10-06 | F-008 Gate 1 | **Approved** | |
