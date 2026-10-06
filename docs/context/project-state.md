@@ -100,4 +100,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-MVP wrap-up in progress (user choice 2026-10-06): (1) requirements traceability audit against brief/PRD/mvp-requirements; (2) investigate the one-off F-009 payment E2E failure; (3) route-level code-splitting (backlog item); (4) backlog triage. Present findings, any decisions needed, and fixes to the user before Phase 2.
+MVP wrap-up findings presented (`docs/mvp-wrap-up.md`). Waiting for the user on: (1) analytics identity (account id / product ids on events, or keep anonymous); (2) storefront demo notice mentioning simulated stock; (3) which Phase 2 track first. Then specify the chosen Phase 2 feature (F-012) for Gate 1.

@@ -2,11 +2,15 @@
 
 Useful ideas that are outside the currently approved scope. Nothing here is implemented without user approval.
 
-| Date | Idea | Origin | Notes |
-|---|---|---|---|
-| 2026-10-06 | Analytics funnel view (simple local page computing brief §20 funnels from stored events) | Discovery | Events are stored from F-001; a viewer could live in the Simulation Console |
-| 2026-10-06 | Catalog re-import / refresh command with diff | Discovery | Snapshot import is enough for MVP |
-| 2026-10-06 | Self-hosted product images for fully offline demos | Discovery | Images currently hotlinked from DummyJSON CDN |
-| 2026-10-06 | Brand landing pages | F-001 scoping | Brand is a filter in F-001 |
-| 2026-10-06 | Product weight/dimensions in specifications | F-001 | Needs units; DummyJSON provides none |
-| 2026-10-06 | Writing and moderating reviews (application-owned) | F-003 | Display of imported reviews is in F-003; brief lists Reviews under "Next" |
+Triage (MVP wrap-up, 2026-10-06): **Phase 2** = fits the brief's next phase; **Later** = worthwhile, low urgency; **Drop?** = suggest closing.
+
+| Date | Idea | Origin | Notes | Triage |
+|---|---|---|---|---|
+| 2026-10-06 | Analytics funnel view (simple local page computing brief §20 funnels from stored events) | Discovery | Events are stored from F-001; could live in the Simulation Console | Phase 2 (pairs with the analytics identity decision) |
+| 2026-10-06 | Writing and moderating reviews (application-owned) | F-003 | Imported reviews shown since F-003; brief lists Reviews under "Next" | Phase 2 |
+| 2026-10-06 | Self-hosted product images for fully offline demos | Discovery | Images are hotlinked from the DummyJSON CDN; offline or slow networks show placeholders | Later |
+| 2026-10-06 | Catalog re-import / refresh command with diff | Discovery | Snapshot import is enough for MVP | Later |
+| 2026-10-06 | Brand landing pages | F-001 scoping | Brand is already a filter | Later |
+| 2026-10-06 | Product weight/dimensions in specifications | F-001 | Needs units; DummyJSON provides none | Drop? |
+| 2026-10-06 | Account-level analytics identity (user id on server events) and product ids on `order_created` | MVP wrap-up | Enables repeat-purchase and Wishlist → Purchase funnels; changes the anonymous-events privacy stance | Needs decision |
+| 2026-10-06 | Automated accessibility checks (axe) in component/E2E tests | MVP wrap-up | Accessibility is built in but not machine-verified | Later |
