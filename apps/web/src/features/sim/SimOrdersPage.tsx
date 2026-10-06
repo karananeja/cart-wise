@@ -1,82 +1,21 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { FlaskConical, Loader2, LogOut } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { formatPrice, ORDER_STATUS_LABELS, type SimOrder } from '@store/shared';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/ErrorState';
-import { FormField, PasswordField } from '@/features/auth/components';
+import { FormField } from '@/features/auth/components';
 import { formatDateTime } from '@/features/orders/format';
 import { ApiError } from '@/lib/api';
-import { simSessionKey, useSimAction, useSimOrders, useSimSession, useSimSignIn, useSimSignOut } from './api';
+import { simSessionKey, useSimAction, useSimOrders } from './api';
 
 /**
- * Demo operator: moves paid orders along, completes delivery with the customer's code and
- * advances returns (spec §5.7). A simulation tool, not an admin dashboard (brief §16).
+ * Orders tab of the Simulation Console: moves paid orders along, completes delivery with the
+ * customer's code and advances returns (F-010 spec §5.7). Sign-in lives in SimConsole.
  */
 export function SimOrdersPage() {
-  const session = useSimSession();
-  const signOut = useSimSignOut();
-  const signedIn = session.data?.signedIn === true;
-
-  return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6">
-      <div role="note" className="flex items-center gap-2 rounded-xl border border-dashed border-amber-400 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">
-        <FlaskConical className="size-4 shrink-0" aria-hidden />
-        <span>
-          <span className="font-medium">Demo operator — simulation only.</span> Changes here stand in for the warehouse and courier.
-        </span>
-      </div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Order simulation</h1>
-        {signedIn && (
-          <Button variant="outline" size="sm" onClick={() => signOut.mutate()} disabled={signOut.isPending}>
-            <LogOut aria-hidden /> Sign out
-          </Button>
-        )}
-      </div>
-      {session.isPending ? (
-        <Skeleton className="h-40 rounded-xl" />
-      ) : session.isError ? (
-        <ErrorState what="the operator session" onRetry={() => void session.refetch()} />
-      ) : signedIn ? (
-        <SimOrderList />
-      ) : (
-        <OperatorSignIn />
-      )}
-    </div>
-  );
-}
-
-function OperatorSignIn() {
-  const [password, setPassword] = useState('');
-  const signIn = useSimSignIn();
-  const error = signIn.error instanceof ApiError ? signIn.error : undefined;
-  const message =
-    error?.code === 'WRONG_PASSWORD'
-      ? 'That password is not right.'
-      : error?.code === 'TOO_MANY_ATTEMPTS'
-        ? `Too many wrong attempts. Try again in ${Math.ceil(Number(error.details?.retryAfterSeconds ?? 900) / 60)} minutes.`
-        : signIn.isError
-          ? "We couldn't sign you in. Please try again."
-          : undefined;
-
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    if (password) signIn.mutate(password);
-  };
-
-  return (
-    <form onSubmit={submit} className="flex max-w-sm flex-col gap-4 rounded-xl border p-5" noValidate>
-      <p className="text-sm text-muted-foreground">Enter the demo operator password to move orders along.</p>
-      <PasswordField label="Operator password" autoComplete="current-password" value={password} error={message} onChange={(e) => setPassword(e.target.value)} />
-      <Button type="submit" disabled={signIn.isPending || !password} className="w-fit">
-        {signIn.isPending && <Loader2 className="animate-spin" aria-hidden />}
-        Sign in
-      </Button>
-    </form>
-  );
+  return <SimOrderList />;
 }
 
 function SimOrderList() {
