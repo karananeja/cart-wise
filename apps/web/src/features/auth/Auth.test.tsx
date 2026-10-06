@@ -30,11 +30,12 @@ describe('sign-up', () => {
     await screen.findByRole('heading', { level: 1, name: 'Check Shirt' });
 
     await user.click(await screen.findByRole('link', { name: 'Sign in' }));
-    expect(location().pathname).toBe('/login');
-    await user.click(screen.getByRole('link', { name: 'Create an account' }));
+    // Pages load on first visit, so wait for each one.
+    await user.click(await screen.findByRole('link', { name: 'Create an account' }));
+    expect(location().pathname).not.toBe('/p/check-shirt');
+    await user.type(await screen.findByLabelText('Full name'), 'Karan Aneja');
+    expect(location().pathname).toBe('/signup');
     expect(location().search).toContain('returnTo=%2Fp%2Fcheck-shirt%3Fsize%3DL');
-
-    await user.type(screen.getByLabelText('Full name'), 'Karan Aneja');
     await user.type(screen.getByLabelText('Email'), 'karan@example.com');
     await user.type(screen.getByLabelText('Mobile number'), '+91 98765 43210');
     await user.type(screen.getByLabelText('Password'), 'correct horse battery');

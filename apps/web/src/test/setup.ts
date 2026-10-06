@@ -9,7 +9,11 @@ import { resetOrders } from './ordersServer';
 import { resetPayments } from './paymentServer';
 import { resetSim } from './simServer';
 import { resetWishlist } from './wishlistServer';
+import { preloadRoutes } from '@/app/routes';
 import { server } from './server';
+
+// Lazily loaded pages compile once here, not inside each test's time limit.
+beforeAll(() => preloadRoutes(), 60_000);
 
 // jsdom gaps used by Radix primitives and the listing page.
 globalThis.ResizeObserver ??= class {

@@ -44,7 +44,8 @@ describe('addresses', () => {
     const { location } = renderRoute('/account/addresses');
     await user.click(await screen.findByRole('link', { name: 'Add address' }));
 
-    await user.type(screen.getByLabelText('Search for your area, street or landmark'), 'Indiranagar');
+    // Pages load on first visit, so wait for the editor.
+    await user.type(await screen.findByLabelText('Search for your area, street or landmark'), 'Indiranagar');
     // Typing restarts the 400 ms search debounce, so allow a little longer than the default wait.
     await user.click(await screen.findByRole('button', { name: /^Indiranagar, Bengaluru/ }, { timeout: 3000 }));
     expect(screen.getByText('Indiranagar, Bengaluru 560038')).toBeInTheDocument();
