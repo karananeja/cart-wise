@@ -6,3 +6,4 @@
 | 2026-10-06 | Spec + intent drafted | Presented for Gate 1 | Decisions D1 (tiers/steps), D2 (preselection), D3 (card price) |
 | 2026-10-06 | Gate 1 | **Approved**: D1 tiers/steps as proposed; D2 cheapest in-stock preselected; D3 "From ₹X" | |
 | 2026-10-06 | Implementation complete | Presented for Gate 2 | See acceptance.md; reseed remap fix included |
+| 2026-10-06 | Gate 2 | **Accepted** | |

@@ -8,7 +8,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## Current feature
 
-**F-013 Electronics variants — implemented and tested, awaiting Gate 2** (`docs/features/F-013-electronics-variants/`). F-012 accepted 2026-10-06.
+**F-014 EMI + Razorpay (test mode) — being specified.** F-013 accepted 2026-10-06; previously (`docs/features/F-013-electronics-variants/`). F-012 accepted 2026-10-06.
 
 ## Completed
 
@@ -19,7 +19,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## In progress
 
-F-013 Gate 2.
+F-014 specification (EMI normal + no-cost; Razorpay test mode alongside the demo payment).
 
 ## Remaining
 
@@ -100,8 +100,9 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 1 F-010: 2026-10-06 (order simulation in F-010; demo operator password; delivery charge not refunded on returns); Gate 2 F-010: 2026-10-06 (after return-dialog width fix).
 - Gate 1 F-011: 2026-10-06; Gate 2 F-011: 2026-10-06.
 - Gate 1 F-012: 2026-10-06; Gate 2 F-012: 2026-10-06 (companion price cap not chosen; in backlog).
-- Gate 1 F-013: 2026-10-06 (D1 tiers as proposed; D2 cheapest in-stock preselected; D3 "From ₹X").
+- Gate 1 F-013: 2026-10-06 (D1 tiers as proposed; D2 cheapest in-stock preselected; D3 "From ₹X"); Gate 2 F-013: 2026-10-06.
+- F-014 direction (2026-10-06): Razorpay test keys only; customer chooses Razorpay or demo payment; EMI simulated in demo mode, Razorpay EMI in Razorpay mode.
 
 ## Exact next action
 
-Wait for Gate 2 acceptance of F-013 (`docs/features/F-013-electronics-variants/acceptance.md`). Then ask the user which Phase 2 item comes next (backlog: reviews writing, analytics funnel view, companion price cap decision, etc.).
+Write F-014 specification, intent and ADR-005 (Razorpay test-mode integration) and present for Gate 1.

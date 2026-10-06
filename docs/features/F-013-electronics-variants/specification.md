@@ -4,7 +4,7 @@
 
 **ID:** F-013
 **Name:** Electronics variants — storage and memory options with their own prices
-**Status:** Acceptance — awaiting Gate 2 (Gate 1 approved 2026-10-06)
+**Status:** Complete (Gate 1 and Gate 2 approved 2026-10-06)
 **Requirements:** PDP-3 (variants where the catalog supports them), brief §6 (variants); backlog item from the F-012 Gate 2 review
 
 **User decisions applied (2026-10-06):**

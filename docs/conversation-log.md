@@ -87,3 +87,5 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-013 | Spec and intent presented for Gate 1 | Decisions: tiers and price steps, preselection, card price |
 | 2026-10-06 | F-013 Gate 1 | **Approved** (tiers as proposed, cheapest in-stock preselected, "From ₹X") | |
 | 2026-10-06 | F-013 implementation | Implemented, tested, presented for Gate 2 | Also fixes reseed remapping of carts, orders and holds |
+| 2026-10-06 | F-013 Gate 2 | **Accepted** | |
+| 2026-10-06 | New requirement: EMI + Razorpay | Razorpay **test keys only** (live keys refused; no real money, CLAUDE.md rule kept); customer chooses Razorpay or demo payment; EMI (normal + no-cost) simulated in demo mode and through Razorpay in Razorpay mode | To be specified as F-014 with ADR-005 |
