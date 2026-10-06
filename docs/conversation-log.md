@@ -63,3 +63,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-010 decisions | Q9: cancel before Shipped; 7-day item returns; staged refunds to original method. Q16: 4-digit delivery code, 3 tries | |
 | 2026-10-06 | F-010 | Spec and intent presented for Gate 1 | Decisions: order simulation in F-010, operator access, delivery charge on returns |
 | 2026-10-06 | F-010 decisions | Q6: console in MVP, order simulation in F-010; Q14: demo operator password; delivery charge not refunded on returns | |
+| 2026-10-06 | F-010 Gate 1 | **Approved** | |

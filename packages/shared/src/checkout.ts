@@ -1,5 +1,6 @@
 import type { Address } from './address.js';
 import type { CartView } from './cart.js';
+import type { OrderActions, OrderRefund, OrderReturn, ReturnState } from './orders.js';
 import type { OrderPayment } from './payment.js';
 
 /** Delivery rules (user decision Q8, 2026-10-06). */
@@ -69,12 +70,22 @@ export interface CheckoutQuote {
   blockers: CheckoutBlocker[];
 }
 
-export type OrderStatus = 'pending_payment' | 'payment_expired' | 'cancelled' | 'confirmed';
+export type OrderStatus =
+  | 'pending_payment'
+  | 'payment_expired'
+  | 'cancelled'
+  | 'confirmed'
+  | 'processing'
+  | 'shipped'
+  | 'out_for_delivery'
+  | 'delivered';
 
-/** Lifecycle steps recorded with their time (F-009 records the first two; F-010 adds the rest). */
-export type OrderHistoryStatus = 'payment_successful' | 'confirmed';
+/** Lifecycle steps recorded with their time (F-009: payment and confirmation; F-010: the rest). */
+export type OrderHistoryStatus = 'payment_successful' | 'confirmed' | 'processing' | 'shipped' | 'out_for_delivery' | 'delivered' | 'cancelled';
 
 export interface OrderLine {
+  /** Order line id, used to choose items to return (F-010). */
+  id: number;
   productId: number;
   slug: string;
   title: string;
@@ -98,4 +109,14 @@ export interface Order {
   /** Set once paid (F-009). */
   payment: OrderPayment | null;
   history: { status: OrderHistoryStatus; at: string }[];
+  /** F-010 */
+  deliveredAt: string | null;
+  cancelledAt: string | null;
+  cancelReason: string | null;
+  returns: OrderReturn[];
+  refunds: OrderRefund[];
+  /** The owner's delivery code, only while out for delivery. */
+  deliveryCode: string | null;
+  actions: OrderActions;
+  returnState: ReturnState;
 }

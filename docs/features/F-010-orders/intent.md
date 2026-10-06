@@ -1,8 +1,8 @@
 # Feature Intent
 
 **Feature:** F-010 — Orders (history, details, lifecycle, cancellation, returns, refunds, delivery OTP)
-**Status:** Draft — decisions recorded, awaiting Gate 1 approval
-**Approved by / date:**
+**Status:** Approved (Gate 1, 2026-10-06)
+**Approved by / date:** User, 2026-10-06
 
 ---
 
@@ -74,4 +74,4 @@ Resolved 2026-10-06 (`specification.md` §22):
 
 ## 7. Approval
 
-- [ ] Approved for implementation (Gate 1)
+- [x] Approved for implementation (Gate 1) — 2026-10-06

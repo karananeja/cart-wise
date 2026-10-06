@@ -10,3 +10,4 @@
 | 2026-10-06 | Scope (Q6) | Order simulation (`/sim/orders`) built in F-010; F-011 keeps inventory simulation | As recommended |
 | 2026-10-06 | Operator access (Q14) | Demo operator password, separate operator session | Differs from recommendation (open page) |
 | 2026-10-06 | Delivery charge on returns | Not refunded | As recommended |
+| 2026-10-06 | Gate 1 | **Approved** | |

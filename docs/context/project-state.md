@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-010 Orders — specification and intent drafted, awaiting Gate 1.** F-001 to F-009 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+**F-010 Orders — Gate 1 approved 2026-10-06; in implementation.** F-001 to F-009 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -97,7 +97,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 1 F-007: 2026-10-06; Gate 2 F-007: 2026-10-06. ADR-004 accepted.
 - Gate 1 F-008: 2026-10-06; Gate 2 F-008: 2026-10-06.
 - Gate 1 F-009: 2026-10-06 (customer-chosen offer, any Luhn-valid card with first 6/last 4 only, bank OTP, in-page demo UPI app); Gate 2 F-009: 2026-10-06.
+- Gate 1 F-010: 2026-10-06 (order simulation in F-010; demo operator password; delivery charge not refunded on returns).
 
 ## Exact next action
 
-Wait for Gate 1 on F-010 (`docs/features/F-010-orders/`). Q9 and Q16 resolved 2026-10-06. Decisions recorded: order simulation in F-010 (Q6 yes); demo operator password (Q14); delivery charge not refunded on returns. On approval: technical-design.md, test-plan.md, implement.
+Implement F-010 per `docs/features/F-010-orders/technical-design.md`: shared `orders.ts` (done) → API lifecycle + sim operator → web orders pages + `/sim/orders` → tests → E2E → acceptance.md → Gate 2.
