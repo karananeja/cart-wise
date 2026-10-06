@@ -4,6 +4,8 @@ import { createAddressService } from './addresses/service.js';
 import { createGeoService } from './geo/service.js';
 import { orderRouter } from './orders/routes.js';
 import { createOrderLifecycle } from './orders/lifecycle.js';
+import { recommendationRouter } from './recommendations/routes.js';
+import { createRecommendationService } from './recommendations/service.js';
 import { createOrderService } from './orders/service.js';
 import { createInventorySimulation } from './sim/inventory.js';
 import { createOperatorAccess, DEFAULT_OPERATOR_PASSWORD } from './sim/operator.js';
@@ -67,6 +69,7 @@ export function createApp(db: Db, options: AppOptions = {}) {
   const carts = createCartService(db, catalog);
   const addresses = createAddressService(db);
   api.use(cartRouter(carts));
+  api.use(recommendationRouter(createRecommendationService(db), carts));
   api.use(wishlistRouter(createWishlistService(db, catalog)));
   api.use(authRouter({ db, otp: createOtpService(db), sessions, merge: createMergeService(db), limiter: createLoginLimiter() }));
   api.use(addressRouter(addresses));
