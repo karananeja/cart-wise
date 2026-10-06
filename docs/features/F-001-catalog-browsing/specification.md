@@ -4,7 +4,7 @@
 
 **ID:** F-001
 **Name:** Catalog Browsing — foundation, home, categories, product listing, filters, sorting
-**Status:** Acceptance — awaiting Gate 2 (Gate 1 approved 2026-10-06)
+**Status:** Complete (Gate 1 and Gate 2 approved 2026-10-06)
 **Requirements:** DISC-1..5, INV-1, INV-3, STATE-1, ANL-1 (`filter_applied`), NFR-1..4, NFR-6..8
 
 ---

@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-001 Catalog Browsing — implemented and tested, awaiting Gate 2 user sign-off.**
+**F-002 Search and search history — specification and intent drafted, awaiting Gate 1 approval.** F-001 is complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -21,7 +21,7 @@ Phase 1 — MVP.
 
 ## In progress
 
-None. Waiting for the user.
+None. Waiting for Gate 1 approval of F-002.
 
 ## Remaining
 
@@ -29,7 +29,7 @@ F-002 → F-011 per `project-plan.md`, then Phase 2 and optional AI.
 
 ## Approved requirements / intents
 
-- F-001 specification and intent (Gate 1, 2026-10-06).
+- F-001 specification and intent (Gate 1, 2026-10-06); F-001 accepted (Gate 2, 2026-10-06).
 
 ## Architecture decisions
 
@@ -55,7 +55,7 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Pending questions for the user
 
-- Store name: "Cartwise" is a placeholder.
+- Store name: "Cartwise" kept as placeholder (user did not address it).
 - Q4–Q14 (`requirements/open-questions.md`) for later features.
 
 ## Rejected approaches
@@ -66,7 +66,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 ## User sign-offs
 
 - Gate 1 F-001: 2026-10-06.
+- Gate 2 F-001: 2026-10-06 ("proceed").
 
 ## Exact next action
 
-Wait for Gate 2 acceptance of F-001. On acceptance: mark F-001 complete in spec, acceptance.md, project-plan and this file; then prepare F-002 (Search + search history) specification and intent for Gate 1.
+Wait for Gate 1 approval of F-002 (`features/F-002-search/`). On approval: write technical design and test plan (search index approach: field-weighted, typo-tolerant, plural- and compound-aware matching built at API start), implement, test, and present for Gate 2.

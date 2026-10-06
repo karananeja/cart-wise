@@ -18,8 +18,8 @@ Order follows the brief's journey and dependencies: each feature builds on the o
 
 | # | Feature | Requirements | Depends on | Status |
 |---|---|---|---|---|
-| F-001 | Catalog browsing (foundation, home, categories, listing, filter, sort) | DISC-1..5, INV-1, INV-3, STATE-1, ANL-1 (`filter_applied`) | — | Implemented and tested — awaiting Gate 2 sign-off |
-| F-002 | Search + search history | SRCH-1..4, HIST-1 | F-001 | Not started |
+| F-001 | Catalog browsing (foundation, home, categories, listing, filter, sort) | DISC-1..5, INV-1, INV-3, STATE-1, ANL-1 (`filter_applied`) | — | **Complete** (accepted 2026-10-06) |
+| F-002 | Search + search history | SRCH-1..4, HIST-1 | F-001 | Spec drafted — awaiting Gate 1 |
 | F-003 | Product details + recently viewed | PDP-1..3, RV-1 | F-001 | Not started |
 | F-004 | Guest cart | CART-1..4 | F-003 | Not started |
 | F-005 | Wishlist | WISH-1..2 | F-003 | Not started |
