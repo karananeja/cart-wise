@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-008 Checkout — implemented and tested, awaiting Gate 2.** F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+**Next: F-009 Simulated payment — drafting specification and intent for Gate 1.** F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -95,7 +95,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 1 F-006: 2026-10-06 (OTP-default sign-in + password alternative; code rules; sign-out → empty guest). ADR-003 accepted.
 - Gate 2 F-006: 2026-10-06.
 - Gate 1 F-007: 2026-10-06; Gate 2 F-007: 2026-10-06. ADR-004 accepted.
+- Gate 1 F-008: 2026-10-06; Gate 2 F-008: 2026-10-06.
 
 ## Exact next action
 
-Wait for Gate 2 acceptance of F-008. On acceptance: mark complete, then prepare F-009 (Simulated payment: card, UPI, card offers with fictional banks and product-page best-offer banner). F-009 needs: offer catalogue and stacking rule (Q17), test-card behaviours (success/failure), UPI flow details.
+Prepare F-009 (Simulated payment: card, UPI, card offers with fictional banks and product-page best-offer banner). F-009 needs: offer catalogue and stacking rule (Q17), test-card behaviours (success/failure), UPI flow details.

@@ -4,7 +4,7 @@
 
 **ID:** F-008
 **Name:** Checkout — address, delivery, summary and stock hold
-**Status:** Acceptance — awaiting Gate 2 (Gate 1 approved 2026-10-06)
+**Status:** Complete (Gate 1 and Gate 2 approved 2026-10-06)
 **Requirements:** CHK-1, CHK-2, CHK-3, INV-2, AUTH-4, STATE-1, ANL-1 (`checkout_started`)
 
 **User decisions applied (2026-10-06):**
