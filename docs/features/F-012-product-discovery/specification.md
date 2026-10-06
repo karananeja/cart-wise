@@ -4,7 +4,7 @@
 
 **ID:** F-012
 **Name:** Product discovery — related products, frequently bought together, continue shopping
-**Status:** Draft — awaiting Gate 1
+**Status:** Approved (Gate 1, 2026-10-06)
 **Requirements:** Brief §17 (deterministic recommendations), §24 Next items 14–16 and 20 (related products, frequently bought together, continue shopping, improved discovery homepage), ANL-1 (`recommendation_clicked`)
 
 **User decisions applied (2026-10-06):**
@@ -243,4 +243,4 @@ F-003 (product page), F-004 (cart), F-005/F-003 (recently viewed), F-009/F-010 (
 
 ## 22. Decisions Required From User
 
-1. **Confirm or adjust the complementary category map** in §9. The current draft is a recommendation.
+None outstanding. The complementary category map in §9 was approved as drafted (Gate 1, 2026-10-06).

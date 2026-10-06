@@ -8,3 +8,4 @@
 | 2026-10-06 | Homepage | Still in your cart + Because you viewed (+ Because you bought when signed in with orders) | User choice |
 | 2026-10-06 | Cart page | One "Pairs well with your cart" rail below checkout | User choice |
 | 2026-10-06 | Spec + intent drafted | Presented for Gate 1 | Confirm the complementary category map |
+| 2026-10-06 | Gate 1 | **Approved**, category map as drafted | |

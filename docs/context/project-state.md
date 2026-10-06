@@ -8,7 +8,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## Current feature
 
-**F-012 Product discovery (Phase 2) — specification and intent drafted, awaiting Gate 1.** MVP wrap-up complete (`docs/mvp-wrap-up.md`).
+**F-012 Product discovery (Phase 2) — Gate 1 approved 2026-10-06 (category map as drafted); in implementation.** MVP wrap-up complete (`docs/mvp-wrap-up.md`).
 
 ## Completed
 
@@ -19,7 +19,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## In progress
 
-F-012 Gate 1.
+F-012 implementation.
 
 ## Remaining
 
@@ -100,4 +100,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Wait for Gate 1 on F-012 (`docs/features/F-012-product-discovery/`). Open: confirm the complementary category map (spec §9). On approval: technical-design.md, test-plan.md, implement.
+Implement F-012 per `docs/features/F-012-product-discovery/technical-design.md`: shared `recommendations.ts` (done) → API `recommendations/` → web `features/discovery/` + product/home/cart placement → tests → E2E → acceptance.md → Gate 2.

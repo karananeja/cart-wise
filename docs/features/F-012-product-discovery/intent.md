@@ -1,8 +1,8 @@
 # Feature Intent
 
 **Feature:** F-012 — Product discovery (related products, frequently bought together, continue shopping)
-**Status:** Draft — awaiting Gate 1
-**Approved by / date:**
+**Status:** Approved (Gate 1, 2026-10-06)
+**Approved by / date:** User, 2026-10-06
 
 ---
 
@@ -47,8 +47,8 @@ Acceptance criteria 1–8 in `specification.md` §17.
 
 ## 6. Decisions needed before implementation
 
-Confirm the complementary category map (`specification.md` §9).
+Resolved 2026-10-06: complementary category map approved as drafted.
 
 ## 7. Approval
 
-- [ ] Approved for implementation (Gate 1)
+- [x] Approved for implementation (Gate 1) — 2026-10-06
