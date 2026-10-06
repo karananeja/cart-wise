@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**Next: F-008 Checkout — gathering decisions Q8 (delivery), Q10 (reservation), Q11 (tax display).** F-001 to F-007 complete. F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+**F-008 Checkout — specification and intent drafted, awaiting Gate 1.** F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -93,7 +93,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 2 F-005: 2026-10-06.
 - Gate 1 F-006: 2026-10-06 (OTP-default sign-in + password alternative; code rules; sign-out → empty guest). ADR-003 accepted.
 - Gate 2 F-006: 2026-10-06.
+- Gate 1 F-007: 2026-10-06; Gate 2 F-007: 2026-10-06. ADR-004 accepted.
 
 ## Exact next action
 
-Wait for Gate 2 acceptance of F-007. On acceptance: mark complete, then prepare F-008 (Checkout: address, delivery, summary, reservation). F-008 needs Q8 (delivery options/pricing), Q10 (reservation timing), Q11 (tax display).
+Wait for Gate 1 approval of F-008 (`features/F-008-checkout/`): confirm one-page checkout with three visible sections, and that restarting checkout cancels the previous unpaid hold. On approval: technical design (orders/order_lines, atomic reservation, expiry sweep, quote endpoint), implement, test (incl. concurrent last-unit), present for Gate 2.

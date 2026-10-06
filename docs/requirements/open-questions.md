@@ -48,10 +48,10 @@ Recommendation: import all categories except `vehicle` and `motorcycle` (~184 pr
 | Q15 | **Resolved 2026-10-06 (user):** star rating = average of the product's reviews (DummyJSON's own `rating` contradicted its reviews for 73 of 194 products). | F-003 | Changes star values, rating filter counts and Top rated order from F-001 |
 | Q6 | Store Simulation Console is in brief §16 but not in the MVP priority list. Include in MVP? | F-010 | Yes — without it the order lifecycle cannot be demonstrated |
 | Q7 | **Resolved 2026-10-06 (user):** OpenStreetMap (Leaflet + Nominatim via our API), manual form always available | F-007 | ADR-004 |
-| Q8 | Delivery options and pricing (e.g. Standard free over ₹X, Express ₹Y) | F-008 | Propose concrete rules in F-008 spec |
+| Q8 | **Resolved 2026-10-06 (user):** Standard (3–5 days) free on ₹999+, else ₹49; Express (1–2 days) ₹149 | F-008 | — |
 | Q9 | Cancellation / return / refund rules (which states allow which action, refund timing) | F-010 | Cancel before Shipped; return within N days of Delivered; simulated instant refund |
-| Q10 | Inventory reservation: when reserved, how long held | F-008 | Reserve at payment start, hold 10 minutes, release on failure/expiry |
-| Q11 | Taxes: tax-inclusive prices (Indian MRP convention) with GST shown informationally, or tax added at checkout? | F-008 | Tax-inclusive |
+| Q10 | **Resolved 2026-10-06 (user):** reserve at payment start, hold 10 minutes, release on cancel/failure/expiry | F-008 | — |
+| Q11 | **Resolved 2026-10-06 (user):** prices inclusive of GST; summary notes "Inclusive of all taxes" | F-008 | — |
 | Q12 | **Resolved 2026-10-06 (user):** cart merge takes the larger quantity, capped by stock and 10 | F-006 | — |
 | Q13 | **Resolved 2026-10-06 (user):** simulated mobile OTP verification; sign-in by mobile + OTP; forgot password via simulated code | F-006 | — |
 | Q17 | **Resolved 2026-10-06 (user):** card offers use fictional banks; the offers engine, product-page banner and discount at payment are built together in F-009. Stacking rule to confirm in the F-009 spec (recommendation: one offer per order) | F-009 | — |
