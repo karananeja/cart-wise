@@ -1,8 +1,8 @@
 # Feature Intent
 
 **Feature:** F-013 — Electronics variants
-**Status:** Awaiting Approval
-**Approved by / date:** —
+**Status:** Approved (Gate 1, 2026-10-06)
+**Approved by / date:** User, 2026-10-06
 
 ---
 
@@ -48,12 +48,8 @@ Acceptance criteria 1–11 in `specification.md` §17.
 
 ## 6. Decisions needed before implementation
 
-- D1 tiers and price steps
-- D2 preselection
-- D3 card price
-
-See specification §22.
+Resolved 2026-10-06: D1 tiers and steps as proposed; D2 cheapest in-stock tier preselected; D3 "From ₹X".
 
 ## 7. Approval
 
-- [ ] Approved for implementation (Gate 1)
+- [x] Approved for implementation (Gate 1) — 2026-10-06

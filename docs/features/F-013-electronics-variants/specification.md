@@ -4,7 +4,7 @@
 
 **ID:** F-013
 **Name:** Electronics variants — storage and memory options with their own prices
-**Status:** Proposed — awaiting Gate 1
+**Status:** Approved (Gate 1, 2026-10-06) — in implementation
 **Requirements:** PDP-3 (variants where the catalog supports them), brief §6 (variants); backlog item from the F-012 Gate 2 review
 
 **User decisions applied (2026-10-06):**
@@ -41,13 +41,13 @@ Real phones, tablets and laptops are sold in configurations at different prices.
 
 - FR-1 These categories get application-owned options. DummyJSON does not provide them (ADR-002: the application owns them, as with sizes).
 
-  | Category | Option type | Tiers (base first) | Price step over base (proposed) |
+  | Category | Option type | Tiers (base first) | Price step over base |
   |---|---|---|---|
   | smartphones (16 products) | Storage | 128 GB · 256 GB · 512 GB | base · +10% · +25% |
   | tablets (3) | Storage | 64 GB · 128 GB · 256 GB | base · +12% · +25% |
   | laptops (5) | RAM + storage, one combined choice | 8 GB · 256 GB · 16 GB · 512 GB · 32 GB · 1 TB | base · +15% · +35% |
 
-  - The tiers and steps are a **decision for the user** (§22, D1).
+  - Tiers and steps approved by the user (D1).
   - The base tier keeps today's catalog price.
   - Every tier keeps the product's discount percentage, so the MRP steps up by the same ratio.
   - Prices are rounded to the rupee.
@@ -61,7 +61,7 @@ Real phones, tablets and laptops are sold in configurations at different prices.
 - FR-4 The purchase panel shows an option selector: one button per tier, labelled with the configuration and its price (e.g. "256 GB · ₹29,600").
   - It is a labelled radio group.
   - Out-of-stock tiers stay visible, struck through, and cannot be selected.
-- FR-5 **Preselection (D2, proposed):** the cheapest in-stock tier is selected when the page opens. The selection is kept in the URL, so it survives reloads and shared links.
+- FR-5 **Preselection (D2, approved):** the cheapest in-stock tier is selected when the page opens. The selection is kept in the URL, so it survives reloads and shared links.
   - An invalid or out-of-stock tier in the URL is ignored and the default applies.
   - When every tier is out of stock, the product shows "Out of stock" with nothing selected.
 - FR-6 Price, MRP, discount, the card-offer banner and the availability line ("Only N left in 256 GB") all follow the selected tier.
@@ -69,7 +69,7 @@ Real phones, tablets and laptops are sold in configurations at different prices.
 
 ### 5.3 Listings, search and discovery
 
-- FR-8 **Card price (D3, proposed):** product cards, search typeahead, wishlist and suggestion rails show "From ₹X", the lowest-priced tier.
+- FR-8 **Card price (D3, approved):** product cards, search typeahead, wishlist and suggestion rails show "From ₹X", the lowest-priced tier.
   - The MRP and discount on cards are the base tier's.
 - FR-9 Price filter, price sorting, the price facet range and discount sorting use the lowest tier price. A phone appears for a price range that includes its starting price.
 - FR-10 Card availability is the total across tiers. This is the existing rule for sized products (F-003 FR-11).
@@ -224,6 +224,8 @@ F-003 (sizes, units), F-004 (cart), F-005 (wishlist), F-008/F-009/F-010 (holds, 
 - Card offers already apply to the order total, so a pricier tier can unlock a bigger offer. This is intended.
 
 ## 22. Decisions Required From User
+
+Resolved 2026-10-06 (Gate 1): **D1** tiers and steps as proposed; **D2** preselect the cheapest in-stock tier; **D3** "From ₹X".
 
 - **D1 — Tiers and price steps:** accept the table in FR-1, or change the tiers or percentages.
 - **D2 — Preselection:** preselect the cheapest in-stock tier (recommended: the shopper always sees a concrete price and can add in one tap; unlike sizes, any tier is a valid choice), or require a choice as sizes do.
