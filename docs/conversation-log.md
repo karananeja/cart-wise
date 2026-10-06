@@ -67,3 +67,5 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-010 implementation | Implemented, tested, presented for Gate 2 | |
 | 2026-10-06 | F-010 Gate 2 review | Return dialog width issue reported and fixed | |
 | 2026-10-06 | F-010 Gate 2 | **Accepted** | |
+| 2026-10-06 | F-011 decisions | Auto decrease 1–3 units; restock to seeded level; settings off by default, persisted; one console with tabs and log | |
+| 2026-10-06 | F-011 | Spec and intent presented for Gate 1 | |

@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**Next: F-011 Store Simulation Console (inventory simulation) — to specify.** F-001 to F-010 complete (accepted 2026-10-06). F-001 to F-009 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+**F-011 Store Simulation Console (inventory simulation) — specification and intent drafted, awaiting Gate 1.** F-001 to F-010 complete (accepted 2026-10-06). F-001 to F-009 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -102,4 +102,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Prepare F-011 (Store Simulation Console — inventory simulation: stock +/−, auto decrease/restock with interval; SIM-1, SIM-2), reusing the operator session from F-010.
+Wait for Gate 1 on F-011 (`docs/features/F-011-inventory-simulation/`). Decisions recorded 2026-10-06 (decrease/restock rules, persisted settings, tabs + log). On approval: technical-design.md, test-plan.md, implement. After F-011 the Phase 1 MVP feature list is complete.
