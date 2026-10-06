@@ -8,7 +8,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## Current feature
 
-**F-013 Electronics variants — approved at Gate 1, in implementation** (`docs/features/F-013-electronics-variants/`). F-012 accepted 2026-10-06.
+**F-013 Electronics variants — implemented and tested, awaiting Gate 2** (`docs/features/F-013-electronics-variants/`). F-012 accepted 2026-10-06.
 
 ## Completed
 
@@ -19,7 +19,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## In progress
 
-F-013 technical design and implementation.
+F-013 Gate 2.
 
 ## Remaining
 
@@ -53,10 +53,11 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 - `packages/shared/src/simulation.ts`, `apps/api/src/sim/inventory.ts` (list, manual stock, ticks, settings), `apps/api/src/sim/scheduler.ts`, `apps/web/src/features/sim/SimConsole.tsx` + `SimInventoryPage.tsx`; `playwright.config.ts` runs `e2e/simulation.spec.ts` as a separate project after the others
 - `packages/shared/src/recommendations.ts`, `apps/api/src/recommendations/` (rules, service, routes), `apps/web/src/features/discovery/`
 - `apps/web/src/features/search/SearchBox.tsx` — header combobox; `apps/web/src/lib/recentSearches.ts` — history store
+- F-013: `apps/api/src/inventory/options.ts` (tiers, `tierPrices`), `apps/api/src/db/seed.ts` (`saveVariantLabels`, `remapUnits`), schema v3 (`product_variants.kind/price_paise/mrp_paise`, `order_lines.option_label`), `apps/web/src/features/catalog/selection.ts` (option/size hooks, `unitLabel`, `productLink`), `OptionSelector.tsx`; tests `options.test.ts`, `options.api.test.ts`, `ProductOptions.test.tsx`, `e2e/options.spec.ts`
 
 ## Tests
 
-- `pnpm test`: 466 passing (shared 38, api 227, web 165). `pnpm e2e`: 49 passing (10 consecutive runs after the BEGIN IMMEDIATE fix). Typecheck clean. Build succeeds (main bundle 413 kB).
+- `pnpm test`: 453 passing (shared 38, api 241, web 174). `pnpm e2e`: 53 passing (3 consecutive runs). Typecheck clean. Build succeeds (main bundle 416 kB).
 - No failing tests.
 
 ## Known bugs / limitations
@@ -103,4 +104,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Write `technical-design.md` (schema v3: `product_variants.kind/price_paise/mrp_paise`, label-based remap of cart/order variant ids on reseed; unit pricing in cart/quote; OptionSelector) and implement. Mapping of affected code is summarised in the F-013 spec §9–§10 and covers cart/service, orders/service, recommendations, catalog/repository+query, seed, web ProductPage/CartPage/WishlistPage/line views, and E2E tests using laptops/phones (cart.spec UNSIZED macbook, payment.spec lenovo-yoga-920 offer amounts).
+Wait for Gate 2 acceptance of F-013 (`docs/features/F-013-electronics-variants/acceptance.md`). Then ask the user which Phase 2 item comes next (backlog: reviews writing, analytics funnel view, companion price cap decision, etc.).

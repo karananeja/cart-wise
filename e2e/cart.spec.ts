@@ -77,9 +77,11 @@ test('add unsized and sized products, adjust, remove and undo; the cart survives
 });
 
 test('a stock drop flags the line instead of removing it', async ({ page }) => {
+  // A phone: the line is one storage option, with stock of its own (F-013).
   const slug = 'iphone-x';
-  setStock(slug, null, 20);
-  await page.goto(`/p/${slug}`);
+  const option = '128 GB';
+  setStock(slug, option, 20);
+  await page.goto(`/p/${slug}?option=${encodeURIComponent(option)}`);
   await page.getByRole('button', { name: 'Add to cart' }).click();
   await page.getByRole('link', { name: 'Go to cart' }).click();
   const row = page.getByRole('listitem').filter({ hasText: 'iPhone X' });
@@ -91,16 +93,16 @@ test('a stock drop flags the line instead of removing it', async ({ page }) => {
   await saved;
   await expect(row.getByRole('status')).toHaveText('3');
 
-  setStock(slug, null, 1);
+  setStock(slug, option, 1);
   await page.reload();
   await expect(page.getByText(/Some items need your attention/)).toBeVisible();
   await expect(row.getByText('Only 1 available — reduce quantity')).toBeVisible();
   await expect(row.getByRole('status')).toHaveText('3');
 
-  setStock(slug, null, 0);
+  setStock(slug, option, 0);
   await page.reload();
   await expect(row.getByText('Out of stock')).toBeVisible();
-  setStock(slug, null, 20);
+  setStock(slug, option, 20);
 });
 
 test('carts are per browser', async ({ browser, page }) => {

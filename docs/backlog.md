@@ -13,5 +13,5 @@ Triage (MVP wrap-up, 2026-10-06): **Phase 2** = fits the brief's next phase; **L
 | 2026-10-06 | Brand landing pages | F-001 scoping | Brand is already a filter | Later |
 | 2026-10-06 | Product weight/dimensions in specifications | F-001 | Needs units; DummyJSON provides none | Drop? |
 | 2026-10-06 | Automated accessibility checks (axe) in component/E2E tests | MVP wrap-up | Accessibility is built in but not machine-verified | Later |
-| 2026-10-06 | Electronics variants: storage for phones and tablets, RAM + storage for laptops; price steps up per tier; no colour; accessories and watches unchanged | User feedback (F-012 Gate 2 review) | Specified as F-013 (`docs/features/F-013-electronics-variants/`) | Next (F-013) |
+| 2026-10-06 | Electronics variants: storage for phones and tablets, RAM + storage for laptops; price steps up per tier; no colour; accessories and watches unchanged | User feedback (F-012 Gate 2 review) | Built as F-013 (`docs/features/F-013-electronics-variants/`), awaiting Gate 2 | F-013 |
 | 2026-10-06 | Price cap for "Pairs well with" companions (e.g. companion ≤ 50% of the main product's price, falling back to the current rule) | F-012 acceptance (known limitation) | Product change; offered at F-012 Gate 2, user accepted F-012 without choosing | Later (awaiting user decision) |

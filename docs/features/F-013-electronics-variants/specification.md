@@ -4,7 +4,7 @@
 
 **ID:** F-013
 **Name:** Electronics variants — storage and memory options with their own prices
-**Status:** Approved (Gate 1, 2026-10-06) — in implementation
+**Status:** Acceptance — awaiting Gate 2 (Gate 1 approved 2026-10-06)
 **Requirements:** PDP-3 (variants where the catalog supports them), brief §6 (variants); backlog item from the F-012 Gate 2 review
 
 **User decisions applied (2026-10-06):**
@@ -124,7 +124,7 @@ Real phones, tablets and laptops are sold in configurations at different prices.
 |---|---|---|
 | ProductVariant | Gains `kind` (`size` / `option`), `price_paise` and `mrp_paise` (null for sizes, which use the product price) | Application, seeded |
 | Inventory | Unchanged (per unit) | Application |
-| Cart / order lines | Unchanged columns; the existing `size` snapshot column stores the configuration label | Application |
+| Cart / order lines | Cart lines unchanged; order lines gain `option_label` for the option snapshot (clarified in implementation) | Application |
 | Product | `price_paise` / `mrp_paise` hold the lowest tier (the starting price) | Catalog snapshot + application |
 
 Schema version 3 rebuilds the seeded tables. User tables that reference variants are remapped by label so they never point at the wrong unit (this also closes a latent reseed issue found during discovery).

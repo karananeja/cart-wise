@@ -1,6 +1,6 @@
 # Technical Design — F-013 Electronics variants
 
-**Status:** Implementation
+**Status:** Implemented
 **Inputs:** specification.md (approved 2026-10-06), ADR-002 (application-owned catalog extensions and inventory), F-003 sizes and units
 
 ## 1. Data (schema version 3)

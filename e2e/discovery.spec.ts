@@ -12,6 +12,18 @@ const setStock = (slug: string, onHand: number) => {
   }
 };
 
+/** Phones are sold in storage options (F-013); API adds use the base one. */
+const baseOption = (slug: string): string | undefined => {
+  const db = new Database('apps/api/data/e2e.db', { readonly: true });
+  try {
+    const row = db.prepare(`SELECT v.label FROM product_variants v JOIN products p ON p.id = v.product_id
+      WHERE p.slug = ? AND v.kind = 'option' ORDER BY v.sort_order LIMIT 1`).get(slug) as { label: string } | undefined;
+    return row?.label;
+  } finally {
+    db.close();
+  }
+};
+
 /** Signs up, adds an address and pays for the given products, all through the API. */
 async function paidOrder(page: Page, slugs: string[]) {
   const n = Math.floor(Math.random() * 1e9).toString().padStart(9, '0');
@@ -22,7 +34,7 @@ async function paidOrder(page: Page, slugs: string[]) {
   await page.request.post('/api/addresses', {
     data: { fullName: 'Asha Rao', mobile: `6${n}`, pincode: '560038', line1: 'Flat 4B', line2: 'Indiranagar', landmark: '', city: 'Bengaluru', state: 'Karnataka', type: 'home', latitude: null, longitude: null },
   });
-  for (const slug of slugs) expect((await page.request.post('/api/cart/lines', { data: { productSlug: slug, quantity: 1 } })).ok()).toBe(true);
+  for (const slug of slugs) expect((await page.request.post('/api/cart/lines', { data: { productSlug: slug, option: baseOption(slug), quantity: 1 } })).ok()).toBe(true);
   const order = (await (await page.request.post('/api/orders', { data: { delivery: 'standard' } })).json()).order;
   const attempt = (await (await page.request.post(`/api/orders/${order.id}/payments`, { data: { method: 'card', bin: '411111', last4: '1111' } })).json()).attempt;
   expect((await page.request.post(`/api/payments/${attempt.id}/verify`, { data: { otp: attempt.demoCode } })).ok()).toBe(true);

@@ -42,7 +42,7 @@ Loading / empty / error / offline states (STATE-1) and analytics events (ANL-1) 
 | #     | Feature                                                                                                | Brief §24 items | Depends on          | Status                                            |
 | ----- | ------------------------------------------------------------------------------------------------------ | --------------- | ------------------- | ------------------------------------------------- |
 | F-012 | Product discovery: related products, frequently bought together, continue shopping, discovery homepage | 14, 15, 16, 20  | F-003, F-004, F-010 | **Complete** (accepted 2026-10-06)                |
-| F-013 | Electronics variants: storage (phones, tablets), RAM + storage (laptops), per-option price and stock   | PDP-3, brief §6 | F-003–F-012         | Approved (Gate 1, 2026-10-06) — in implementation |
+| F-013 | Electronics variants: storage (phones, tablets), RAM + storage (laptops), per-option price and stock   | PDP-3, brief §6 | F-003–F-012         | Implemented and tested — awaiting Gate 2 sign-off |
 
 
 Reviews, related products, frequently bought together, continue shopping, order tracking timeline, notifications, price-drop / back-in-stock, improved discovery homepage. To be sequenced after MVP acceptance.

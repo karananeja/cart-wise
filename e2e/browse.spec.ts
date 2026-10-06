@@ -25,7 +25,8 @@ test('browse: home → category → filter → sort → paginate → back', asyn
   await page.getByLabel('Sort by').selectOption('price_desc');
   await expect(page).toHaveURL(/sort=price_desc/);
   await expect(page.locator('main [aria-busy="true"]')).toHaveCount(0);
-  const prices = (await page.locator('main ul li article').getByText(/^Price/).allTextContents()).map(rupees);
+  // Phones read "From ₹X" (F-013): sorting uses that starting price.
+  const prices = (await page.locator('main ul li article').getByText(/^(Price|From)/).allTextContents()).map(rupees);
   expect(prices.length).toBeGreaterThan(1);
   expect(prices).toEqual([...prices].sort((a, b) => b - a));
 

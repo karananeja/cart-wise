@@ -86,3 +86,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-012 Gate 2 | **Accepted** | Companion price cap not chosen; kept in backlog |
 | 2026-10-06 | F-013 | Spec and intent presented for Gate 1 | Decisions: tiers and price steps, preselection, card price |
 | 2026-10-06 | F-013 Gate 1 | **Approved** (tiers as proposed, cheapest in-stock preselected, "From ₹X") | |
+| 2026-10-06 | F-013 implementation | Implemented, tested, presented for Gate 2 | Also fixes reseed remapping of carts, orders and holds |
