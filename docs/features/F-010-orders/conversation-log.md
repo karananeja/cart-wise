@@ -7,3 +7,6 @@
 | 2026-10-06 | Q9 Refunds | To original method; cancel refunds instantly; returns Requested → Picked Up → Refunded via operator; restock at pickup | User choice |
 | 2026-10-06 | Q16 Delivery OTP | 4 digits on Out for Delivery; shown on order page and list; 3 wrong → blocked until new code | User choice |
 | 2026-10-06 | Spec + intent drafted | Presented for Gate 1 | Confirm: order simulation in F-010, operator access, delivery charge on returns |
+| 2026-10-06 | Scope (Q6) | Order simulation (`/sim/orders`) built in F-010; F-011 keeps inventory simulation | As recommended |
+| 2026-10-06 | Operator access (Q14) | Demo operator password, separate operator session | Differs from recommendation (open page) |
+| 2026-10-06 | Delivery charge on returns | Not refunded | As recommended |

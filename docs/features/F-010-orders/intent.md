@@ -1,7 +1,7 @@
 # Feature Intent
 
 **Feature:** F-010 — Orders (history, details, lifecycle, cancellation, returns, refunds, delivery OTP)
-**Status:** Draft — awaiting Gate 1
+**Status:** Draft — decisions recorded, awaiting Gate 1 approval
 **Approved by / date:**
 
 ---
@@ -31,7 +31,7 @@ Customers can see every paid order and its timeline, cancel before it ships with
   - pick the items and a reason each;
   - see the refund before confirming: what you paid for those items, with the bank offer shared out, and no delivery charge;
   - stages: Return Requested → Picked Up (items back on sale, refund started) → Refunded.
-- **Demo operator page** (`/sim/orders`), clearly labelled as simulation:
+- **Demo operator page** (`/sim/orders`), behind a demo operator password (default `demo-operator` locally) and clearly labelled as simulation:
   - Advance;
   - Enter delivery code;
   - Issue new code;
@@ -47,6 +47,7 @@ Customers can see every paid order and its timeline, cancel before it ships with
 | Delivery code on the list card as well as the order page | It's needed at the door, fast |
 | Unpaid holds hidden from order history | They were never orders to the customer |
 | Operator page plain and labelled | Brief §16: minimal simulation, not an admin dashboard |
+| Operator password, separate from customer accounts | Your decision; customers can't move their own orders along |
 
 ## 4. What this feature deliberately does not do
 
@@ -66,10 +67,10 @@ Acceptance criteria 1–10 in `specification.md` §17.
 
 ## 6. Decisions needed before implementation
 
-See `specification.md` §22:
-- order simulation in F-010;
-- operator access;
-- delivery charge on returns.
+Resolved 2026-10-06 (`specification.md` §22):
+- order simulation is in F-010;
+- the operator page uses a demo operator password;
+- the delivery charge is not refunded on returns.
 
 ## 7. Approval
 

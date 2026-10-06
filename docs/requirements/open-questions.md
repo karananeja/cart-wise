@@ -46,7 +46,7 @@ Recommendation: import all categories except `vehicle` and `motorcycle` (~184 pr
 | Q4 | **Resolved 2026-10-06 (user): add app-owned sizes** for apparel and footwear. | F-003 | Size sets proposed in F-003 spec |
 | Q5 | **Resolved 2026-10-06 (user, corrected): show DummyJSON reviews without a per-review "demo" label.** The site-wide footer notice ("ratings, reviews … are simulated") satisfies brief §18. Reviewer emails are not shown. | F-003 | — |
 | Q15 | **Resolved 2026-10-06 (user):** star rating = average of the product's reviews (DummyJSON's own `rating` contradicted its reviews for 73 of 194 products). | F-003 | Changes star values, rating filter counts and Top rated order from F-001 |
-| Q6 | Store Simulation Console is in brief §16 but not in the MVP priority list. Include in MVP? | F-010 | Yes — without it the order lifecycle cannot be demonstrated |
+| Q6 | **Resolved 2026-10-06 (user):** yes — the Simulation Console is in the MVP; its order part is built in F-010, inventory simulation in F-011 | F-010 / F-011 | — |
 | Q7 | **Resolved 2026-10-06 (user):** OpenStreetMap (Leaflet + Nominatim via our API), manual form always available | F-007 | ADR-004 |
 | Q8 | **Resolved 2026-10-06 (user):** Standard (3–5 days) free on ₹999+, else ₹49; Express (1–2 days) ₹149 | F-008 | — |
 | Q9 | **Resolved 2026-10-06 (user):** customer can cancel before Shipped (Confirmed or Processing); returns within 7 days of Delivered, choosing items (full quantity of each) with a reason; refunds go to the original method — cancellation refunds immediately, returns go Return Requested → Picked Up → Refunded (advanced from the Simulation Console), with stock back on sale at pickup | F-010 | — |
@@ -56,7 +56,7 @@ Recommendation: import all categories except `vehicle` and `motorcycle` (~184 pr
 | Q13 | **Resolved 2026-10-06 (user):** simulated mobile OTP verification; sign-in by mobile + OTP; forgot password via simulated code | F-006 | — |
 | Q17 | **Resolved 2026-10-06 (user):** card offers use fictional banks; the offers engine, product-page banner and discount at payment are built together in F-009. Stacking rule to confirm in the F-009 spec (recommendation: one offer per order) | F-009 | — |
 | Q16 | **Resolved 2026-10-06 (user):** 4-digit code created on Out for Delivery, shown on the order page and in the order list; the console enters it to mark Delivered; 3 wrong codes block delivery until the console issues a new code | F-010 / F-011 | — |
-| Q14 | Simulation console access control | F-011 | Local demo route with a visible "Demo operator" label, no separate admin auth |
+| Q14 | **Resolved 2026-10-06 (user):** demo operator password (`SIM_OPERATOR_PASSWORD`, default `demo-operator` locally), separate operator session | F-010 / F-011 | — |
 
 ## Observations about the inputs
 

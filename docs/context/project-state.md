@@ -100,4 +100,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Wait for Gate 1 on F-010 (`docs/features/F-010-orders/`). Q9 and Q16 resolved 2026-10-06. Open (spec §22): order simulation (`/sim/orders`) built in F-010 (answers Q6); operator access (Q14); delivery charge not refunded on returns. On approval: technical-design.md, test-plan.md, implement.
+Wait for Gate 1 on F-010 (`docs/features/F-010-orders/`). Q9 and Q16 resolved 2026-10-06. Decisions recorded: order simulation in F-010 (Q6 yes); demo operator password (Q14); delivery charge not refunded on returns. On approval: technical-design.md, test-plan.md, implement.

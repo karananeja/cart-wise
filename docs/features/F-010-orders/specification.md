@@ -4,7 +4,7 @@
 
 **ID:** F-010
 **Name:** Orders — history, details, lifecycle, cancellation, returns, refunds and delivery OTP
-**Status:** Draft — awaiting Gate 1
+**Status:** Draft — decisions recorded, awaiting Gate 1 approval
 **Requirements:** ORD-2, ORD-3, ORD-4, ORD-5, SIM-3 and SIM-4 (order part, see §22), STATE-1, ANL-1 (`order_cancelled`)
 
 **User decisions applied (2026-10-06):**
@@ -15,10 +15,10 @@
   - A return moves Return Requested → Picked Up → Refunded, advanced by the demo operator. Stock goes back on sale at pickup.
 - **Q16 delivery OTP:** a 4-digit code is created on Out for Delivery and shown to the customer. The operator must enter it to mark the order Delivered. After 3 wrong codes, delivery is blocked until a new code is issued.
 
-**Proposed here, for confirmation at Gate 1** (§22):
-- order simulation moves into this feature, with inventory simulation staying in F-011;
-- operator access is a local demo page with no separate sign-in;
-- the delivery charge is not refunded on returns.
+**User decisions (2026-10-06, Gate 1 questions):**
+- **Scope:** the order part of the Simulation Console (`/sim/orders`) is built in this feature; F-011 keeps inventory simulation. This answers Q6: the Simulation Console is in the MVP.
+- **Operator access (Q14):** a demo operator password (FR-18).
+- **Delivery charge on returns:** not refunded. Cancellations refund it.
 
 ---
 
@@ -140,6 +140,12 @@ After checkout, shoppers want three things:
 
   It has no customer data beyond order number, status, items and city. It's a simulation tool, not an admin dashboard (brief §16).
 
+- FR-18 **Operator sign-in.**
+  - The operator page asks for the demo operator password, set by `SIM_OPERATOR_PASSWORD`. In local development it defaults to `demo-operator`, documented in the README; the API logs a notice at start when the default is in use.
+  - A correct password sets an operator session cookie, valid for 8 hours. It is separate from customer sessions: being signed in as a customer grants nothing here, and vice versa.
+  - Wrong passwords are rate-limited (5 per 15 minutes per IP, as with F-006 sign-in).
+  - The page has **Sign out**.
+
 ### 5.8 Analytics
 
 - FR-17 `order_cancelled` `{ itemCount, totalPaise, reason? }` is recorded by the server at cancellation. No new event types are added: returns and refunds aren't in the brief's event set.
@@ -200,7 +206,7 @@ After checkout, shoppers want three things:
 | `POST /api/orders/:id/cancel` | Extends F-008: a paid order in Order Confirmed or Processing → Cancelled, restock, refund. `{ reason? }` |
 | `POST /api/orders/:id/returns` | `{ lines: [{ orderLineId, reason }] }` → a return request |
 
-**Operator** (§22):
+**Operator** (operator session required, FR-18; `POST /api/sim/session` `{ password }` signs in, `DELETE /api/sim/session` signs out):
 
 | Endpoint | Purpose |
 |---|---|
@@ -238,7 +244,11 @@ After checkout, shoppers want three things:
 
 - Ownership is enforced on every customer route.
 - The delivery code is returned only to the owner, and only while Out for Delivery.
-- **Operator access:** the operator page is unauthenticated in this local demo (Q14 recommendation, §22). A production build would need operator authentication; that is out of scope.
+- **Operator access:** operator routes require the operator session (FR-18).
+  - The password is compared in constant time.
+  - Only a hash of the operator session token is stored.
+  - Operator routes return no address details beyond the city.
+  - A production build would need real operator accounts and roles; that is out of scope.
 
 ## 16. Analytics
 
@@ -260,7 +270,7 @@ FR-17.
 6. Within 7 days of delivery, the customer can return selected items, with a reason each. After 7 days, Return items is gone and the API refuses. An item can't be returned twice.
 7. Each returned item's refund is its paid share: the line total minus its share of the bank offer, with no delivery charge. All refunds for an order add up to no more than the amount paid.
 8. Return stages Requested → Picked Up (stock back on sale, refund initiated) → Refunded are each visible to the customer with times. The order shows Returned or Partly returned.
-9. No customer can see or act on another's orders, delivery code, or returns.
+9. No customer can see or act on another's orders, delivery code, or returns. Operator routes refuse requests without the operator session, including from signed-in customers. A wrong operator password is refused and rate-limited.
 10. Keyboard and screen reader work, including the timeline, dialogs and delivery code; 360 px works.
 
 ## 18. Testing Strategy
@@ -313,6 +323,7 @@ FR-17.
 
 ## 22. Decisions Required From User
 
-1. **Order simulation in F-010** (recommended): build the order part of the Simulation Console here — a small `/sim/orders` operator page for advancing orders, the delivery code, and return pickup and refund. Without it, F-010's lifecycle, delivery OTP and staged returns can't be demonstrated at Gate 2. F-011 keeps inventory simulation. This also answers Q6: the Simulation Console is in the MVP.
-2. **Operator access (Q14):** a local demo page with a visible "Demo operator" label and no separate sign-in (recommended), versus requiring a demo operator password.
-3. **Delivery charge on returns:** not refunded (recommended; the usual practice), versus refunded when every item in the order is returned.
+Resolved 2026-10-06:
+- order simulation is built in F-010 (Q6: the console is in the MVP);
+- operator access uses a demo operator password;
+- the delivery charge is not refunded on returns.
