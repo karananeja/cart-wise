@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-007 Address management — specification, intent and ADR-004 drafted, awaiting Gate 1.** F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+**F-007 Address management — implemented and tested, awaiting Gate 2.** F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -35,7 +35,7 @@ F-002 → F-011 per `project-plan.md`, then Phase 2 and optional AI.
 
 ## Architecture decisions
 
-ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application inventory, accepted), ADR-003 (sessions, scrypt, simulated OTP, JSON-only POST guard, accepted). F-003: inventory is per sellable unit (size or product); schema version 2 with automatic rebuild of seeded tables.
+ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application inventory, accepted), ADR-003 (sessions, scrypt, simulated OTP, JSON-only POST guard, accepted), ADR-004 (Leaflet + OSM tiles + Nominatim via API proxy, accepted). F-003: inventory is per sellable unit (size or product); schema version 2 with automatic rebuild of seeded tables.
 
 ## Relevant files
 
@@ -50,11 +50,12 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 - `apps/api/src/cart/` — cart rules, service (cookie identity, limits, expiry), routes; `apps/web/src/features/cart/` — Add to cart, cart page, hooks
 - `apps/api/src/wishlist/`, `apps/web/src/features/wishlist/` — wishlist API, hearts, page, size picker; `apps/api/src/http/cookies.ts` — guest cookies
 - `apps/api/src/auth/` (validation, passwords, otp, sessions, rateLimit, merge, routes), `apps/api/src/http/owner.ts` (user/guest owner), `apps/web/src/features/auth/`
+- `apps/api/src/addresses/`, `apps/api/src/geo/` (Nominatim proxy), `apps/web/src/features/addresses/` (LocationPicker, lazy MapView)
 - `apps/web/src/features/search/SearchBox.tsx` — header combobox; `apps/web/src/lib/recentSearches.ts` — history store
 
 ## Tests
 
-- `pnpm test`: 244 passing (shared 16, api 136, web 92). `pnpm e2e`: 29 passing (stable over 3 repeats). Typecheck clean. Build succeeds.
+- `pnpm test`: 272 passing (shared 20, api 154, web 98). `pnpm e2e`: 32 passing (stable over 3 repeats). Typecheck clean. Build succeeds (Leaflet lazy-loaded).
 - No failing tests.
 
 ## Known bugs / limitations
@@ -95,4 +96,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Wait for Gate 1 approval of F-007 (`features/F-007-addresses/`): confirm 10-address limit, default reassignment on delete, signed-in only. On approval: accept ADR-004, technical design, implement (API addresses + geo proxy with injected fetch; web list/form/lazy Leaflet picker), test with stubbed geo, one manual live check on preview ports.
+Wait for Gate 2 acceptance of F-007. On acceptance: mark complete, then prepare F-008 (Checkout: address, delivery, summary, reservation). F-008 needs Q8 (delivery options/pricing), Q10 (reservation timing), Q11 (tax display).

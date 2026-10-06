@@ -48,3 +48,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | Q7 Map provider | OpenStreetMap | |
 | 2026-10-06 | F-007 | Spec, intent and ADR-004 presented for Gate 1 | |
 | 2026-10-06 | F-007 Gate 1 | **Approved**; ADR-004 accepted | |
+| 2026-10-06 | F-007 implementation | Implemented, tested (incl. live OSM check), presented for Gate 2 | |

@@ -88,7 +88,14 @@ export function createGeoService(deps: { fetch: typeof fetch; clock?: () => numb
       const q = query.replace(/\s+/g, ' ').trim().slice(0, 120);
       if (q.length < 3) return [];
       const places = await call<NominatimPlace[]>('/search', { q, countrycodes: 'in', limit: '5' });
-      return places.map(toGeoPlace);
+      // OpenStreetMap often has several entries for one place; show each name + pincode once.
+      const seen = new Set<string>();
+      return places.map(toGeoPlace).filter((place) => {
+        const key = `${place.label}|${place.pincode ?? ''}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
     },
 
     async reverse(latitude: number, longitude: number): Promise<GeoPlace | null> {

@@ -69,6 +69,13 @@ describe('geo service', () => {
     await expect(Promise.race([pending[6], new Promise((r) => setTimeout(() => r('still waiting'), 50))])).resolves.toBe('GEO_UNAVAILABLE');
   });
 
+  it('shows each place name and pincode once', async () => {
+    const duplicate = { ...indiranagar, lat: '12.97841' };
+    const fetch = async () => new Response(JSON.stringify([indiranagar, duplicate, { ...indiranagar, address: { ...indiranagar.address, postcode: '560008' } }]));
+    const places = await createGeoService({ fetch: fetch as typeof globalThis.fetch }).search('Indiranagar');
+    expect(places.map((p) => p.pincode)).toEqual(['560038', '560008']);
+  });
+
   it('ignores very short queries without calling upstream', async () => {
     const fetch = vi.fn();
     expect(await createGeoService({ fetch: fetch as unknown as typeof globalThis.fetch }).search('ab')).toEqual([]);
