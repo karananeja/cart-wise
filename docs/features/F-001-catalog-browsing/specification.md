@@ -68,7 +68,7 @@ A shopper who does not yet know exactly what they want needs to explore the rang
 
 ### 5.4 Product page stub (`/p/:productSlug`)
 
-- FR-16 Listing cards must lead somewhere real. Until F-003, `/p/:productSlug` shows a minimal product view (image, title, brand, price, availability, description) with a link back. F-003 replaces it with the full product page. No cart/wishlist buttons in the stub.
+- FR-16 Listing cards must lead somewhere real. Until F-003, `/p/:productSlug` shows a minimal product view (image gallery with thumbnails when a product has several images, title, brand, price, availability, description) with a link back. The gallery was added at the user's request on 2026-10-06. F-003 replaces it with the full product page. No cart/wishlist buttons in the stub.
 
 ### 5.5 Analytics
 

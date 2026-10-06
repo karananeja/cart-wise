@@ -17,6 +17,8 @@ Phase 1 — MVP.
 - ADR-001 and ADR-002 accepted.
 - F-001 built: workspace, shared package, Express API (SQLite via better-sqlite3), committed DummyJSON snapshot + deterministic inventory seed, homepage, listing pages with filters/sort/pagination/URL state, product page stub, analytics pipeline (`filter_applied`), loading/empty/error/offline states.
 
+- Gallery added to the product page stub after user feedback (2026-10-06).
+
 ## In progress
 
 None. Waiting for the user.
@@ -44,7 +46,7 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 
 ## Tests
 
-- `pnpm test`: 78 passing (shared 13, api 45, web 20). `pnpm e2e`: 6 passing. Typecheck clean. Build succeeds.
+- `pnpm test`: 80 passing (shared 13, api 45, web 22). `pnpm e2e`: 6 passing. Typecheck clean. Build succeeds.
 - No failing tests.
 
 ## Known bugs / limitations

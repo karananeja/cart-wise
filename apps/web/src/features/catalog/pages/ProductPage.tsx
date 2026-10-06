@@ -15,7 +15,7 @@ import { ApiError } from '@/lib/api';
 import { useProduct } from '../api';
 import { AvailabilityNote } from '../components/AvailabilityNote';
 import { Price } from '../components/Price';
-import { ProductImage } from '../components/ProductImage';
+import { ProductGallery } from '../components/ProductGallery';
 import { Rating } from '../components/Rating';
 
 /**
@@ -67,7 +67,7 @@ export function ProductPage() {
       </Breadcrumb>
 
       <article className="grid gap-8 md:grid-cols-2">
-        <ProductImage key={p.imageUrls[0] ?? p.thumbnailUrl} src={p.imageUrls[0] ?? p.thumbnailUrl} alt={p.title} eager />
+        <ProductGallery images={p.imageUrls.length ? p.imageUrls : [p.thumbnailUrl]} title={p.title} />
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             {p.brand && <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">{p.brand}</p>}

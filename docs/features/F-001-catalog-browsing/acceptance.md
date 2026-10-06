@@ -21,12 +21,12 @@
 | 12 | Bottom sheet below 1024 px; 2/3/4 columns; no horizontal scroll at 360 px | Pass | E2E mobile test (360 px); screenshots at 375 and 1280 px |
 | 13 | Keyboard operable; result count announced | Pass | E2E keyboard filter; count in an `aria-live` region; native select and Radix controls |
 | 14 | `filter_applied` stored with specified properties | Pass | `ListingPage.test.tsx`; `app.test.ts`; row observed in the E2E database |
-| 15 | Card → `/p/:slug` stub; unknown slug → Not found | Pass | E2E |
+| 15 | Card → `/p/:slug` stub; unknown slug → Not found | Pass | E2E. Stub now shows all product images (user feedback, 2026-10-06); `ProductGallery.test.tsx` |
 | 16 | Demo notice in footer on every page | Pass | Root layout; screenshots |
 
 ## 2. Test results summary
 
-78 unit/API/component tests and 6 E2E tests pass; typecheck clean; production build succeeds. Details in `test-plan.md`.
+80 unit/API/component tests and 6 E2E tests pass; typecheck clean; production build succeeds. Details in `test-plan.md`.
 
 ## 3. Known issues and limitations
 

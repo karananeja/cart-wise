@@ -26,6 +26,7 @@ Catalog import mapping, inventory seeding and availability, the listing query (f
 | Unit | api: query | each filter, combinations, disjunctive facets, every sort with OOS last, pagination clamp, relaxations | `apps/api/src/catalog/query.test.ts` |
 | API | routes | categories, listing with params, 404 category/product, events validation, no raw stock exposed | `apps/api/src/app.test.ts` |
 | Component | ProductCard | discount/no discount, low stock, out of stock, image fallback | `apps/web/src/features/catalog/components/ProductCard.test.tsx` |
+| Component | ProductGallery | thumbnails for every image, switching main image, single image has no strip | `apps/web/src/features/catalog/components/ProductGallery.test.tsx` |
 | Unit | web: helpers | price presets, price labels, pagination window | `apps/web/src/features/catalog/filterLabels.test.ts` |
 | Component | Listing page | filter → chips + URL, clear all, empty state suggestion, error + retry, invalid params normalised | `apps/web/src/features/catalog/pages/ListingPage.test.tsx` |
 | E2E | browse flow | home → category → brand filter → sort → page 2 → Back; deep link; out-of-stock last; card → product page; unknown product; keyboard filter; mobile sheet at 360 px with no horizontal scroll | `e2e/browse.spec.ts` |
@@ -41,6 +42,7 @@ Catalog import mapping, inventory seeding and availability, the listing query (f
 | Run date | Command | Result | Notes |
 |---|---|---|---|
 | 2026-10-06 | `pnpm test` | 78 passed (shared 13, api 45, web 20) | |
+| 2026-10-06 | `pnpm test` (after gallery change) | 80 passed (web 22) | Gallery screenshots checked at 1280 and 375 px |
 | 2026-10-06 | `pnpm e2e` | 6 passed | Chromium; own API (port 3101, fresh DB) and web server (5174) |
 | 2026-10-06 | `pnpm typecheck` | Clean | |
 | 2026-10-06 | `pnpm build` | Succeeds | Vite warns that the main chunk exceeds 500 kB (backlog: route code-splitting) |
