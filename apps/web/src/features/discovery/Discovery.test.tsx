@@ -58,6 +58,18 @@ describe('product page pairing', () => {
     expect((await events('cart_item_added')).map((p) => p.source)).toEqual(['recommendation', 'recommendation']);
   });
 
+  it('offers no second "Add to cart" when no companion is ticked', async () => {
+    setProductRecommendations('product-4', { pairing: { kind: 'pairs_well', items: [cable] }, similar: [] });
+    const user = userEvent.setup();
+    renderRoute('/p/product-4');
+    const section = await screen.findByRole('region', { name: 'Pairs well with' });
+    await user.click(within(section).getByRole('checkbox', { name: 'Include USB Cable' }));
+    expect(within(section).queryByRole('button')).not.toBeInTheDocument();
+    expect(within(section).getByText('Tick an item to add them together.')).toBeInTheDocument();
+    // The page keeps exactly one Add to cart.
+    expect(screen.getAllByRole('button', { name: 'Add to cart' })).toHaveLength(1);
+  });
+
   it('labels real co-purchases, links sized companions to their page, and reports partial failures', async () => {
     setProductRecommendations('product-4', { pairing: { kind: 'bought_together', items: [pCase, sizedShirt] }, similar: [] });
     setStock('phone-case', null, 0);

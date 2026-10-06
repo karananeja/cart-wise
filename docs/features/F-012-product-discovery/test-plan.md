@@ -34,3 +34,6 @@
 
 | Run date | Command | Result | Notes |
 |---|---|---|---|
+| 2026-10-06 | `pnpm test` | 465 passed (shared 38, api 226, web 165) | |
+| 2026-10-06 | `pnpm e2e` ×8 | 49 passed each run | After fixing the duplicate "Add to cart" regression |
+| 2026-10-06 | `pnpm typecheck`, `pnpm build` | Clean | Main bundle 413 kB |

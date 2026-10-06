@@ -78,3 +78,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-012 decisions | Honest pairing labels with ≥2-order threshold; one-tap bundle add for unsized items; home continue-shopping sections; cart pairing rail | |
 | 2026-10-06 | F-012 | Spec and intent presented for Gate 1 | Confirm complementary category map |
 | 2026-10-06 | F-012 Gate 1 | **Approved** (category map as drafted) | |
+| 2026-10-06 | F-012 implementation | Implemented, tested, presented for Gate 2 | |

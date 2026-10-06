@@ -16,7 +16,7 @@ interface PairingSectionProps {
   pairing: { kind: PairingKind; items: RecommendedProduct[] };
 }
 
-const buttonLabel = (count: number) => (count === 1 ? 'Add to cart' : count === 2 ? 'Add both to cart' : `Add all ${count} to cart`);
+const buttonLabel = (count: number) => (count === 2 ? 'Add both to cart' : `Add all ${count} to cart`);
 const reasonText = (error: unknown) => cartErrorMessage(error).replace(/\.$/, '').toLowerCase();
 
 /**
@@ -118,11 +118,17 @@ export function PairingSection({ product, selectedSize, pairing }: PairingSectio
             {formatPrice(total)}
           </span>
         </p>
-        <Button variant="outline" onClick={() => void addAll()} disabled={busy || !!disabledReason} aria-describedby={disabledReason ? hintId : undefined}>
-          {busy && <Loader2 className="animate-spin" aria-hidden />}
-          {buttonLabel(ticked.length + 1)}
-        </Button>
-        {disabledReason && (
+        {/* With no companion ticked the group adds nothing the page's own Add to cart doesn't, so it
+            offers no second, identically named button. */}
+        {ticked.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Tick an item to add them together.</p>
+        ) : (
+          <Button variant="outline" onClick={() => void addAll()} disabled={busy || !!disabledReason} aria-describedby={disabledReason ? hintId : undefined}>
+            {busy && <Loader2 className="animate-spin" aria-hidden />}
+            {buttonLabel(ticked.length + 1)}
+          </Button>
+        )}
+        {ticked.length > 0 && disabledReason && (
           <p id={hintId} className="text-sm text-muted-foreground">
             {disabledReason}
           </p>

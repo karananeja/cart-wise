@@ -9,3 +9,4 @@
 | 2026-10-06 | Cart page | One "Pairs well with your cart" rail below checkout | User choice |
 | 2026-10-06 | Spec + intent drafted | Presented for Gate 1 | Confirm the complementary category map |
 | 2026-10-06 | Gate 1 | **Approved**, category map as drafted | |
+| 2026-10-06 | Implementation complete | Presented for Gate 2 | See acceptance.md; FR-8 clarified (no duplicate Add to cart) |

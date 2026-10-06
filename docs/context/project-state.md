@@ -8,7 +8,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## Current feature
 
-**F-012 Product discovery (Phase 2) — Gate 1 approved 2026-10-06 (category map as drafted); in implementation.** MVP wrap-up complete (`docs/mvp-wrap-up.md`).
+**F-012 Product discovery (Phase 2) — implemented and tested, awaiting Gate 2.** MVP wrap-up complete (`docs/mvp-wrap-up.md`).
 
 ## Completed
 
@@ -19,7 +19,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## In progress
 
-F-012 implementation.
+F-012 Gate 2.
 
 ## Remaining
 
@@ -51,11 +51,12 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 - `packages/shared/src/payment.ts` (offers, card ranges, outcome rule, UPI), `apps/api/src/payments/` (attempts, OTP, completion), `apps/api/src/analytics/record.ts` (server events), `apps/web/src/features/payment/`, `apps/web/src/features/orders/ConfirmationPage.tsx`
 - `packages/shared/src/orders.ts` (lifecycle, reasons, `allocatePaise`), `apps/api/src/orders/lifecycle.ts` (list, cancel, returns, operator steps), `apps/api/src/sim/` (operator password session, routes), `apps/web/src/features/orders/`, `apps/web/src/features/sim/`
 - `packages/shared/src/simulation.ts`, `apps/api/src/sim/inventory.ts` (list, manual stock, ticks, settings), `apps/api/src/sim/scheduler.ts`, `apps/web/src/features/sim/SimConsole.tsx` + `SimInventoryPage.tsx`; `playwright.config.ts` runs `e2e/simulation.spec.ts` as a separate project after the others
+- `packages/shared/src/recommendations.ts`, `apps/api/src/recommendations/` (rules, service, routes), `apps/web/src/features/discovery/`
 - `apps/web/src/features/search/SearchBox.tsx` — header combobox; `apps/web/src/lib/recentSearches.ts` — history store
 
 ## Tests
 
-- `pnpm test`: 401 passing (shared 38, api 215, web 148). `pnpm e2e`: 46 passing (11 consecutive full runs; one earlier unreproduced failure of an F-009 payment test noted in F-011 acceptance §3). Typecheck clean. Build succeeds.
+- `pnpm test`: 465 passing (shared 38, api 226, web 165). `pnpm e2e`: 49 passing (8 consecutive runs). Typecheck clean. Build succeeds (main bundle 413 kB).
 - No failing tests.
 
 ## Known bugs / limitations
@@ -100,4 +101,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Implement F-012 per `docs/features/F-012-product-discovery/technical-design.md`: shared `recommendations.ts` (done) → API `recommendations/` → web `features/discovery/` + product/home/cart placement → tests → E2E → acceptance.md → Gate 2.
+Wait for Gate 2 acceptance of F-012 (`docs/features/F-012-product-discovery/acceptance.md`). Raised for the user: companions are ranked by rating first (a premium accessory can be suggested for a phone) — optional price cap is a product change. After acceptance: next Phase 2 track (reviews, retention, analytics funnel view) by user choice.

@@ -4,7 +4,7 @@
 
 **ID:** F-012
 **Name:** Product discovery — related products, frequently bought together, continue shopping
-**Status:** Approved (Gate 1, 2026-10-06)
+**Status:** Acceptance — awaiting Gate 2 (Gate 1 approved 2026-10-06)
 **Requirements:** Brief §17 (deterministic recommendations), §24 Next items 14–16 and 20 (related products, frequently bought together, continue shopping, improved discovery homepage), ANL-1 (`recommendation_clicked`)
 
 **User decisions applied (2026-10-06):**
@@ -71,7 +71,7 @@ After viewing or buying something, shoppers have to start over to find alternati
   - the combined price;
   - **Add both to cart** (or **Add all 3 to cart**).
 
-  The customer can untick companions. Unticking all of them leaves "Add to cart" for this product only.
+  The customer can untick companions. With none ticked, the group shows "Tick an item to add them together" and no button, so the page never has two identically named "Add to cart" buttons. (Clarified during implementation, 2026-10-06; the page's own Add to cart covers that case.)
   - **Sized products** can't be ticked. They show **Choose size**, which links to their page. If this product itself needs a size, the button is disabled with "Choose a size above first" until a size is selected on the page.
   - **Adding** uses the normal cart rules (F-004). If an item can't be added (stock or limit), the others are still added, and a short message names what wasn't.
 
