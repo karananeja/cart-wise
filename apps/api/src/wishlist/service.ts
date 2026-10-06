@@ -3,6 +3,7 @@ import { MAX_WISHLIST_ITEMS, type WishlistView } from '@store/shared';
 import type { CatalogRepository } from '../catalog/repository.js';
 import type { Db } from '../db/database.js';
 import { HttpError } from '../http/errors.js';
+import type { Owner } from '../http/owner.js';
 
 export const WISHLIST_LIFETIME_DAYS = 90;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -11,8 +12,9 @@ export function createWishlistService(db: Db, catalog: CatalogRepository) {
   const now = () => new Date().toISOString();
   const cutoff = () => new Date(Date.now() - WISHLIST_LIFETIME_DAYS * DAY_MS).toISOString();
 
-  const findWishlist = db.prepare('SELECT id FROM wishlists WHERE id = ? AND updated_at >= ?');
-  const insertWishlist = db.prepare('INSERT INTO wishlists (id, created_at, updated_at) VALUES (?, ?, ?)');
+  const findGuestWishlist = db.prepare('SELECT id FROM wishlists WHERE id = ? AND user_id IS NULL AND updated_at >= ?');
+  const findUserWishlist = db.prepare('SELECT id FROM wishlists WHERE user_id = ?');
+  const insertWishlist = db.prepare('INSERT INTO wishlists (id, user_id, created_at, updated_at) VALUES (?, ?, ?, ?)');
   const touch = db.prepare('UPDATE wishlists SET updated_at = ? WHERE id = ?');
   const items = db.prepare(`
     SELECT p.slug, w.added_at AS addedAt FROM wishlist_items w JOIN products p ON p.id = w.product_id
@@ -22,9 +24,13 @@ export function createWishlistService(db: Db, catalog: CatalogRepository) {
   const has = db.prepare('SELECT 1 FROM wishlist_items WHERE wishlist_id = ? AND product_id = ?');
   const insertItem = db.prepare('INSERT INTO wishlist_items (wishlist_id, product_id, added_at) VALUES (?, ?, ?)');
   const deleteItem = db.prepare('DELETE FROM wishlist_items WHERE wishlist_id = ? AND product_id = ?');
-  const deleteExpired = db.prepare('DELETE FROM wishlists WHERE updated_at < ?');
+  // Only guest wishlists expire; account wishlists persist.
+  const deleteExpired = db.prepare('DELETE FROM wishlists WHERE user_id IS NULL AND updated_at < ?');
 
-  const live = (id: string | undefined): id is string => Boolean(id && findWishlist.get(id, cutoff()));
+  function resolve(owner: Owner): string | undefined {
+    if ('userId' in owner) return (findUserWishlist.get(owner.userId) as { id: string } | undefined)?.id;
+    return owner.guestId && findGuestWishlist.get(owner.guestId, cutoff()) ? owner.guestId : undefined;
+  }
 
   function requireProduct(slug: string): number {
     const row = productId.get(slug) as { id: number } | undefined;
@@ -33,8 +39,9 @@ export function createWishlistService(db: Db, catalog: CatalogRepository) {
   }
 
   return {
-    view(wishlistId: string | undefined): WishlistView {
-      if (!live(wishlistId)) return { items: [], count: 0 };
+    view(owner: Owner): WishlistView {
+      const wishlistId = resolve(owner);
+      if (!wishlistId) return { items: [], count: 0 };
       const rows = items.all(wishlistId) as { slug: string; addedAt: string }[];
       const summaries = new Map(catalog.findSummaries(rows.map((r) => r.slug)).map((s) => [s.slug, s]));
       const list = rows.flatMap((r) => {
@@ -45,13 +52,13 @@ export function createWishlistService(db: Db, catalog: CatalogRepository) {
     },
 
     /** Idempotent. Creates the wishlist on first save; refuses beyond 100 items. */
-    save(wishlistId: string | undefined, slug: string): string {
+    save(owner: Owner, slug: string): string {
       const id = requireProduct(slug);
       return db.transaction(() => {
-        let listId = wishlistId;
-        if (!live(listId)) {
+        let listId = resolve(owner);
+        if (!listId) {
           listId = randomBytes(16).toString('base64url');
-          insertWishlist.run(listId, now(), now());
+          insertWishlist.run(listId, 'userId' in owner ? owner.userId : null, now(), now());
         }
         if (!has.get(listId, id)) {
           if ((count.get(listId) as { n: number }).n >= MAX_WISHLIST_ITEMS) {
@@ -65,11 +72,13 @@ export function createWishlistService(db: Db, catalog: CatalogRepository) {
     },
 
     /** Idempotent: removing something not saved is not an error. */
-    remove(wishlistId: string | undefined, slug: string) {
+    remove(owner: Owner, slug: string): string | undefined {
       const id = requireProduct(slug);
-      if (!live(wishlistId)) return;
+      const wishlistId = resolve(owner);
+      if (!wishlistId) return undefined;
       deleteItem.run(wishlistId, id);
       touch.run(now(), wishlistId);
+      return wishlistId;
     },
 
     deleteExpired: () => deleteExpired.run(cutoff()).changes,

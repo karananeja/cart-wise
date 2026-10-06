@@ -1,5 +1,6 @@
 import { createApp } from './app.js';
 import { createCatalogRepository } from './catalog/repository.js';
+import { createSessionService } from './auth/sessions.js';
 import { createCartService } from './cart/service.js';
 import { createWishlistService } from './wishlist/service.js';
 import { openDatabase } from './db/database.js';
@@ -18,9 +19,11 @@ if (!isSeeded(db)) {
 const catalog = createCatalogRepository(db);
 const carts = createCartService(db, catalog);
 const wishlists = createWishlistService(db, catalog);
+const sessions = createSessionService(db);
 const deleteExpiredGuestData = () => {
   carts.deleteExpired();
   wishlists.deleteExpired();
+  sessions.deleteExpired();
 };
 deleteExpiredGuestData();
 setInterval(deleteExpiredGuestData, 60 * 60 * 1000).unref();

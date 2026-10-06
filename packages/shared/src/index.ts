@@ -4,3 +4,4 @@ export * from './money.js';
 export * from './analytics.js';
 export * from './cart.js';
 export * from './wishlist.js';
+export * from './auth.js';

@@ -60,9 +60,76 @@ CREATE TABLE IF NOT EXISTS inventory (
 );
 CREATE INDEX IF NOT EXISTS inventory_product ON inventory(product_id);
 
+-- Accounts (F-006, ADR-003). Only verified accounts exist here; pending sign-ups live in
+-- their OTP challenge until the code is entered.
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  mobile TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  mobile_verified_at TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+
+-- Only a hash of the session token is stored.
+CREATE TABLE IF NOT EXISTS sessions (
+  token_hash TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  last_seen_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS sessions_user ON sessions(user_id);
+
+-- Simulated one-time codes (stored hashed). `payload` holds pending sign-up details.
+CREATE TABLE IF NOT EXISTS otp_challenges (
+  id TEXT PRIMARY KEY,
+  purpose TEXT NOT NULL CHECK (purpose IN ('signup', 'login', 'reset')),
+  mobile TEXT NOT NULL,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  code_hash TEXT NOT NULL,
+  payload TEXT,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  last_sent_at TEXT NOT NULL,
+  consumed_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS otp_sends (
+  mobile TEXT NOT NULL,
+  sent_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS otp_sends_mobile ON otp_sends(mobile, sent_at);
+
+CREATE TABLE IF NOT EXISTS password_resets (
+  token_hash TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  expires_at TEXT NOT NULL,
+  used_at TEXT
+);
+
+-- Account copies of browsing history, so it follows the shopper across devices.
+CREATE TABLE IF NOT EXISTS user_recently_viewed (
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  slug TEXT NOT NULL,
+  viewed_at TEXT NOT NULL,
+  PRIMARY KEY (user_id, slug)
+);
+
+CREATE TABLE IF NOT EXISTS user_search_history (
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  query_key TEXT NOT NULL,
+  query TEXT NOT NULL,
+  searched_at TEXT NOT NULL,
+  PRIMARY KEY (user_id, query_key)
+);
+
 -- Guest carts (F-004), identified by an anonymous random id held in a cookie.
 CREATE TABLE IF NOT EXISTS carts (
   id TEXT PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
@@ -82,6 +149,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS cart_lines_unit ON cart_lines(cart_id, product
 -- Guest wishlists (F-005): products, not sizes. Same anonymous-cookie pattern as carts.
 CREATE TABLE IF NOT EXISTS wishlists (
   id TEXT PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );

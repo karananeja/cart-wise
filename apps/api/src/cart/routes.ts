@@ -1,8 +1,9 @@
 import type { Request, Response } from 'express';
 import { Router } from 'express';
 import { addToCartSchema, updateCartLineSchema } from '@store/shared';
-import { readCookie, setGuestCookie } from '../http/cookies.js';
+import { setGuestCookie } from '../http/cookies.js';
 import { HttpError } from '../http/errors.js';
+import { currentUser, ownerFor, type Owner } from '../http/owner.js';
 import { CART_LIFETIME_DAYS, type CartService } from './service.js';
 
 export const CART_COOKIE = 'cart_id';
@@ -25,29 +26,31 @@ function lineId(req: Request): number {
 
 export function cartRouter(carts: CartService): Router {
   const router = Router();
+  const owner = (req: Request, res: Response) => ownerFor(req, res, CART_COOKIE);
+  /**
+   * Guests keep their cart in a cookie; signed-in users' carts are found by account. Returns
+   * the owner to read the updated cart for (a guest's first add creates the cart).
+   */
+  const remember = (res: Response, cartId: string): Owner => {
+    if (currentUser(res)) return { userId: currentUser(res)!.id };
+    setCartCookie(res, cartId);
+    return { guestId: cartId };
+  };
 
   router.get('/cart', (req, res) => {
-    res.json(carts.view(readCookie(req, CART_COOKIE)));
+    res.json(carts.view(owner(req, res)));
   });
 
   router.post('/cart/lines', (req, res) => {
-    const cartId = carts.add(readCookie(req, CART_COOKIE), parse(addToCartSchema, req.body));
-    setCartCookie(res, cartId);
-    res.json(carts.view(cartId));
+    res.json(carts.view(remember(res, carts.add(owner(req, res), parse(addToCartSchema, req.body)))));
   });
 
   router.patch('/cart/lines/:id', (req, res) => {
-    const cartId = readCookie(req, CART_COOKIE);
-    carts.update(cartId, lineId(req), parse(updateCartLineSchema, req.body).quantity);
-    setCartCookie(res, cartId!);
-    res.json(carts.view(cartId));
+    res.json(carts.view(remember(res, carts.update(owner(req, res), lineId(req), parse(updateCartLineSchema, req.body).quantity))));
   });
 
   router.delete('/cart/lines/:id', (req, res) => {
-    const cartId = readCookie(req, CART_COOKIE);
-    carts.remove(cartId, lineId(req));
-    setCartCookie(res, cartId!);
-    res.json(carts.view(cartId));
+    res.json(carts.view(remember(res, carts.remove(owner(req, res), lineId(req)))));
   });
 
   return router;

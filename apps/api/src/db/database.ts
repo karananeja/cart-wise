@@ -26,5 +26,23 @@ export function openDatabase(path: string): Db {
     db.pragma(`user_version = ${SCHEMA_VERSION}`);
   }
   db.exec(schema);
+  upgradeInPlace(db);
   return db;
+}
+
+/**
+ * Additive changes to tables that hold user data (never dropped). Idempotent, so it runs on
+ * every open; fresh databases already have these from schema.sql.
+ */
+function upgradeInPlace(db: Db) {
+  ensureColumn(db, 'carts', 'user_id', 'INTEGER REFERENCES users(id) ON DELETE CASCADE');
+  ensureColumn(db, 'wishlists', 'user_id', 'INTEGER REFERENCES users(id) ON DELETE CASCADE');
+  // One cart and one wishlist per account.
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS carts_user ON carts(user_id) WHERE user_id IS NOT NULL');
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS wishlists_user ON wishlists(user_id) WHERE user_id IS NOT NULL');
+}
+
+function ensureColumn(db: Db, table: string, column: string, definition: string) {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[];
+  if (!columns.some((c) => c.name === column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
 }
