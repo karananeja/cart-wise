@@ -101,7 +101,7 @@ export interface SearchSuggestions {
 }
 
 export interface ApiErrorBody {
-  error: { code: string; message: string };
+  error: { code: string; message: string; details?: Record<string, unknown> };
 }
 
 export const RATING_FILTERS = [4, 3] as const;

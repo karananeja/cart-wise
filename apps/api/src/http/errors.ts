@@ -6,6 +6,7 @@ export class HttpError extends Error {
     readonly status: number,
     readonly code: string,
     message: string,
+    readonly details?: Record<string, unknown>,
   ) {
     super(message);
   }
@@ -17,7 +18,8 @@ export const notFoundHandler: RequestHandler = (_req, res) => {
 
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   if (err instanceof HttpError) {
-    res.status(err.status).json({ error: { code: err.code, message: err.message } } satisfies ApiErrorBody);
+    const error = { code: err.code, message: err.message, ...(err.details ? { details: err.details } : {}) };
+    res.status(err.status).json({ error } satisfies ApiErrorBody);
     return;
   }
   // Malformed JSON bodies from express.json()

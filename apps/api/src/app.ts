@@ -1,5 +1,7 @@
 import express from 'express';
 import { analyticsRouter } from './analytics/routes.js';
+import { cartRouter } from './cart/routes.js';
+import { createCartService } from './cart/service.js';
 import { createCatalogRepository } from './catalog/repository.js';
 import { catalogRouter } from './catalog/routes.js';
 import type { Db } from './db/database.js';
@@ -20,6 +22,7 @@ export function createApp(db: Db) {
   const catalog = createCatalogRepository(db);
   // Built once from the seeded catalog; holds only ids, so prices and stock stay live.
   api.use(catalogRouter(catalog, createSearchIndex(catalog.listSearchDocuments())));
+  api.use(cartRouter(createCartService(db, catalog)));
   api.use(analyticsRouter(db));
   app.use('/api', api);
 
