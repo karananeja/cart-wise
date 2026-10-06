@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import type { CatalogSnapshot } from '../catalog/dummyjson.js';
 import { USD_TO_INR_RATE } from '../catalog/config.js';
 import { mapCatalog } from '../catalog/mapping.js';
-import { seedOnHand } from '../inventory/inventory.js';
+import { seedOnHand, seedSizeOnHand } from '../inventory/inventory.js';
+import { sizesFor } from '../inventory/sizes.js';
 import { SNAPSHOT_PATH } from '../paths.js';
 import type { Db } from './database.js';
 
@@ -10,7 +11,10 @@ export function loadSnapshot(path = SNAPSHOT_PATH): CatalogSnapshot {
   return JSON.parse(readFileSync(path, 'utf8')) as CatalogSnapshot;
 }
 
-/** Replaces catalog and inventory with the snapshot contents. Idempotent. Analytics are kept. */
+/**
+ * Replaces catalog, reviews, sizes and inventory with the snapshot contents plus
+ * application-owned sizes and stock. Idempotent and deterministic. Analytics are kept.
+ */
 export function seedDatabase(db: Db, snapshot: CatalogSnapshot = loadSnapshot()): { products: number; categories: number } {
   const { products, categories } = mapCatalog(snapshot.products, USD_TO_INR_RATE);
   const now = new Date().toISOString();
@@ -24,12 +28,19 @@ export function seedDatabase(db: Db, snapshot: CatalogSnapshot = loadSnapshot())
     VALUES (@id, @slug, @externalCatalogId, @title, @description, @brand, @brandSlug, @categorySlug,
       @mrpPaise, @pricePaise, @discountPercent, @rating, @thumbnailUrl, @imageUrls, @specifications, @tags, @catalogOrder)
   `);
+  const insertReview = db.prepare(
+    'INSERT INTO product_reviews (product_id, rating, comment, reviewer_name, sort_order) VALUES (?, ?, ?, ?, ?)',
+  );
+  const insertVariant = db.prepare('INSERT INTO product_variants (product_id, label, sort_order) VALUES (?, ?, ?)');
   const insertInventory = db.prepare(
-    'INSERT INTO inventory (product_id, on_hand, reserved, updated_at) VALUES (?, ?, 0, ?)',
+    'INSERT INTO inventory (product_id, variant_id, on_hand, reserved, updated_at) VALUES (?, ?, ?, 0, ?)',
   );
 
   db.transaction(() => {
-    db.exec('DELETE FROM inventory; DELETE FROM products; DELETE FROM categories;');
+    db.exec(
+      'DELETE FROM inventory; DELETE FROM product_variants; DELETE FROM product_reviews; DELETE FROM products; DELETE FROM categories;',
+    );
+    db.exec("DELETE FROM sqlite_sequence WHERE name IN ('inventory', 'product_variants', 'product_reviews');");
     for (const category of categories) insertCategory.run(category);
     for (const product of products) {
       insertProduct.run({
@@ -38,7 +49,17 @@ export function seedDatabase(db: Db, snapshot: CatalogSnapshot = loadSnapshot())
         specifications: JSON.stringify(product.specifications),
         tags: JSON.stringify(product.tags),
       });
-      insertInventory.run(product.id, seedOnHand(product.id), now);
+      product.reviews.forEach((r, i) => insertReview.run(product.id, r.rating, r.comment, r.reviewerName, i));
+
+      const sizes = sizesFor(product.categorySlug);
+      if (sizes.length === 0) {
+        insertInventory.run(product.id, null, seedOnHand(product.id), now);
+        continue;
+      }
+      sizes.forEach((label, i) => {
+        const variantId = insertVariant.run(product.id, label, i).lastInsertRowid;
+        insertInventory.run(product.id, variantId, seedSizeOnHand(product.id, i), now);
+      });
     }
   })();
 

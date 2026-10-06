@@ -17,7 +17,7 @@ describe('ProductCard', () => {
     renderCard(product({ id: 7, slug: 'macbook', title: 'MacBook Pro', mrpPaise: 1_999_99, pricePaise: 1_906_19, discountPercent: 5 }));
     expect(screen.getByRole('link', { name: 'MacBook Pro' })).toHaveAttribute('href', '/p/macbook');
     expect(screen.getByText('Apple')).toBeInTheDocument();
-    expect(screen.getByLabelText('Rated 4.2 out of 5')).toBeInTheDocument();
+    expect(screen.getByLabelText('Rated 4.2 out of 5 from 3 reviews')).toBeInTheDocument();
     expect(screen.getByText('₹1,906.19')).toBeInTheDocument();
     expect(screen.getByText('₹1,999.99').closest('s')).not.toBeNull();
     expect(screen.getByText('5% off')).toBeInTheDocument();
@@ -46,6 +46,7 @@ describe('ProductCard', () => {
     const { container } = renderCard(product({ id: 1 }));
     fireEvent.error(container.querySelector('img')!);
     expect(container.querySelector('img')).toBeNull();
-    expect(screen.getByRole('img')).toBeInTheDocument();
+    // The placeholder replaces the <img> (the rating is also role=img, so target the placeholder box).
+    expect(container.querySelector('div[role="img"]')).toBeInTheDocument();
   });
 });

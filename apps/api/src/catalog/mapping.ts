@@ -1,4 +1,4 @@
-import type { ProductSpecification } from '@store/shared';
+import type { ProductReview, ProductSpecification } from '@store/shared';
 import type { DummyJsonProduct } from './dummyjson.js';
 
 export interface ProductRecord {
@@ -14,6 +14,7 @@ export interface ProductRecord {
   pricePaise: number;
   discountPercent: number;
   rating: number;
+  reviews: ProductReview[];
   thumbnailUrl: string;
   imageUrls: string[];
   specifications: ProductSpecification[];
@@ -58,6 +59,15 @@ export function applyDiscount(mrpPaise: number, discountPercentage: number): { p
   return { pricePaise: Math.round(mrpPaise * (1 - discountPercentage / 100)), discountPercent };
 }
 
+/**
+ * The displayed rating is the mean of the reviews shown (Q15): upstream `rating` contradicts
+ * its own reviews for many products. Falls back to the upstream rating when there are none.
+ */
+export function ratingFromReviews(reviews: { rating: number }[], fallback: number): number {
+  const value = reviews.length ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : fallback;
+  return Math.round(value * 10) / 10;
+}
+
 function specifications(product: DummyJsonProduct): ProductSpecification[] {
   const specs: ProductSpecification[] = [];
   if (product.warrantyInformation) specs.push({ label: 'Warranty', value: product.warrantyInformation });
@@ -88,6 +98,8 @@ export function mapCatalog(
 
     const mrpPaise = toPaise(product.price, rate);
     const brand = product.brand?.trim() || null;
+    // Reviewer emails and dates are dropped: not needed, and emails look like personal data.
+    const reviews = (product.reviews ?? []).map((r) => ({ rating: r.rating, comment: r.comment, reviewerName: r.reviewerName }));
     return {
       id: product.id,
       slug,
@@ -99,7 +111,8 @@ export function mapCatalog(
       categorySlug: product.category,
       mrpPaise,
       ...applyDiscount(mrpPaise, product.discountPercentage),
-      rating: Math.round(product.rating * 10) / 10,
+      rating: ratingFromReviews(reviews, product.rating),
+      reviews,
       thumbnailUrl: product.thumbnail,
       imageUrls: product.images,
       specifications: specifications(product),

@@ -2,6 +2,7 @@ import { ErrorState, OfflineState } from '@/components/ErrorState';
 import { useCategories } from '../api';
 import { CategoryGrid, CategoryGridSkeleton } from '../components/CategoryGrid';
 import { ProductRail } from '../components/ProductRail';
+import { RecentlyViewedRail } from '../components/RecentlyViewedRail';
 
 export function HomePage() {
   const categories = useCategories();
@@ -25,6 +26,8 @@ export function HomePage() {
           <CategoryGridSkeleton />
         )}
       </section>
+
+      <RecentlyViewedRail showClear />
 
       {/* Factual rails only: no "trending" until there is real behavioural data (spec FR-6). */}
       <ProductRail

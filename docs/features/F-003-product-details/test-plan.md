@@ -31,3 +31,12 @@ Screenshots of sized and unsized product pages at 1280 and 375 px; homepage with
 
 | Run date | Command | Result | Notes |
 |---|---|---|---|
+| 2026-10-06 | `pnpm test` | 162 passed (shared 16, api 89, web 57) | |
+| 2026-10-06 | `pnpm e2e --repeat-each=3 --workers=2` | 51 passed (17 tests × 3) | F-001, F-002 and F-003 suites; no flakes |
+| 2026-10-06 | `pnpm typecheck`, `pnpm build` | Clean / succeeds | |
+| 2026-10-06 | Manual (screenshots) | Pass | Sized product (1280, 375 px), homepage rail; no console errors; local DB at schema v2 with analytics kept |
+
+### Defects found during testing
+
+- A product page test found two `role="img"` elements after the rating gained an accessible label; test selector made specific (no product defect).
+- Test-only timing issues: analytics events queued by earlier tests, and reading the previous page's rail before navigation finished.

@@ -20,6 +20,7 @@ function item(o: { id: number; category?: string; brand?: string | null; price: 
     pricePaise: o.price * 100,
     discountPercent: o.discount ?? 0,
     rating: o.rating ?? 4,
+    reviewCount: 3,
     thumbnailUrl: '',
     availability: { status: (o.available ?? 10) > 0 ? 'in_stock' : 'out_of_stock' },
   };

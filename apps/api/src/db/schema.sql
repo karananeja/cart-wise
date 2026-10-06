@@ -27,13 +27,38 @@ CREATE TABLE IF NOT EXISTS products (
 );
 CREATE INDEX IF NOT EXISTS products_category ON products(category_slug);
 
--- Application-owned inventory, deliberately separate from catalog data (INV-1).
+-- Imported with the catalog; emails and dates are not kept.
+CREATE TABLE IF NOT EXISTS product_reviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  rating INTEGER NOT NULL,
+  comment TEXT NOT NULL,
+  reviewer_name TEXT NOT NULL,
+  sort_order INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS product_reviews_product ON product_reviews(product_id);
+
+-- Application-owned sizes (Q4); never imported.
+CREATE TABLE IF NOT EXISTS product_variants (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  label TEXT NOT NULL,
+  sort_order INTEGER NOT NULL,
+  UNIQUE (product_id, label)
+);
+
+-- Application-owned inventory, deliberately separate from catalog data (INV-1). One row per
+-- sellable unit: variant_id is NULL for products without sizes.
 CREATE TABLE IF NOT EXISTS inventory (
-  product_id INTEGER PRIMARY KEY REFERENCES products(id) ON DELETE CASCADE,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  variant_id INTEGER REFERENCES product_variants(id) ON DELETE CASCADE,
   on_hand INTEGER NOT NULL CHECK (on_hand >= 0),
   reserved INTEGER NOT NULL DEFAULT 0 CHECK (reserved >= 0),
-  updated_at TEXT NOT NULL
+  updated_at TEXT NOT NULL,
+  UNIQUE (product_id, variant_id)
 );
+CREATE INDEX IF NOT EXISTS inventory_product ON inventory(product_id);
 
 CREATE TABLE IF NOT EXISTS analytics_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

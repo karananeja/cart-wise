@@ -27,7 +27,7 @@ export function ProductCard({ product, eager }: { product: ProductSummary; eager
             {product.title}
           </Link>
         </h3>
-        <Rating value={product.rating} />
+        <Rating value={product.rating} count={product.reviewCount} />
         <div className="mt-auto pt-1">
           <Price pricePaise={product.pricePaise} mrpPaise={product.mrpPaise} discountPercent={product.discountPercent} />
           <AvailabilityNote availability={product.availability} />

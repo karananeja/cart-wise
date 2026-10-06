@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DummyJsonProduct } from './dummyjson.js';
-import { applyDiscount, categoryName, mapCatalog, slugify, toPaise } from './mapping.js';
+import { applyDiscount, categoryName, mapCatalog, ratingFromReviews, slugify, toPaise } from './mapping.js';
 
 const product = (overrides: Partial<DummyJsonProduct>): DummyJsonProduct => ({
   id: 1,
@@ -30,6 +30,17 @@ describe('price conversion', () => {
   });
 });
 
+describe('ratingFromReviews', () => {
+  it('averages review ratings to one decimal', () => {
+    expect(ratingFromReviews([{ rating: 3 }, { rating: 4 }, { rating: 5 }], 2.56)).toBe(4);
+    expect(ratingFromReviews([{ rating: 4 }, { rating: 5 }, { rating: 5 }], 1)).toBe(4.7);
+  });
+
+  it('falls back to the catalog rating without reviews', () => {
+    expect(ratingFromReviews([], 4.123)).toBe(4.1);
+  });
+});
+
 describe('names and slugs', () => {
   it('slugifies titles', () => {
     expect(slugify("Gucci Bloom Eau de Parfum — Women's")).toBe('gucci-bloom-eau-de-parfum-womens');
@@ -45,7 +56,13 @@ describe('names and slugs', () => {
 describe('mapCatalog', () => {
   const { products, categories } = mapCatalog(
     [
-      product({ id: 1, title: 'Lamp', category: 'home-decoration', brand: ' Acme Co ' }),
+      product({
+        id: 1,
+        title: 'Lamp',
+        category: 'home-decoration',
+        brand: ' Acme Co ',
+        reviews: [{ rating: 5, comment: 'Great', date: '2025-04-30', reviewerName: 'Asha', reviewerEmail: 'asha@x.test' }],
+      }),
       product({ id: 2, title: 'Lamp', category: 'home-decoration', thumbnail: 'second.webp' }),
       product({ id: 3, title: 'Shirt', category: 'mens-shirts' }),
     ],
@@ -57,8 +74,13 @@ describe('mapCatalog', () => {
   });
 
   it('keeps the upstream id separate from application fields', () => {
-    expect(products[0]).toMatchObject({ externalCatalogId: 'dummyjson:1', brand: 'Acme Co', brandSlug: 'acme-co', rating: 4.1 });
+    expect(products[0]).toMatchObject({ externalCatalogId: 'dummyjson:1', brand: 'Acme Co', brandSlug: 'acme-co', rating: 5 });
+    expect(products[1]).toMatchObject({ rating: 4.1, reviews: [] });
     expect(products[1]).toMatchObject({ brand: null, brandSlug: null });
+  });
+
+  it('keeps review text and name but drops email and date', () => {
+    expect(products[0]!.reviews).toEqual([{ rating: 5, comment: 'Great', reviewerName: 'Asha' }]);
   });
 
   it('derives categories in first-seen order, imaged by their first product', () => {

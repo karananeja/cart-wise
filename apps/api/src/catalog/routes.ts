@@ -8,6 +8,8 @@ import type { CatalogRepository } from './repository.js';
 const SUGGESTED_PRODUCTS = 5;
 const SUGGESTED_CATEGORIES = 3;
 const MIN_SUGGESTION_LENGTH = 2;
+const MAX_BATCH = 24;
+const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export function catalogRouter(catalog: CatalogRepository, search: SearchIndex): Router {
   const router = Router();
@@ -30,6 +32,13 @@ export function catalogRouter(catalog: CatalogRepository, search: SearchIndex): 
       ...queryCatalog(catalog.listItems(), params, catalog.listCategories(), scores),
       search: { query: params.q, matchMode },
     });
+  });
+
+  // Registered before /products/:slug so "batch" is not taken as a slug.
+  router.get('/products/batch', (req, res) => {
+    const raw = typeof req.query.slugs === 'string' ? req.query.slugs : '';
+    const slugs = [...new Set(raw.split(',').filter((s) => SLUG.test(s)))].slice(0, MAX_BATCH);
+    res.json({ items: catalog.findSummaries(slugs) });
   });
 
   router.get('/products/:slug', (req, res) => {

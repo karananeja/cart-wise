@@ -23,8 +23,11 @@ export interface ProductSummary {
   pricePaise: number;
   /** Whole percent; 0 means no discount. */
   discountPercent: number;
+  /** Average of the product's reviews (one decimal). */
   rating: number;
+  reviewCount: number;
   thumbnailUrl: string;
+  /** For sized products, the total across sizes. */
   availability: Availability;
 }
 
@@ -33,11 +36,25 @@ export interface ProductSpecification {
   value: string;
 }
 
+export interface ProductSize {
+  label: string;
+  availability: Availability;
+}
+
+export interface ProductReview {
+  rating: number;
+  comment: string;
+  reviewerName: string;
+}
+
 export interface ProductDetail extends ProductSummary {
   description: string;
   categoryName: string;
   imageUrls: string[];
   specifications: ProductSpecification[];
+  /** Empty for products sold without sizes. In size order. */
+  sizes: ProductSize[];
+  reviews: ProductReview[];
 }
 
 export interface FacetValue {

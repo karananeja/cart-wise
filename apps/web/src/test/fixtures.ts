@@ -1,4 +1,4 @@
-import type { Category, ListingResponse, ProductSummary } from '@store/shared';
+import type { Category, ListingResponse, ProductDetail, ProductSummary } from '@store/shared';
 
 export function product(overrides: Partial<ProductSummary> & Pick<ProductSummary, 'id'>): ProductSummary {
   return {
@@ -10,6 +10,7 @@ export function product(overrides: Partial<ProductSummary> & Pick<ProductSummary
     pricePaise: 90_000_00,
     discountPercent: 10,
     rating: 4.2,
+    reviewCount: 3,
     thumbnailUrl: `https://img.test/${overrides.id}.webp`,
     availability: { status: 'in_stock' },
     ...overrides,
@@ -55,3 +56,40 @@ export function listing(items: ProductSummary[], overrides: Partial<ListingRespo
     ...overrides,
   };
 }
+
+export function productDetail(overrides: Partial<ProductDetail> & Pick<ProductDetail, 'id'>): ProductDetail {
+  return {
+    ...product(overrides),
+    description: 'A product description.',
+    categoryName: 'Laptops',
+    imageUrls: ['https://img.test/a.webp', 'https://img.test/b.webp', 'https://img.test/c.webp'],
+    specifications: [{ label: 'Warranty', value: '1 year warranty' }],
+    sizes: [],
+    reviews: [
+      { rating: 5, comment: 'Love it', reviewerName: 'Asha Rao' },
+      { rating: 4, comment: 'Good value', reviewerName: 'Vikram Shah' },
+      { rating: 3, comment: 'Okay', reviewerName: 'Meera Iyer' },
+    ],
+    ...overrides,
+  };
+}
+
+/** A sized product: S and XL sold out, M low on stock. */
+export const shirt = productDetail({
+  id: 50,
+  slug: 'check-shirt',
+  title: 'Check Shirt',
+  categorySlug: 'mens-shirts',
+  categoryName: "Men's Shirts",
+  sizes: [
+    { label: 'S', availability: { status: 'out_of_stock' } },
+    { label: 'M', availability: { status: 'low_stock', available: 2 } },
+    { label: 'L', availability: { status: 'in_stock' } },
+    { label: 'XL', availability: { status: 'out_of_stock' } },
+  ],
+});
+
+export const productDetails: ProductDetail[] = [
+  ...products.map((p) => productDetail({ ...p, categoryName: p.categorySlug === 'phones' ? 'Phones' : 'Laptops' })),
+  shirt,
+];

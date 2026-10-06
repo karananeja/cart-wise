@@ -23,3 +23,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | Q5 correction | Show DummyJSON reviews, unlabelled (earlier entry misread the answer) | |
 | 2026-10-06 | Q15 Rating | Star rating = average of reviews | |
 | 2026-10-06 | F-003 Gate 1 | **Approved**, size sets as proposed | |
+| 2026-10-06 | F-003 implementation | Implemented, tested, presented for Gate 2 | |

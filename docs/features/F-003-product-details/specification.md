@@ -4,7 +4,7 @@
 
 **ID:** F-003
 **Name:** Product details, sizes and recently viewed
-**Status:** Approved — In Progress (Gate 1 approved 2026-10-06)
+**Status:** Acceptance — awaiting Gate 2 (Gate 1 approved 2026-10-06)
 **Requirements:** PDP-1, PDP-3, RV-1, guest "view reviews" (brief §3), INV-1, INV-3, STATE-1, ANL-1 (`product_viewed`)
 **User decisions applied:** Q4 — add application-owned sizes for apparel and footwear. Q5 (corrected) — show DummyJSON reviews, no per-review label. Q15 — star rating is the average of the reviews.
 

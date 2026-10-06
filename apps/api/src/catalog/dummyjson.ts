@@ -14,6 +14,7 @@ export interface DummyJsonProduct {
   dimensions?: { width: number; height: number; depth: number };
   warrantyInformation?: string;
   shippingInformation?: string;
+  reviews?: { rating: number; comment: string; date: string; reviewerName: string; reviewerEmail: string }[];
   images: string[];
   thumbnail: string;
   // Upstream stock fields (stock, availabilityStatus, minimumOrderQuantity) are deliberately

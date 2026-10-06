@@ -26,9 +26,21 @@ export function seedOnHand(productId: number): number {
   return 8 + Math.floor(random() * 53);
 }
 
-export function deriveAvailability(onHand: number, reserved: number): Availability {
-  const available = Math.max(0, onHand - reserved);
-  if (available === 0) return { status: 'out_of_stock' };
+/**
+ * Initial stock for one size. Sizes sell through unevenly, so out-of-stock and low sizes are
+ * more common than for whole products. Seeded by product and size position.
+ */
+export function seedSizeOnHand(productId: number, sizeIndex: number): number {
+  const random = mulberry32((productId * 31 + sizeIndex + 1) * 2246822519);
+  const roll = random();
+  if (roll < 0.15) return 0;
+  if (roll < 0.3) return 1 + Math.floor(random() * 3);
+  return 4 + Math.floor(random() * 12);
+}
+
+/** Availability from the units available (on hand minus reserved, summed across sizes). */
+export function deriveAvailability(available: number): Availability {
+  if (available <= 0) return { status: 'out_of_stock' };
   if (available <= LOW_STOCK_THRESHOLD) return { status: 'low_stock', available };
   return { status: 'in_stock' };
 }

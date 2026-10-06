@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { parseListingParams, type AnalyticsEvent } from '@store/shared';
-import { categories, listing, products } from './fixtures';
+import { categories, listing, productDetails, products } from './fixtures';
 
 /** Analytics events received by the mock API during a test. */
 export const receivedEvents: AnalyticsEvent[] = [];
@@ -33,6 +33,16 @@ export const handlers = [
       categories: categories.filter((c) => c.slug.startsWith(q)).map(({ slug, name }) => ({ slug, name })),
       products: products.filter((p) => p.title.toLowerCase().includes(q)).slice(0, 5),
     });
+  }),
+  http.get('*/api/products/batch', ({ request }) => {
+    const slugs = (new URL(request.url).searchParams.get('slugs') ?? '').split(',');
+    return HttpResponse.json({ items: slugs.flatMap((slug) => productDetails.filter((p) => p.slug === slug)) });
+  }),
+  http.get('*/api/products/:slug', ({ params }) => {
+    const product = productDetails.find((p) => p.slug === params.slug);
+    return product
+      ? HttpResponse.json({ product })
+      : HttpResponse.json({ error: { code: 'PRODUCT_NOT_FOUND', message: 'Product not found' } }, { status: 404 });
   }),
   http.post('*/api/events', async ({ request }) => {
     const body = (await request.json()) as { events: AnalyticsEvent[] };

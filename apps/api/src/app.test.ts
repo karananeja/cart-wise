@@ -125,6 +125,58 @@ describe('GET /api/products/:slug', () => {
   });
 });
 
+describe('F-003 product details', () => {
+  const detail = async (slug: string) => (await request(app).get(`/api/products/${slug}`).expect(200)).body.product;
+  const slugIn = (category: string) =>
+    (db.prepare('SELECT slug FROM products WHERE category_slug = ? ORDER BY id LIMIT 1').get(category) as { slug: string }).slug;
+
+  it('returns sizes in order for sized products and none otherwise', async () => {
+    expect((await detail(slugIn('mens-shirts'))).sizes.map((s: { label: string }) => s.label)).toEqual(['S', 'M', 'L', 'XL', 'XXL']);
+    expect((await detail(slugIn('mens-shoes'))).sizes).toHaveLength(6);
+    expect((await detail(slugIn('laptops'))).sizes).toEqual([]);
+  });
+
+  it('seeds sold-out and low-stock sizes', () => {
+    const units = db.prepare('SELECT MAX(on_hand - reserved, 0) AS a FROM inventory WHERE variant_id IS NOT NULL').all() as { a: number }[];
+    expect(units.some((u) => u.a === 0)).toBe(true);
+    expect(units.some((u) => u.a >= 1 && u.a <= 5)).toBe(true);
+  });
+
+  it('returns reviews without emails, and a rating equal to their average', async () => {
+    const product = await detail('essence-mascara-lash-princess');
+    expect(product.reviews).toHaveLength(3);
+    expect(product.reviews[0]).toEqual({ rating: 3, comment: 'Would not recommend!', reviewerName: 'Eleanor Collins' });
+    expect(product.rating).toBe(4);
+    expect(product.reviewCount).toBe(3);
+    expect(JSON.stringify(product)).not.toMatch(/@|reviewerEmail|date/);
+  });
+
+  it('aggregates size stock for product availability, listings and the in-stock filter', async () => {
+    const slug = slugIn('tops');
+    const id = (db.prepare('SELECT id FROM products WHERE slug = ?').get(slug) as { id: number }).id;
+    const setStock = (onHand: number) => db.prepare('UPDATE inventory SET on_hand = ?, reserved = 0 WHERE product_id = ?').run(onHand, id);
+
+    setStock(0);
+    db.prepare('UPDATE inventory SET on_hand = 2 WHERE id = (SELECT MIN(id) FROM inventory WHERE product_id = ?)').run(id);
+    expect((await detail(slug)).availability).toEqual({ status: 'low_stock', available: 2 });
+
+    setStock(0);
+    expect((await detail(slug)).availability).toEqual({ status: 'out_of_stock' });
+    const inStock = (await request(app).get('/api/products?category=tops&inStock=1')).body as ListingResponse;
+    expect(inStock.items.some((i) => i.slug === slug)).toBe(false);
+
+    setStock(4);
+    expect((await detail(slug)).availability).toEqual({ status: 'in_stock' });
+  });
+
+  it('looks up summaries by slug in request order, skipping unknown and invalid slugs', async () => {
+    const res = await request(app).get('/api/products/batch?slugs=iphone-x,nope,essence-mascara-lash-princess,Bad%20Slug,iphone-x').expect(200);
+    expect(res.body.items.map((i: { slug: string }) => i.slug)).toEqual(['iphone-x', 'essence-mascara-lash-princess']);
+    expect(res.body.items[0]).toHaveProperty('reviewCount');
+    expect((await request(app).get('/api/products/batch')).body).toEqual({ items: [] });
+  });
+});
+
 describe('POST /api/events', () => {
   const event = {
     name: 'filter_applied',
