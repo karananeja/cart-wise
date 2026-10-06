@@ -1,6 +1,6 @@
 # Project Plan
 
-**Last updated:** 2026-10-06 (F-001 implemented)
+**Last updated:** 2026-10-06 (Phase 1 complete; MVP wrap-up)
 
 ## Phase 0 — Discovery (complete)
 

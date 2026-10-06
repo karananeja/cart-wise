@@ -69,7 +69,7 @@ Derived from `PROJECT_BRIEF.md`. IDs are stable. "Feature" is the planned featur
 |---|---|---|
 | CHK-1 | Cart → Auth if needed → Address → Delivery → Summary → Payment → Confirmation | §12 |
 | CHK-2 | Summary shows items, quantities, prices, discounts, delivery, taxes, total, address, delivery option, payment method | §12 |
-| CHK-3 | Stock is reserved during checkout and released on abandonment/failure (see Q10) | §15 |
+| CHK-3 | Stock is reserved when the customer continues to payment (a Pending Payment order) and released on cancel, failure or expiry after 10 minutes (Q10) | §15 |
 
 ## Payment — F-009
 

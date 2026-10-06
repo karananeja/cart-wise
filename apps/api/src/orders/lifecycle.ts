@@ -207,7 +207,7 @@ export function createOrderLifecycle({ db, orders, record, clock = Date.now }: D
       restockLines(lines.all(row.id) as LineRow[], now);
       insertRefund.run({ id: newId('RF'), orderId: row.id, returnId: null, amountPaise: row.paid_paise, label: row.payment_label ?? '', status: 'refunded', now, refundedAt: now });
       addHistory.run(row.id, 'cancelled', now);
-      record('order_cancelled', { itemCount: row.item_count, totalPaise: row.paid_paise, reason }, visitorId);
+      record('order_cancelled', { orderId: row.id, itemCount: row.item_count, totalPaise: row.paid_paise, reason }, visitorId);
       return view(userId, row.id);
     }),
 

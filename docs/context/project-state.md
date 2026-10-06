@@ -4,34 +4,30 @@
 
 ## Current phase
 
-Phase 1 — MVP.
+Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06). MVP wrap-up in progress.
 
 ## Current feature
 
-**Phase 1 MVP feature list complete — F-001 to F-011 accepted 2026-10-06.** Next: MVP wrap-up and Phase 2 sequencing (user to choose). F-001 to F-010 complete (accepted 2026-10-06). F-001 to F-009 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+None. MVP wrap-up (user choice, 2026-10-06): requirements audit, fixes, backlog triage, then Phase 2 sequencing.
 
 ## Completed
 
 - Phase 0 discovery and documentation.
-- User decisions (2026-10-06): Q1 React + Tailwind + shadcn/ui, Node.js Express API, pnpm workspace; Q2 ₹ at 1:1 with USD; Q3 all 24 categories. F-001 Gate 1 approved.
-- ADR-001 and ADR-002 accepted.
-- F-001 built: workspace, shared package, Express API (SQLite via better-sqlite3), committed DummyJSON snapshot + deterministic inventory seed, homepage, listing pages with filters/sort/pagination/URL state, product page stub, analytics pipeline (`filter_applied`), loading/empty/error/offline states.
-
-- Gallery added to the product page stub after user feedback (2026-10-06).
+- F-001 catalog browsing · F-002 search + history · F-003 product details, sizes, reviews, recently viewed · F-004 guest cart · F-005 wishlist · F-006 authentication + guest merge · F-007 addresses (OpenStreetMap) · F-008 checkout with stock holds · F-009 simulated payment (card, UPI, bank offers) · F-010 orders, cancel/return/refund, delivery OTP, order simulation · F-011 inventory simulation.
+- Core user decisions: Q1 React + Tailwind + shadcn/ui with an Express API and pnpm workspace; Q2 INR pricing at ₹96 = $1 (corrected from 1:1 on 2026-10-06); Q3 all 24 categories. Feature-level decisions are in each feature's `conversation-log.md` and in `requirements/open-questions.md`.
+- MVP wrap-up so far: route-level code-splitting (main bundle 829 → 407 kB); signed-in history removal now reaches the account; error/offline states on account, order, payment and console pages; `orderId` on server payment/order events; stale docs corrected.
 
 ## In progress
 
-None.
+MVP wrap-up: present audit findings and the product decisions it raised.
 
 ## Remaining
 
-F-002 → F-011 per `project-plan.md`, then Phase 2 and optional AI.
+Phase 2 (brief §24) and optional AI (Phase 3), sequencing to be chosen by the user.
 
 ## Approved requirements / intents
 
-- F-001 specification and intent (Gate 1, 2026-10-06); F-001 accepted (Gate 2, 2026-10-06).
-- F-002 specification and intent (Gate 1, 2026-10-06); F-002 accepted (Gate 2, 2026-10-06).
-- F-003 specification and intent (Gate 1, 2026-10-06), size sets as proposed; F-003 accepted (Gate 2, 2026-10-06).
+All F-001–F-011 specifications and intents approved at Gate 1 and accepted at Gate 2 on 2026-10-06 (see each `docs/features/*/acceptance.md`).
 
 ## Architecture decisions
 
@@ -41,7 +37,7 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 
 - `apps/api/src/catalog/query.ts` — listing query (filters, disjunctive facets, sort, pagination, relaxations)
 - `apps/api/src/inventory/inventory.ts` — seeded stock and availability rules (low stock ≤ 5)
-- `apps/api/src/catalog/config.ts` — USD→INR rate (1)
+- `apps/api/src/catalog/config.ts` — USD→INR rate (96)
 - `packages/shared/src/listing-params.ts` — URL/API query contract
 - `apps/web/src/features/catalog/` — pages, components, hooks
 - `apps/web/src/lib/analytics.ts` — event client

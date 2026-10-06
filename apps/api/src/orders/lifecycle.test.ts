@@ -156,7 +156,7 @@ describe('cancellation', () => {
     expect(cancelled.history.at(-1)!.status).toBe('cancelled');
     expect(onHand('iphone-x')).toBe(10);
     expect(onHand('apple-airpods')).toBe(10);
-    expect(events('order_cancelled')).toEqual([{ itemCount: 3, totalPaise: 7_200_00, reason: 'changed_mind' }]);
+    expect(events('order_cancelled')).toEqual([{ orderId: order.id, itemCount: 3, totalPaise: 7_200_00, reason: 'changed_mind' }]);
 
     expect((await agent.post(`/api/orders/${order.id}/cancel`).send({}).expect(409)).body.error.code).toBe('NOT_CANCELLABLE');
     expect(onHand('iphone-x')).toBe(10);

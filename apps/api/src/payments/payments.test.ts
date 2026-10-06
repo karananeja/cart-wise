@@ -123,8 +123,8 @@ describe('card payment', () => {
     const cart = (await agent.get('/api/cart')).body as CartView;
     expect(cart.lines.map((l) => l.product.slug)).toEqual(['apple-airpods']);
 
-    expect(events('payment_completed')).toEqual([{ method: 'card', amountPaise: 5_400_00, discountPaise: 600_00, offerId: 'aurora-credit-10' }]);
-    expect(events('order_created')).toEqual([{ itemCount: 2, totalPaise: 5_400_00 }]);
+    expect(events('payment_completed')).toEqual([{ orderId: order.id, method: 'card', amountPaise: 5_400_00, discountPaise: 600_00, offerId: 'aurora-credit-10' }]);
+    expect(events('order_created')).toEqual([{ orderId: order.id, itemCount: 2, totalPaise: 5_400_00 }]);
   });
 
   it('keeps cart lines the customer topped up after checkout', async () => {
@@ -316,8 +316,8 @@ describe('boundaries', () => {
     const attempt = (await upiStart(agent, order.id).expect(201)).body.attempt as PaymentAttemptView;
     await agent.post(`/api/payments/${attempt.id}/cancel`).send({}).expect(200);
     await agent.post(`/api/payments/${attempt.id}/cancel`).send({}).expect(200);
-    expect(events('payment_started')).toEqual([{ method: 'upi_id', amountPaise: 6_000_00, offerId: null }]);
-    expect(events('payment_failed')).toEqual([{ method: 'upi_id', reason: 'cancelled' }]);
+    expect(events('payment_started')).toEqual([{ orderId: order.id, method: 'upi_id', amountPaise: 6_000_00, offerId: null }]);
+    expect(events('payment_failed')).toEqual([{ orderId: order.id, method: 'upi_id', reason: 'cancelled' }]);
   });
 });
 

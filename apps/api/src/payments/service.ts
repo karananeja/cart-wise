@@ -121,7 +121,7 @@ export function createPaymentService({ db, orders, record, clock = Date.now }: D
   const reload = (id: string) => attemptById.get(id) as AttemptRow;
 
   const fail = (row: AttemptRow, reason: PaymentFailureReason): AttemptRow => {
-    if (failRow.run(reason, iso(clock()), row.id).changes) record('payment_failed', { method: row.method, reason }, row.visitor_id);
+    if (failRow.run(reason, iso(clock()), row.id).changes) record('payment_failed', { orderId: row.order_id, method: row.method, reason }, row.visitor_id);
     return reload(row.id);
   };
 
@@ -189,8 +189,8 @@ export function createPaymentService({ db, orders, record, clock = Date.now }: D
     addHistory.run(order.id, 'payment_successful', now);
     addHistory.run(order.id, 'confirmed', now);
 
-    record('payment_completed', { method: row.method, amountPaise: paidPaise, discountPaise: row.discount_paise, offerId: row.offer_id }, row.visitor_id);
-    record('order_created', { itemCount: order.item_count, totalPaise: paidPaise }, row.visitor_id);
+    record('payment_completed', { orderId: order.id, method: row.method, amountPaise: paidPaise, discountPaise: row.discount_paise, offerId: row.offer_id }, row.visitor_id);
+    record('order_created', { orderId: order.id, itemCount: order.item_count, totalPaise: paidPaise }, row.visitor_id);
     return reload(row.id);
   });
 
@@ -267,7 +267,7 @@ export function createPaymentService({ db, orders, record, clock = Date.now }: D
       }
 
       insertAttempt.run(base);
-      record('payment_started', { method: input.method, amountPaise: amountPaise - base.discountPaise, offerId: base.offerId }, visitorId);
+      record('payment_started', { orderId, method: input.method, amountPaise: amountPaise - base.discountPaise, offerId: base.offerId }, visitorId);
       return view(reload(id), demoCode ? { demoCode } : {});
     }),
 

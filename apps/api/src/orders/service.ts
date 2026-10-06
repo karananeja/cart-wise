@@ -130,7 +130,7 @@ export function createOrderService({ db, carts, addresses, record, clock = Date.
     setStatus.run(status, iso(clock()), orderId);
     const reason: PaymentFailureReason = status === 'payment_expired' ? 'hold_expired' : 'cancelled';
     for (const a of pendingAttempts.all(orderId) as { id: string; method: PaymentMethod; visitor_id: string }[]) {
-      if (failAttempt.run(reason, iso(clock()), a.id).changes) record('payment_failed', { method: a.method, reason }, a.visitor_id);
+      if (failAttempt.run(reason, iso(clock()), a.id).changes) record('payment_failed', { orderId, method: a.method, reason }, a.visitor_id);
     }
     release(orderId);
   });

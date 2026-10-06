@@ -17,7 +17,7 @@ The brief prefers React frontend + own backend/API with application-owned state,
 | B. React SPA + in-browser mock backend (MSW + IndexedDB) | No server process | Simplest to run, but "application-owned" data lives in each browser; auth and inventory are fictional; multi-tab and simulation console become awkward |
 | C. Next.js full-stack | One framework for UI and API | Blurs the frontend/backend boundary the brief wants to demonstrate; heavier framework conventions |
 
-Details: `decisions/ADR-001-application-architecture.md` (Proposed).
+Details: `decisions/ADR-001-application-architecture.md` (Accepted). **Decision:** option A with an Express API instead of the recommended Fastify (user choice, 2026-10-06).
 
 ### Q2 — Currency and pricing (Resolved 2026-10-06)
 
@@ -61,7 +61,7 @@ Recommendation: import all categories except `vehicle` and `motorcycle` (~184 pr
 ## Observations about the inputs
 
 - DummyJSON `stock`, `availabilityStatus` and `minimumOrderQuantity` (e.g. 48 for a mascara) are ignored. Inventory is seeded by the application (INV-1).
-- DummyJSON product `rating` does not correspond to its 3 reviews. Ratings will be shown as catalog data and treated as demo data (NFR-8).
+- DummyJSON product `rating` does not correspond to its 3 reviews. Ratings will be shown as catalog data and treated as demo data (NFR-8). *Superseded by Q15: the star rating is the average of the product's reviews.*
 - Product images are served from `cdn.dummyjson.com`; offline viewing needs a placeholder fallback.
 - The repository was not a Git repository at discovery time.
 - The original template `docs/feeature-specification.md` was moved to `docs/templates/specification.md`.

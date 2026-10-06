@@ -148,7 +148,7 @@ After checkout, shoppers want three things:
 
 ### 5.8 Analytics
 
-- FR-17 `order_cancelled` `{ itemCount, totalPaise, reason? }` is recorded by the server at cancellation. No new event types are added: returns and refunds aren't in the brief's event set.
+- FR-17 `order_cancelled` `{ orderId, itemCount, totalPaise, reason? }` is recorded by the server at cancellation. No new event types are added: returns and refunds aren't in the brief's event set.
 
 ## 6. Non-Functional Requirements
 

@@ -1,6 +1,6 @@
 # Product Requirements Document — E-Commerce Application
 
-**Status:** v0.2 (derived from `PROJECT_BRIEF.md`; awaiting user review)
+**Status:** v1.0 — Phase 1 MVP delivered (F-001–F-011 accepted 2026-10-06)
 **Last updated:** 2026-10-06
 
 `PROJECT_BRIEF.md` is the source of truth for vision and scope. This PRD turns it into traceable requirements, priorities and open questions. Where the two disagree, the brief wins and this document is corrected.
@@ -48,7 +48,7 @@ Requirement IDs are stable and referenced by feature specifications. The full ca
 | Inventory | INV-* | Must (cross-cutting) |
 | Application states | STATE-* | Must (cross-cutting) |
 | Analytics | ANL-* | Must (cross-cutting) |
-| Store Simulation Console | SIM-* | Proposed Must — see open question Q6 |
+| Store Simulation Console | SIM-* | Must (Q6 resolved 2026-10-06; built in F-010 and F-011) |
 | Reviews, related, frequently bought together, continue shopping, tracking timeline, notifications, price-drop / back-in-stock, discovery homepage | NEXT-* | Next |
 | Semantic search, Help me find, AI recommendations, comparison, conversational shopping | AI-* | Optional / Experimental |
 
@@ -86,4 +86,4 @@ The analytics event set and funnels in brief §20 (Search → Product → Cart �
 
 ## 9. Open questions
 
-Tracked in `requirements/open-questions.md`. Q1–Q3 resolved 2026-10-06 (Express API, ₹ at 1:1, all categories).
+Tracked in `requirements/open-questions.md`. Q1–Q3 resolved 2026-10-06 (Express API, ₹ pricing — corrected from 1:1 to ₹96 = $1 on 2026-10-06 — all categories). All later questions are resolved too.
