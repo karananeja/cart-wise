@@ -10,10 +10,11 @@ import { useHomeRecommendations } from './api';
 import { RecommendationRail } from './RecommendationRail';
 
 /**
- * Homepage "pick up where you left off" for returning visitors (spec FR-9). First-time
- * visitors (no cart, no history, signed out) get nothing here, so the homepage is unchanged.
+ * Homepage "Because you viewed / bought" rails for returning visitors (spec FR-9). They sit below
+ * the category grid and recently viewed (user feedback at Gate 2, 2026-10-06); first-time
+ * visitors (no history, signed out) get nothing, so the homepage is unchanged for them.
  */
-export function ContinueShopping() {
+export function PersonalisedRails() {
   const viewed = useRecentlyViewed().map((p) => p.slug);
   const me = useMe();
   const account = me.data?.user?.email ?? null;
@@ -22,7 +23,6 @@ export function ContinueShopping() {
 
   return (
     <>
-      <StillInYourCart />
       {showRails && (
         <>
           {(home.data?.becauseViewed || (!home.data && viewed.length > 0)) && (
@@ -47,7 +47,8 @@ export function ContinueShopping() {
   );
 }
 
-function StillInYourCart() {
+/** The short cart reminder at the top of the homepage (spec FR-9). */
+export function StillInYourCart() {
   const cart = useCart();
   const headingId = useId();
   const lines = cart.data?.lines ?? [];

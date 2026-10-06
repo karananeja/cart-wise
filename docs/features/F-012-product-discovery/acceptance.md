@@ -34,6 +34,8 @@
 
 ## 5. Other changes
 
+- **Gate 2 review change (user):** the Because you viewed and Because you bought rails moved below Shop by category and Recently viewed; Still in your cart stays at the top. A component test checks the order.
+
 - **Homepage headings:** the homepage now starts with a visually hidden `h1` (the store name), and "Shop by category" is an `h2`. The new sections sit above it, so the headings are in order.
 - **Size selection:** product-page size selection moved into a small `useSelectedSize` hook, so the pairing group can read it.
 - **One-off checkout E2E failure:** the checkout mobile E2E test failed once, in the same run as the duplicate-button regression, and has passed in all 8 runs since. Its cause wasn't confirmed.

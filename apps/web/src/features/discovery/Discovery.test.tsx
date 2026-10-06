@@ -141,6 +141,12 @@ describe('homepage continue shopping', () => {
     const rail = await screen.findByRole('region', { name: 'Because you viewed MacBook Pro' });
     expect(await within(rail).findByRole('link', { name: 'Zenbook' })).toBeInTheDocument();
     expect(homeRequests[0]).toBe('product-1');
+
+    // Order on the page: cart reminder on top, then categories, then the personalised rail.
+    const categories = await screen.findByRole('heading', { name: 'Shop by category' });
+    const follows = (a: Node, b: Node) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(follows(reminder, categories)).toBe(true);
+    expect(follows(categories, rail)).toBe(true);
   });
 
   it('adds "Because you bought" for signed-in customers with orders', async () => {

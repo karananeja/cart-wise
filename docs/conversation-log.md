@@ -79,3 +79,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-012 | Spec and intent presented for Gate 1 | Confirm complementary category map |
 | 2026-10-06 | F-012 Gate 1 | **Approved** (category map as drafted) | |
 | 2026-10-06 | F-012 implementation | Implemented, tested, presented for Gate 2 | |
+| 2026-10-06 | F-012 Gate 2 review | Personalised rails moved below the category grid and recently viewed | |

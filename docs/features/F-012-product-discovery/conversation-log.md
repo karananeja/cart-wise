@@ -10,3 +10,4 @@
 | 2026-10-06 | Spec + intent drafted | Presented for Gate 1 | Confirm the complementary category map |
 | 2026-10-06 | Gate 1 | **Approved**, category map as drafted | |
 | 2026-10-06 | Implementation complete | Presented for Gate 2 | See acceptance.md; FR-8 clarified (no duplicate Add to cart) |
+| 2026-10-06 | Gate 2 review | User: Because you viewed/bought should go below, not on top → moved below Shop by category and Recently viewed; cart reminder stays on top | Re-presented for Gate 2 |

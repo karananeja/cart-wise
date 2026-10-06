@@ -1,6 +1,6 @@
 import { STORE_NAME } from '@/app/store';
 import { ErrorState, OfflineState } from '@/components/ErrorState';
-import { ContinueShopping } from '@/features/discovery/ContinueShopping';
+import { PersonalisedRails, StillInYourCart } from '@/features/discovery/ContinueShopping';
 import { useCategories } from '../api';
 import { CategoryGrid, CategoryGridSkeleton } from '../components/CategoryGrid';
 import { ProductRail } from '../components/ProductRail';
@@ -13,8 +13,8 @@ export function HomePage() {
     <div className="flex flex-col gap-12">
       {/* The page heading comes first so the sections below (h2) are in order for screen readers. */}
       <h1 className="sr-only">{STORE_NAME}</h1>
-      {/* Returning visitors pick up where they left off (F-012); first-time visitors see nothing here. */}
-      <ContinueShopping />
+      {/* A returning visitor's cart reminder (F-012); nothing for an empty cart. */}
+      <StillInYourCart />
       <section aria-labelledby="categories-heading" className="flex flex-col gap-5">
         <div>
           <h2 id="categories-heading" className="text-2xl font-semibold tracking-tight sm:text-3xl">
@@ -34,6 +34,9 @@ export function HomePage() {
       </section>
 
       <RecentlyViewedRail showClear />
+
+      {/* Suggestions from viewing and buying history (F-012), below the browsing sections. */}
+      <PersonalisedRails />
 
       {/* Factual rails only: no "trending" until there is real behavioural data (spec FR-6). */}
       <ProductRail

@@ -77,12 +77,14 @@ After viewing or buying something, shoppers have to start over to find alternati
 
 ### 5.3 Homepage (continue shopping, improved discovery)
 
-- FR-9 For visitors with history, before the existing sections:
-  1. **Still in your cart:** up to 4 thumbnails, the item count, the subtotal and **Go to cart**. Shown only when the cart has items.
-  2. **Because you viewed ‹X›:** a rail (FR-4), shown when there is recently viewed history.
-  3. **Because you bought ‹X›:** a rail (FR-5), for signed-in customers with orders.
+- FR-9 **Homepage order for returning visitors** (changed at Gate 2 review, 2026-10-06):
+  1. **Still in your cart**, at the top. Up to 4 thumbnails, the item count, the subtotal and **Go to cart**. Shown only when the cart has items.
+  2. The existing **Shop by category** and **Recently viewed** sections.
+  3. **Because you viewed ‹X›** (FR-4), shown when there is recently viewed history.
+  4. **Because you bought ‹X›** (FR-5), for signed-in customers with orders.
+  5. The existing Top rated and Biggest discounts rails.
 
-  First-time visitors see the homepage as today.
+  First-time visitors see the homepage as before.
 
 ### 5.4 Cart page
 
