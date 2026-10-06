@@ -72,3 +72,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-011 Gate 1 | **Approved** | |
 | 2026-10-06 | F-011 implementation | Implemented, tested, presented for Gate 2 | |
 | 2026-10-06 | F-011 Gate 2 | **Accepted** — Phase 1 MVP feature list complete | |
+| 2026-10-06 | Next step after Phase 1 | MVP wrap-up first: journey/requirements audit, backlog triage, payment E2E flake investigation, bundle code-splitting | User choice |

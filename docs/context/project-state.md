@@ -104,4 +104,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Phase 1 complete. Proposed to the user (awaiting choice): MVP wrap-up (full-journey review against the brief, backlog triage, production-readiness notes) and Phase 2 sequencing (brief §24: reviews, related products, frequently bought together, continue shopping, order tracking timeline, notifications, price-drop/back-in-stock, discovery homepage). Optional AI features need separate proposals (CLAUDE.md §14).
+MVP wrap-up in progress (user choice 2026-10-06): (1) requirements traceability audit against brief/PRD/mvp-requirements; (2) investigate the one-off F-009 payment E2E failure; (3) route-level code-splitting (backlog item); (4) backlog triage. Present findings, any decisions needed, and fixes to the user before Phase 2.
