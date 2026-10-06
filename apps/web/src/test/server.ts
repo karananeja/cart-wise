@@ -1,0 +1,35 @@
+import { http, HttpResponse } from 'msw';
+import { setupServer } from 'msw/node';
+import { parseListingParams, type AnalyticsEvent } from '@store/shared';
+import { categories, listing, products } from './fixtures';
+
+/** Analytics events received by the mock API during a test. */
+export const receivedEvents: AnalyticsEvent[] = [];
+
+/**
+ * A small stand-in for the API: filters fixtures by category, brand and rating, which is all
+ * the component tests rely on. The real query logic is covered by the API tests.
+ */
+export const handlers = [
+  http.get('*/api/categories', () => HttpResponse.json({ categories })),
+  http.get('*/api/products', ({ request }) => {
+    const params = parseListingParams(new URL(request.url).searchParams);
+    if (params.category && !categories.some((c) => c.slug === params.category)) {
+      return HttpResponse.json({ error: { code: 'CATEGORY_NOT_FOUND', message: 'Category not found' } }, { status: 404 });
+    }
+    const items = products.filter(
+      (p) =>
+        (!params.category || p.categorySlug === params.category) &&
+        (!params.brands.length || params.brands.includes((p.brand ?? '').toLowerCase())) &&
+        (!params.rating || p.rating >= params.rating),
+    );
+    return HttpResponse.json(listing(items));
+  }),
+  http.post('*/api/events', async ({ request }) => {
+    const body = (await request.json()) as { events: AnalyticsEvent[] };
+    receivedEvents.push(...body.events);
+    return new HttpResponse(null, { status: 202 });
+  }),
+];
+
+export const server = setupServer(...handlers);

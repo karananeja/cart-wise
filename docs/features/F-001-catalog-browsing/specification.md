@@ -4,7 +4,7 @@
 
 **ID:** F-001
 **Name:** Catalog Browsing — foundation, home, categories, product listing, filters, sorting
-**Status:** Approved — In Progress (Gate 1 approved 2026-10-06)
+**Status:** Acceptance — awaiting Gate 2 (Gate 1 approved 2026-10-06)
 **Requirements:** DISC-1..5, INV-1, INV-3, STATE-1, ANL-1 (`filter_applied`), NFR-1..4, NFR-6..8
 
 ---
@@ -106,7 +106,7 @@ States per screen: loading, success, empty, error, offline (see §12–14).
 | Entity | Fields | Owner | Notes |
 |---|---|---|---|
 | Category | slug, name, imageUrl, productCount | Application (derived from import) | Display names prettified ("mens-shirts" → "Men's Shirts") |
-| Product | id, slug, externalCatalogId, title, description, brand, categorySlug, mrpPaise, pricePaise, discountPercent, rating, imageUrls, thumbnailUrl, specifications (warranty, shipping info, dimensions, weight), tags | Application (catalog snapshot) | Prices integer paise. `pricePaise = round(mrp × (1 − discount/100))` |
+| Product | id, slug, externalCatalogId, title, description, brand, brandSlug, categorySlug, mrpPaise, pricePaise, discountPercent, rating, imageUrls, thumbnailUrl, specifications (warranty, shipping info), tags | Application (catalog snapshot) | Prices integer paise. `pricePaise = round(mrp × (1 − discount/100))` |
 | Inventory | productId, onHand, reserved, updatedAt | Application | Separate table; `reserved` is 0 until F-008 |
 | AnalyticsEvent | id, name, properties (JSON), visitorId, occurredAt | Application | |
 

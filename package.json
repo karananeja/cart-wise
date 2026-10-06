@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "concurrently -n api,web -c blue,magenta \"pnpm --filter @store/api dev\" \"pnpm --filter @store/web dev\"",
+    "build": "pnpm --filter @store/web build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "e2e": "playwright test",
