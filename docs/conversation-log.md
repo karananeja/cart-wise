@@ -20,3 +20,6 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | Q4 Variants | Add app-owned sizes for apparel and footwear | |
 | 2026-10-06 | Q5 Reviews | Do not show DummyJSON reviews | |
 | 2026-10-06 | F-003 | Spec and intent presented for Gate 1 | |
+| 2026-10-06 | Q5 correction | Show DummyJSON reviews, unlabelled (earlier entry misread the answer) | |
+| 2026-10-06 | Q15 Rating | Star rating = average of reviews | |
+| 2026-10-06 | F-003 Gate 1 | **Approved**, size sets as proposed | |

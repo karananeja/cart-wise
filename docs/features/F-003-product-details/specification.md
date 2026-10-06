@@ -4,9 +4,9 @@
 
 **ID:** F-003
 **Name:** Product details, sizes and recently viewed
-**Status:** Proposed (awaiting Gate 1)
-**Requirements:** PDP-1, PDP-3, RV-1, INV-1, INV-3, STATE-1, ANL-1 (`product_viewed`)
-**User decisions applied:** Q4 — add application-owned sizes for apparel and footwear. Q5 — do not show DummyJSON reviews.
+**Status:** Approved — In Progress (Gate 1 approved 2026-10-06)
+**Requirements:** PDP-1, PDP-3, RV-1, guest "view reviews" (brief §3), INV-1, INV-3, STATE-1, ANL-1 (`product_viewed`)
+**User decisions applied:** Q4 — add application-owned sizes for apparel and footwear. Q5 (corrected) — show DummyJSON reviews, no per-review label. Q15 — star rating is the average of the reviews.
 
 ---
 
@@ -35,7 +35,9 @@ Shoppers cannot judge a product from a card. Clothing and shoes are unusable wit
 
 - FR-1 Layout: the gallery on the left (stacked on mobile) and the purchase panel on the right, with brand, title, rating, price block, availability, size selector (if sized), and short delivery info from the catalog. Description and specifications appear below.
 - FR-2 Gallery: the existing thumbnails, plus previous/next controls on the main image, ←/→ keys when the gallery is focused, and swipe on touch screens. No zoom or lightbox (out of scope).
-- FR-3 Rating shows the star value only. No review count or review text (Q5). The footer demo notice already covers rating data.
+- FR-3 Rating shows stars, value and review count ("4.0 · 3 reviews"), linking to the reviews section. The same value and count appear on product cards.
+- FR-3a **Reviews section** below the specifications: average rating, review count, and each review's star rating, reviewer name and comment. No per-review "demo" label (Q5); the site-wide footer notice covers simulated content. Reviewer emails and review dates are not shown (all upstream dates are identical, so they add nothing).
+- FR-3b **Rating rule (Q15):** a product's rating is the average of its reviews, rounded to one decimal, everywhere (cards, rating filter, "Top rated", sort). A product without reviews falls back to the catalog rating.
 - FR-4 Breadcrumb: Home › Category › Product.
 - FR-5 The purchase panel reserves the place for the primary action. **Add to cart arrives in F-004.** F-003 shows no non-working buttons. Until F-004, the panel ends at availability and size.
 
@@ -113,6 +115,7 @@ Shoppers cannot judge a product from a card. Clothing and shoes are unusable wit
 | ProductVariant | id, productId, sizeLabel, sortOrder | Application | Created at seed for the 25 sized products |
 | Inventory | variantId (sized) or productId (unsized), onHand, reserved | Application | Per sellable unit; seeded deterministically |
 | Recently viewed (guest) | slug, viewedAt | Browser | `localStorage`, max 20 |
+| ProductReview | productId, rating, comment, reviewerName | Application (imported from the catalog snapshot) | Email and date dropped at import |
 
 Catalog import is unchanged. Variants are added by the application seed, never imported.
 
@@ -120,7 +123,8 @@ Catalog import is unchanged. Variants are added by the application seed, never i
 
 | Endpoint | Change |
 |---|---|
-| `GET /api/products/:slug` | Adds `sizes: { label, availability }[]` (empty for unsized). Product `availability` is the aggregate (FR-11) |
+| `GET /api/products/:slug` | Adds `sizes: { label, availability }[]` (empty for unsized) and `reviews: { rating, comment, reviewerName }[]`. Product `availability` is the aggregate (FR-11) |
+| All product summaries | Add `reviewCount`; `rating` follows FR-3b |
 | `GET /api/products/batch?slugs=a,b,c` | New. Returns `{ items: ProductSummary[] }` in the requested order, skipping unknown slugs; at most 24 slugs |
 | `GET /api/products` and search | Unchanged contract. Availability and the in-stock filter use the aggregate |
 
@@ -156,8 +160,8 @@ The batch endpoint validates slugs and caps their number. No personal data is in
 
 ## 17. Acceptance Criteria
 
-1. A product page shows a gallery with thumbnails, previous/next, keyboard arrows and swipe, plus brand, title, rating (no reviews), price, discount, availability, description and specifications.
-2. No DummyJSON review content appears anywhere in the app.
+1. A product page shows a gallery with thumbnails, previous/next, keyboard arrows and swipe, plus brand, title, rating with review count, price, discount, availability, description and specifications.
+2. The reviews section lists every review (stars, name, comment) with no per-review label and no emails; the displayed rating equals the reviews' average (e.g. Essence Mascara: 4.0 from 3, 4, 5).
 3. A Men's Shirts product shows sizes S–XXL; a Men's Shoes product shows UK 6–11; a Laptops product shows no size selector.
 4. Out-of-stock sizes are visible, struck through and not selectable; selecting a low-stock size shows "Only N left in <size>".
 5. The selected size appears in the URL and survives reload; an invalid size in the URL is ignored.
@@ -183,14 +187,13 @@ F-001 and F-002 (complete). F-004 builds Add to cart on this page and uses the s
 
 ## 20. Out of Scope
 
-Add to cart (F-004), wishlist (F-005), reviews (Q5; application-owned reviews are in the backlog), related or "frequently bought together" products (Phase 2), size guide, colour variants, per-size prices, image zoom/lightbox, delivery-date estimates (F-008), share buttons.
+Add to cart (F-004), wishlist (F-005), writing or moderating reviews, related or "frequently bought together" products (Phase 2), size guide, colour variants, per-size prices, image zoom/lightbox, delivery-date estimates (F-008), share buttons.
 
 ## 21. Assumptions
 
 - Size sets in FR-6 are reasonable defaults for an Indian store (UK shoe sizing).
-- The existing catalog `rating` remains visible (Q5 covers reviews, not the star rating).
 - The 20-item recently-viewed limit balances usefulness and the brief's "not unbounded" rule.
 
 ## 22. Decisions Required From User
 
-None blocking. Please confirm or adjust the size sets in FR-6 when approving.
+None outstanding. Size sets approved as proposed (2026-10-06).

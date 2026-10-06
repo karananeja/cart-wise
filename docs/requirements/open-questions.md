@@ -42,7 +42,8 @@ Recommendation: import all categories except `vehicle` and `motorcycle` (~184 pr
 | # | Question | Blocks | Recommendation |
 |---|---|---|---|
 | Q4 | **Resolved 2026-10-06 (user): add app-owned sizes** for apparel and footwear. | F-003 | Size sets proposed in F-003 spec |
-| Q5 | **Resolved 2026-10-06 (user): do not show DummyJSON reviews.** | F-003 / Reviews | Catalog rating stays as shown since F-001; a reviews feature would need application-owned reviews (Phase 2) |
+| Q5 | **Resolved 2026-10-06 (user, corrected): show DummyJSON reviews without a per-review "demo" label.** The site-wide footer notice ("ratings, reviews … are simulated") satisfies brief §18. Reviewer emails are not shown. | F-003 | — |
+| Q15 | **Resolved 2026-10-06 (user):** star rating = average of the product's reviews (DummyJSON's own `rating` contradicted its reviews for 73 of 194 products). | F-003 | Changes star values, rating filter counts and Top rated order from F-001 |
 | Q6 | Store Simulation Console is in brief §16 but not in the MVP priority list. Include in MVP? | F-010 | Yes — without it the order lifecycle cannot be demonstrated |
 | Q7 | Map-assisted address entry: which provider? | F-007 | Manual form first; map via OpenStreetMap + Leaflet + Nominatim (free, no key) — Google Maps needs a billing account |
 | Q8 | Delivery options and pricing (e.g. Standard free over ₹X, Express ₹Y) | F-008 | Propose concrete rules in F-008 spec |
