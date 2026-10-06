@@ -8,7 +8,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## Current feature
 
-**F-012 Product discovery (Phase 2) — implemented and tested, awaiting Gate 2.** MVP wrap-up complete (`docs/mvp-wrap-up.md`).
+**F-013 Electronics variants — specified, awaiting Gate 1** (`docs/features/F-013-electronics-variants/`). F-012 accepted 2026-10-06.
 
 ## Completed
 
@@ -19,7 +19,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## In progress
 
-F-012 Gate 2.
+F-013 Gate 1 (decisions D1 tiers/price steps, D2 preselection, D3 "From" price).
 
 ## Remaining
 
@@ -98,7 +98,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 1 F-009: 2026-10-06 (customer-chosen offer, any Luhn-valid card with first 6/last 4 only, bank OTP, in-page demo UPI app); Gate 2 F-009: 2026-10-06.
 - Gate 1 F-010: 2026-10-06 (order simulation in F-010; demo operator password; delivery charge not refunded on returns); Gate 2 F-010: 2026-10-06 (after return-dialog width fix).
 - Gate 1 F-011: 2026-10-06; Gate 2 F-011: 2026-10-06.
+- Gate 1 F-012: 2026-10-06; Gate 2 F-012: 2026-10-06 (companion price cap not chosen; in backlog).
 
 ## Exact next action
 
-Wait for Gate 2 acceptance of F-012 (homepage reordered per user; account menu email fix; SQLite lock fix). Still open: optional price cap on "Pairs well with" companions. Then specify F-013 Electronics variants (decided 2026-10-06: storage for phones/tablets, RAM+storage for laptops, price steps per tier, no colour, accessories/watches unchanged) for Gate 1.
+Get Gate 1 approval for F-013 with answers to D1–D3 (specification §22). Then write `technical-design.md` (schema v3: `product_variants.kind/price_paise/mrp_paise`, label-based remap of cart/order variant ids on reseed; unit pricing in cart/quote; OptionSelector) and implement. Mapping of affected code is summarised in the F-013 spec §9–§10 and covers cart/service, orders/service, recommendations, catalog/repository+query, seed, web ProductPage/CartPage/WishlistPage/line views, and E2E tests using laptops/phones (cart.spec UNSIZED macbook, payment.spec lenovo-yoga-920 offer amounts).
