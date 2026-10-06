@@ -142,3 +142,21 @@ test.describe('mobile', () => {
     expect(Math.abs(logo!.y - signIn!.y)).toBeLessThan(20);
   });
 });
+
+for (const width of [1280, 360]) {
+  test(`the account menu shows a long email in full (${width} px)`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    const customer = { ...newCustomer(), name: 'Asha Rao' };
+    customer.email = `asha.ramakrishnan.${customer.mobile}@very-long-company-domain.example.com`;
+    await page.goto('/signup');
+    await signUp(page, customer);
+    await page.getByRole('button', { name: 'Account menu for Asha' }).click();
+    const email = page.getByRole('menu').getByText(customer.email);
+    await expect(email).toBeVisible();
+    // Nothing clipped: the text fits its box, and the menu fits the screen.
+    expect(await email.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+    const box = (await page.getByRole('menu').boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(width);
+  });
+}

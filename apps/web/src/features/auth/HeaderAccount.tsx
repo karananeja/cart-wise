@@ -38,10 +38,12 @@ export function HeaderAccount() {
           <span className="max-sm:hidden">Hi, {first}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      {/* Sized to its content, not to the small trigger button, so the full email is visible; a very
+          long one wraps rather than being cut off. */}
+      <DropdownMenuContent align="end" className="w-auto min-w-56 max-w-[min(22rem,calc(100vw-2rem))]">
         <DropdownMenuLabel className="font-normal">
-          <span className="block font-medium">{user.name}</span>
-          <span className="block text-xs text-muted-foreground">{user.email}</span>
+          <span className="block font-medium break-words">{user.name}</span>
+          <span className="block text-xs break-all text-muted-foreground">{user.email}</span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
