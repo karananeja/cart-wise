@@ -28,3 +28,6 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-004 | Spec and intent presented for Gate 1 | |
 | 2026-10-06 | F-004 Gate 1 | **Approved** as proposed | |
 | 2026-10-06 | F-004 implementation | Implemented, tested, presented for Gate 2 | |
+| 2026-10-06 | F-004 Gate 2 review | Change: in-place +/− quantity after Add to cart, separate Go to cart | |
+| 2026-10-06 | Delivery OTP | New requirement ORD-5/SIM-4: OTP required before a simulated delivery completes | Detailed in F-010/F-011 (Q16) |
+| 2026-10-06 | Dev environment | User runs `pnpm dev` on 5173/3001; agent must use other ports and never kill it | |

@@ -16,7 +16,7 @@ Anyone can put products, in the right size, into a cart that remembers them, res
   - An **Add to cart** button.
   - On clothing and shoes with no size picked, it asks "Please select a size" instead of adding.
   - When sold out it reads **Out of stock**.
-  - After adding: the header cart count goes up, an "Added to cart · View cart" note appears, and the button becomes **Go to cart**.
+  - After adding: the header cart count goes up, and the button turns into a **− 1 +** quantity control right there, with a separate **Go to cart** link. − at 1 takes it back out of the cart. *(Changed at the user's request during Gate 2 review.)*
 - **Cart page:**
   - Each item has image, title, size, price, a − / + quantity control, its total, and Remove.
   - Removing shows **Undo** for a few seconds.
@@ -30,7 +30,7 @@ Anyone can put products, in the right size, into a cart that remembers them, res
 
 | Choice | Reason |
 |---|---|
-| Button becomes **Go to cart** after adding | One obvious next step; prevents accidental duplicates. Quantity is changed in the cart |
+| Button becomes a **quantity stepper** after adding, with a separate **Go to cart** | User request (Gate 2 review): adjust quantity in place without leaving the product page |
 | Size prompt instead of a disabled button | Tells the user *why*, and takes them to the fix |
 | Undo instead of "Are you sure?" | Fewer dialogs, same safety |
 | Max 10 per item | Sensible consumer limit; avoids silly quantities |

@@ -34,6 +34,7 @@ Screenshots of the product page after adding, the cart with an issue, and the em
 | 2026-10-06 | `pnpm test` | 192 passed (shared 16, api 107, web 69) | |
 | 2026-10-06 | `pnpm e2e --repeat-each=3 --workers=2` | 63 passed (21 tests × 3) | All feature suites; cart stock-drop test edits the E2E database directly |
 | 2026-10-06 | `pnpm typecheck`, `pnpm build` | Clean / succeeds | |
+| 2026-10-06 | After Gate 2 change (in-place stepper) | 193 unit/component/API passed; E2E 63 passed (21 × 3) | Screenshots on preview ports 5274/3201 at 1280 and 375 px; no console errors |
 | 2026-10-06 | Manual (screenshots) | Pass after fixes | Size prompt, added state, cart desktop and mobile, mobile menu; no console errors |
 
 ### Defects found and fixed during testing

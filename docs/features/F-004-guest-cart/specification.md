@@ -37,8 +37,11 @@ Shoppers collect several items before deciding. They expect the cart to remember
 - FR-1 The product page purchase panel gains one primary button: **Add to cart**.
 - FR-2 **Sized products:** pressing Add to cart with no size selected does not add anything. It shows "Please select a size" next to the size group and moves focus to it. (The button stays enabled; a disabled button would not explain why.)
 - FR-3 **Out of stock** (the product, or the selected size) shows a disabled **Out of stock** button instead.
-- FR-4 A successful add puts 1 unit of that product and size in the cart. The header cart count updates, and a short confirmation appears ("Added to cart", with a **View cart** link).
-- FR-5 Once that product and size is in the cart, the primary button changes to **Go to cart**. More units are added from the cart page, which prevents accidental duplicates and keeps one obvious next step.
+- FR-4 A successful add puts 1 unit of that product and size in the cart. The header cart count updates, and "Added to cart" is announced.
+- FR-5 *(Changed at Gate 2 review, 2026-10-06, user request.)* Once that product and size is in the cart, the Add to cart button is replaced in place by a **quantity stepper** (− quantity +) for that line. A separate **Go to cart** button/link sits beside it.
+  - **+** increases the quantity within the FR-7 limits, and shows the reason at the limit.
+  - **−** decreases it. At 1, − removes the item (labelled "Remove from cart") and the Add to cart button returns.
+  - Changing size shows the state for the newly selected size.
 
 ### 5.2 Cart page (`/cart`)
 
@@ -190,7 +193,7 @@ See §6. In addition:
 
 ## 17. Acceptance Criteria
 
-1. On an unsized in-stock product, Add to cart adds 1 unit, the header count goes from 0 to 1, "Added to cart" with View cart appears, and the button becomes Go to cart.
+1. On an unsized in-stock product, Add to cart adds 1 unit and the header count goes from 0 to 1. The button is replaced by a − 1 + stepper with a separate Go to cart link. + raises the quantity (header count follows) up to the limit; − at 1 removes the item and brings back Add to cart.
 2. On a sized product with no size selected, Add to cart shows "Please select a size", focuses the size group and adds nothing. After choosing a size it adds that size, and the cart line shows it.
 3. A sold-out product or size shows a disabled Out of stock button.
 4. The cart page lists lines with image, title, size, prices, quantity and line total. The summary shows Items, Total MRP, Discount, Subtotal and "Delivery: calculated at checkout", and the totals are correct.

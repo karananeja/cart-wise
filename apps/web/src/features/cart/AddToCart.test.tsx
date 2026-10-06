@@ -18,7 +18,7 @@ beforeEach(async () => {
 const cartLink = () => screen.getByRole('link', { name: /^Cart(,|$)/ });
 
 describe('Add to cart', () => {
-  it('adds an unsized product, updates the header count, then offers Go to cart', async () => {
+  it('adds an unsized product, then adjusts quantity in place with a separate Go to cart', async () => {
     const user = userEvent.setup();
     renderRoute('/p/product-1');
     await screen.findByRole('heading', { level: 1, name: 'MacBook Pro' });
@@ -26,21 +26,40 @@ describe('Add to cart', () => {
 
     await user.click(screen.getByRole('button', { name: 'Add to cart' }));
 
-    expect(await screen.findByText(/Added to cart/)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'View cart' })).toHaveAttribute('href', '/cart');
-    expect(screen.getByRole('link', { name: 'Go to cart' })).toBeInTheDocument();
+    const stepper = await screen.findByRole('group', { name: 'Quantity in cart' });
     expect(screen.queryByRole('button', { name: 'Add to cart' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Go to cart' })).toHaveAttribute('href', '/cart');
+    expect(screen.getByText('Added to cart')).toBeInTheDocument();
+    expect(within(stepper).getByRole('status')).toHaveTextContent('1');
     expect(cartLink()).toHaveAccessibleName('Cart, 1 item');
 
+    await user.click(within(stepper).getByRole('button', { name: 'Increase quantity' }));
+    await waitFor(() => expect(cartLink()).toHaveAccessibleName('Cart, 2 items'));
+    expect(within(stepper).getByRole('status')).toHaveTextContent('2');
+
+    await user.click(within(stepper).getByRole('button', { name: 'Decrease quantity' }));
+    await waitFor(() => expect(cartLink()).toHaveAccessibleName('Cart, 1 item'));
+
+    // − at 1 takes the item out and brings Add to cart back.
+    await user.click(within(stepper).getByRole('button', { name: 'Remove from cart' }));
+    expect(await screen.findByRole('button', { name: 'Add to cart' })).toBeInTheDocument();
+    await waitFor(() => expect(cartLink()).toHaveAccessibleName('Cart, 0 items'));
+
     flush();
-    await waitFor(() => expect(receivedEvents.filter((e) => e.name === 'cart_item_added')).toHaveLength(1));
-    expect(receivedEvents.find((e) => e.name === 'cart_item_added')!.properties).toEqual({
-      productId: 1,
-      size: null,
-      quantity: 1,
-      pricePaise: 90_000_00,
-      source: 'product_page',
-    });
+    const cartEvents = () => receivedEvents.filter((e) => e.name.startsWith('cart_'));
+    await waitFor(() => expect(cartEvents().map((e) => e.name)).toEqual(['cart_item_added', 'cart_item_removed']));
+    expect(cartEvents()[0]!.properties).toEqual({ productId: 1, size: null, quantity: 1, pricePaise: 90_000_00, source: 'product_page' });
+  });
+
+  it('stops + at the stock limit with the reason', async () => {
+    const user = userEvent.setup();
+    renderRoute('/p/check-shirt?size=M'); // M has 2 left
+    await screen.findByRole('heading', { level: 1, name: 'Check Shirt' });
+    await user.click(screen.getByRole('button', { name: 'Add to cart' }));
+    const stepper = await screen.findByRole('group', { name: 'Quantity in cart, size M' });
+    await user.click(within(stepper).getByRole('button', { name: 'Increase quantity' }));
+    await waitFor(() => expect(within(stepper).getByRole('button', { name: 'Increase quantity' })).toBeDisabled());
+    expect(screen.getByText('Only 2 available')).toBeInTheDocument();
   });
 
   it('asks for a size first, focusing the sizes, and adds nothing', async () => {
@@ -57,7 +76,8 @@ describe('Add to cart', () => {
     await user.click(within(sizes).getByRole('radio', { name: 'L' }));
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Add to cart' }));
-    expect(await screen.findByRole('link', { name: 'Go to cart' })).toBeInTheDocument();
+    expect(await screen.findByRole('group', { name: 'Quantity in cart, size L' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Go to cart' })).toBeInTheDocument();
 
     // A different size is a different line, so it can be added too.
     await user.click(within(sizes).getByRole('radio', { name: 'M' }));

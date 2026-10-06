@@ -27,8 +27,8 @@ Order follows the brief's journey and dependencies: each feature builds on the o
 | F-007 | Address management | ADDR-1..2 | F-006 | Not started |
 | F-008 | Checkout (address, delivery, summary, reservation) | CHK-1..3, INV-2 | F-007 | Not started |
 | F-009 | Simulated payment | PAY-1..4 | F-008 | Not started |
-| F-010 | Orders (history, details, cancel/return/refund) | ORD-1..4 | F-009 | Not started |
-| F-011 | Store Simulation Console | SIM-1..3 | F-010 | Pending Q6 |
+| F-010 | Orders (history, details, cancel/return/refund, delivery OTP) | ORD-1..5 | F-009 | Not started |
+| F-011 | Store Simulation Console (incl. OTP-gated delivery) | SIM-1..4 | F-010 | Pending Q6 |
 
 Loading / empty / error / offline states (STATE-1) and analytics events (ANL-1) are delivered inside each feature, not as separate features.
 

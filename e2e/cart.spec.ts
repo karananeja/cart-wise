@@ -40,6 +40,16 @@ test('add unsized and sized products, adjust, remove and undo; the cart survives
   await expect(page.getByText(/Added to cart/)).toBeVisible();
   await expect(cartLink(page)).toHaveAccessibleName('Cart, 1 item');
 
+  // Quantity is adjusted in place on the product page; − at 1 takes it back out.
+  const stepper = page.getByRole('group', { name: 'Quantity in cart' });
+  await stepper.getByRole('button', { name: 'Increase quantity' }).click();
+  await expect(cartLink(page)).toHaveAccessibleName('Cart, 2 items');
+  await stepper.getByRole('button', { name: 'Decrease quantity' }).click();
+  await stepper.getByRole('button', { name: 'Remove from cart' }).click();
+  await expect(cartLink(page)).toHaveAccessibleName('Cart, 0 items');
+  await page.getByRole('button', { name: 'Add to cart' }).click();
+  await expect(cartLink(page)).toHaveAccessibleName('Cart, 1 item');
+
   const { product, size } = await sizedProduct(request);
   await page.goto(`/p/${product.slug}`);
   await page.getByRole('button', { name: 'Add to cart' }).click();

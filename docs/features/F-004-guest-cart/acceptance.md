@@ -7,7 +7,7 @@
 
 | # | Criterion | Result | Evidence |
 |---|---|---|---|
-| 1 | Unsized add: count 0 → 1, "Added to cart · View cart", button → Go to cart | Pass | `AddToCart.test.tsx`; E2E |
+| 1 | Unsized add: count 0 → 1; button → in-place − / + stepper with separate Go to cart; + and − update the cart; − at 1 removes and restores Add to cart *(changed at Gate 2 review)* | Pass | `AddToCart.test.tsx` (incl. stock limit on the product page); E2E |
 | 2 | Sized without size: prompt, focus, nothing added; with size: line shows size | Pass | `AddToCart.test.tsx`; `cart.test.ts` (`SIZE_REQUIRED`); E2E |
 | 3 | Sold-out product/size: disabled Out of stock | Pass | `AddToCart.test.tsx` |
 | 4 | Cart lines and summary (Items, MRP, Discount, Subtotal, delivery note) correct | Pass | `CartPage.test.tsx` totals; `cart.test.ts` server totals |
@@ -23,7 +23,7 @@
 
 ## 2. Test results summary
 
-192 unit/API/component tests; 21 E2E tests passing on 3 repeated runs; typecheck and build clean. Details in `test-plan.md`.
+193 unit/API/component tests; 21 E2E tests passing on 3 repeated runs (after the Gate 2 change); typecheck and build clean. Details in `test-plan.md`.
 
 ## 3. Known issues and limitations
 
@@ -34,7 +34,7 @@
 
 ## 4. Deviations from the approved specification
 
-None.
+FR-5 changed at the user's request during Gate 2 review: after adding, an in-place quantity stepper with a separate Go to cart replaces the "Go to cart" button. Spec, intent and AC1 updated.
 
 ## 5. Documentation updated
 

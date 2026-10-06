@@ -88,6 +88,7 @@ Derived from `PROJECT_BRIEF.md`. IDs are stable. "Feature" is the planned featur
 | ORD-2 | Order history and details | §14 |
 | ORD-3 | Lifecycle states per brief | §14 |
 | ORD-4 | Cancellation, return, refund where appropriate (see Q9) | §14 |
+| ORD-5 | **Delivery OTP:** when an order is about to be delivered, a one-time code is shown to the customer and must be entered in the simulated delivery step before the order can be marked Delivered (see Q16) | User request 2026-10-06 |
 
 ## Inventory — cross-cutting (F-001 onward)
 
@@ -104,6 +105,7 @@ Derived from `PROJECT_BRIEF.md`. IDs are stable. "Feature" is the planned featur
 | SIM-1 | Adjust stock per product | §16 |
 | SIM-2 | Toggle automatic inventory decrease / restocking with interval | §16 |
 | SIM-3 | Advance an order through its lifecycle | §16 |
+| SIM-4 | Delivering an order requires entering the customer's delivery OTP (ORD-5) | User request 2026-10-06 |
 
 ## Cross-cutting
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, Minus, Plus, ShoppingCart, Trash2, WifiOff } from 'lucide-react';
+import { AlertTriangle, ShoppingCart, Trash2, WifiOff } from 'lucide-react';
 import { Link } from 'react-router';
 import { formatPrice, type CartLineView, type CartView } from '@store/shared';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -14,6 +14,7 @@ import { useOnlineStatus } from '@/lib/useOnlineStatus';
 import { cn } from '@/lib/utils';
 import { useAddToCart, useCart, useRemoveCartLine, useUpdateCartLine } from './api';
 import { cartErrorMessage } from './messages';
+import { limitReasonFor, QuantityStepper } from './QuantityStepper';
 
 const UNDO_MS = 6000;
 
@@ -183,7 +184,16 @@ function CartLine({
         <Price pricePaise={product.pricePaise} mrpPaise={product.mrpPaise} discountPercent={product.discountPercent} />
         <LineIssue line={line} />
         <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-2">
-          {!unavailable && <QuantityStepper line={line} disabled={disabled} onChange={onQuantity} />}
+          {!unavailable && (
+            <QuantityStepper
+              quantity={line.quantity}
+              max={line.maxQuantity}
+              label={`Quantity for ${product.title}${line.size ? `, size ${line.size}` : ''}`}
+              disabled={disabled}
+              onChange={onQuantity}
+              limitReason={line.issue === 'none' ? limitReasonFor(line.maxQuantity) : undefined}
+            />
+          )}
           <Button variant="ghost" size="sm" onClick={onRemove} disabled={disabled} aria-label={`Remove ${product.title}${line.size ? `, size ${line.size}` : ''}`}>
             <Trash2 aria-hidden /> Remove
           </Button>
@@ -207,29 +217,6 @@ function LineIssue({ line }: { line: CartLineView }) {
     return <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Only {line.maxQuantity} available — reduce quantity</p>;
   }
   return null;
-}
-
-function QuantityStepper({ line, disabled, onChange }: { line: CartLineView; disabled: boolean; onChange: (quantity: number) => void }) {
-  const atMax = line.quantity >= line.maxQuantity;
-  const reason = atMax && line.issue === 'none' ? (line.maxQuantity >= 10 ? 'Max 10 per order' : `Only ${line.maxQuantity} available`) : undefined;
-  const label = `Quantity for ${line.product.title}${line.size ? `, size ${line.size}` : ''}`;
-
-  return (
-    <div className="flex items-center gap-3">
-      <div role="group" aria-label={label} className="inline-flex items-center rounded-lg border">
-        <Button variant="ghost" size="icon" disabled={disabled || line.quantity <= 1} onClick={() => onChange(line.quantity - 1)} aria-label="Decrease quantity">
-          <Minus aria-hidden />
-        </Button>
-        <output aria-live="polite" className="w-8 text-center text-sm font-medium tabular-nums">
-          {line.quantity}
-        </output>
-        <Button variant="ghost" size="icon" disabled={disabled || atMax} onClick={() => onChange(line.quantity + 1)} aria-label="Increase quantity">
-          <Plus aria-hidden />
-        </Button>
-      </div>
-      {reason && <span className="text-xs text-muted-foreground">{reason}</span>}
-    </div>
-  );
 }
 
 function CartSummary({ cart }: { cart: CartView }) {

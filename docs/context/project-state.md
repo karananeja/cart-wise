@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-004 Guest cart — implemented and tested, awaiting Gate 2.** F-001, F-002 and F-003 complete (accepted 2026-10-06).
+**F-004 Guest cart — implemented, revised per Gate 2 review (in-place quantity stepper), awaiting Gate 2.** F-001, F-002 and F-003 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -52,14 +52,20 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 
 ## Tests
 
-- `pnpm test`: 192 passing (shared 16, api 107, web 69). `pnpm e2e`: 21 passing (stable over 3 repeats). Typecheck clean. Build succeeds.
+- `pnpm test`: 193 passing (shared 16, api 107, web 70). `pnpm e2e`: 21 passing (stable over 3 repeats). Typecheck clean. Build succeeds.
 - No failing tests.
 
 ## Known bugs / limitations
 
 See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
+## Working rules
+
+- The user runs `pnpm dev` (5173/3001, `store.db`) in their own terminal. Never stop it. Manual checks run on 5274/3201 with `preview.db`; E2E on 5174/3101 with `e2e.db`. Stop only those ports.
+
 ## Pending questions for the user
+
+- Q16 delivery OTP details (for F-010/F-011).
 
 - Store name: "Cartwise" kept as placeholder (user did not address it).
 - Q4 (add sizes), Q5 (show reviews, unlabelled — corrected after a misread), Q15 (rating = review average) resolved. Q6–Q14 open for later features.
