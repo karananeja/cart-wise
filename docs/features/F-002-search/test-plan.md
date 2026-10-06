@@ -36,3 +36,14 @@ Screenshots of the dropdown, results, partial and no-results states at 1280 and 
 
 | Run date | Command | Result | Notes |
 |---|---|---|---|
+| 2026-10-06 | `pnpm test` | 140 passed (shared 16, api 77, web 47) | |
+| 2026-10-06 | `pnpm e2e --repeat-each=3 --workers=2` | 36 passed (12 tests × 3) | F-001 and F-002 suites; no flakes |
+| 2026-10-06 | `pnpm typecheck`, `pnpm build` | Clean / succeeds | Bundle-size warning as in F-001 (backlog) |
+| 2026-10-06 | Manual (Playwright-driven screenshots) | Pass | Suggestions, results, partial, no results (1280 px); recent searches and suggestions (375 px); no console errors |
+
+### Defects found and fixed during testing
+
+- Search ids: MiniSearch returned product ids as strings, so every search would have matched nothing in the listing. Found by probing against the real catalog; ids are now converted to numbers, and searches are covered by tests against the real catalog.
+- Navigation race: clearing the "this search was submitted" marker with a router navigation could land after the user's next search and send them back to the previous results. Found by repeated E2E runs. Replaced with a per-session record plus a direct history-entry update (no navigation).
+- Typing overwritten: syncing the box from the URL could overwrite text typed immediately after a submit. The box now syncs only while it is not focused.
+- Test-only: E2E reads before results settled, an ambiguous "Men's Shoes" locator (category vs product name), and sort `<option>`s matched by a broad query.

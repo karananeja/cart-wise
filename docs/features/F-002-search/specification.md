@@ -4,7 +4,7 @@
 
 **ID:** F-002
 **Name:** Search and search history
-**Status:** Approved — In Progress (Gate 1 approved 2026-10-06)
+**Status:** Acceptance — awaiting Gate 2 (Gate 1 approved 2026-10-06)
 **Requirements:** SRCH-1..4, HIST-1, STATE-1, ANL-1 (`search_performed`, `search_no_results`)
 
 ---

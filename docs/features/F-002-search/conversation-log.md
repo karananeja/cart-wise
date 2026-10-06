@@ -4,3 +4,4 @@
 |---|---|---|---|
 | 2026-10-06 | Spec + intent drafted | Presented for Gate 1 | No blocking decisions; UX choices listed in intent §3 |
 | 2026-10-06 | Gate 1 | **Approved** by user | |
+| 2026-10-06 | Implementation complete | Presented for Gate 2 | See acceptance.md |

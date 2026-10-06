@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useCategories } from '@/features/catalog/api';
+import { SearchBox } from '@/features/search/SearchBox';
 import { STORE_NAME } from './store';
 
 export function Header() {
@@ -17,12 +18,14 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-      <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-4 sm:gap-6 sm:px-6 lg:px-8">
-        <Link to="/" className="mr-auto flex items-center gap-2 font-semibold tracking-tight">
+      {/* One search box for all widths: CSS order puts it inline on desktop and in its own row on mobile. */}
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-2 gap-y-2 px-4 py-2 sm:gap-x-6 sm:px-6 md:flex-nowrap lg:px-8">
+        <Link to="/" className="order-1 flex shrink-0 items-center gap-2 font-semibold tracking-tight">
           <ShoppingBag className="size-5" aria-hidden />
           {STORE_NAME}
         </Link>
-        <nav aria-label="Main" className="flex items-center gap-1">
+        <SearchBox className="order-3 w-full md:order-2 md:mx-auto md:w-auto md:max-w-xl md:flex-1" />
+        <nav aria-label="Main" className="order-2 ml-auto flex items-center gap-1 md:order-3 md:ml-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost">

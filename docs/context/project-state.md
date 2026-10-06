@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-002 Search and search history — specification and intent drafted, awaiting Gate 1 approval.** F-001 is complete (accepted 2026-10-06).
+**F-002 Search and search history — implemented and tested, awaiting Gate 2 sign-off.** F-001 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -21,7 +21,7 @@ Phase 1 — MVP.
 
 ## In progress
 
-None. Waiting for Gate 1 approval of F-002.
+None. Waiting for Gate 2 acceptance of F-002.
 
 ## Remaining
 
@@ -30,6 +30,7 @@ F-002 → F-011 per `project-plan.md`, then Phase 2 and optional AI.
 ## Approved requirements / intents
 
 - F-001 specification and intent (Gate 1, 2026-10-06); F-001 accepted (Gate 2, 2026-10-06).
+- F-002 specification and intent (Gate 1, 2026-10-06).
 
 ## Architecture decisions
 
@@ -43,10 +44,12 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 - `packages/shared/src/listing-params.ts` — URL/API query contract
 - `apps/web/src/features/catalog/` — pages, components, hooks
 - `apps/web/src/lib/analytics.ts` — event client
+- `apps/api/src/search/` — search index (MiniSearch + term processing, swapped-letter variants)
+- `apps/web/src/features/search/SearchBox.tsx` — header combobox; `apps/web/src/lib/recentSearches.ts` — history store
 
 ## Tests
 
-- `pnpm test`: 80 passing (shared 13, api 45, web 22). `pnpm e2e`: 6 passing. Typecheck clean. Build succeeds.
+- `pnpm test`: 140 passing (shared 16, api 77, web 47). `pnpm e2e`: 12 passing (stable over 3 repeats). Typecheck clean. Build succeeds.
 - No failing tests.
 
 ## Known bugs / limitations
@@ -67,7 +70,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 - Gate 1 F-001: 2026-10-06.
 - Gate 2 F-001: 2026-10-06 ("proceed").
+- Gate 1 F-002: 2026-10-06.
 
 ## Exact next action
 
-Wait for Gate 1 approval of F-002 (`features/F-002-search/`). On approval: write technical design and test plan (search index approach: field-weighted, typo-tolerant, plural- and compound-aware matching built at API start), implement, test, and present for Gate 2.
+Wait for Gate 2 acceptance of F-002. On acceptance: mark F-002 complete (spec, acceptance.md, project-plan, this file), then prepare F-003 (Product details + recently viewed) specification and intent for Gate 1. F-003 needs open questions Q4 (variants) and Q5 (review labelling) answered.

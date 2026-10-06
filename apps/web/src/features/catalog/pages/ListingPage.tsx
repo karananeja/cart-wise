@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router';
 import { RefreshCw } from 'lucide-react';
-import { serializeListingParams, type ListingParams, type ListingResponse } from '@store/shared';
+import { countActiveFilters, serializeListingParams, sortOptionsFor, type ListingParams, type ListingResponse } from '@store/shared';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Breadcrumb,
@@ -26,12 +26,16 @@ import { MobileFilterSheet } from '../components/MobileFilterSheet';
 import { Pagination } from '../components/Pagination';
 import { ProductGrid, ProductGridSkeleton } from '../components/ProductGrid';
 import { SortSelect } from '../components/SortSelect';
+import { NoSearchResults } from '@/features/search/NoSearchResults';
+import { PartialMatchNotice } from '@/features/search/PartialMatchNotice';
+import type { SearchNavigationState } from '@/features/search/SearchBox';
 import { useListingParams } from '../useListingParams';
 
 type FilterEvent = NonNullable<FilterChange['event']>;
 
 export function ListingPage() {
-  const { params, update, isCategoryPage } = useListingParams();
+  const { params, update, mode, isCategoryPage } = useListingParams();
+  const location = useLocation();
   const listing = useProductListing(params);
   const categories = useCategories();
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -55,6 +59,17 @@ export function ListingPage() {
     pendingEvents.current = [];
   }, [listing.data, listing.isPlaceholderData, params.category]);
 
+  // search_performed fires once per submitted search, when its first results arrive.
+  const searchSource = (location.state as SearchNavigationState | null)?.searchSource;
+  useEffect(() => {
+    const result = listing.data;
+    const query = result?.search?.query;
+    if (mode !== 'search' || !searchSource || !result || listing.isPlaceholderData || !query || query !== params.q) return;
+    if (!markSearchCounted(location.key)) return;
+    track('search_performed', { query, resultCount: result.total, source: searchSource });
+    if (result.total === 0) track('search_no_results', { query });
+  }, [mode, searchSource, listing.data, listing.isPlaceholderData, params.q, location.key]);
+
   // A page beyond the end is corrected to the last real page.
   const serverPage = listing.data && !listing.isPlaceholderData ? listing.data.page : undefined;
   useEffect(() => {
@@ -76,8 +91,10 @@ export function ListingPage() {
     ? (categories.data?.find((c) => c.slug === params.category)?.name ??
       data?.facets.categories.find((c) => c.value === params.category)?.label)
     : undefined;
-  const title = isCategoryPage ? categoryName : 'All products';
-  const basePath = isCategoryPage ? `/c/${params.category}` : '/products';
+  const title = mode === 'search' ? `Results for “${params.q}”` : isCategoryPage ? categoryName : 'All products';
+  const basePath = mode === 'search' ? '/search' : isCategoryPage ? `/c/${params.category}` : '/products';
+  const noSearchResults =
+    mode === 'search' && data?.total === 0 && countActiveFilters(params, { includeCategory: true }) === 0;
   const hrefFor = (page: number) => {
     const qs = serializeListingParams({ ...params, page }, { omitCategory: isCategoryPage }).toString();
     return qs ? `${basePath}?${qs}` : basePath;
@@ -109,7 +126,7 @@ export function ListingPage() {
               </>
             ) : (
               <BreadcrumbItem>
-                <BreadcrumbPage>All products</BreadcrumbPage>
+                <BreadcrumbPage>{mode === 'search' ? 'Search results' : 'All products'}</BreadcrumbPage>
               </BreadcrumbItem>
             )}
           </BreadcrumbList>
@@ -142,11 +159,13 @@ export function ListingPage() {
             </p>
             <div className="flex items-center gap-2">
               <MobileFilterSheet params={params} facets={data?.facets} isCategoryPage={isCategoryPage} onApply={applyChanges} />
-              <SortSelect value={params.sort} onChange={(sort) => update({ sort })} />
+              <SortSelect value={params.sort} options={sortOptionsFor(params)} onChange={(sort) => update({ sort })} />
             </div>
           </div>
 
           <ActiveFilterChips params={params} facets={data?.facets} showCategory={!isCategoryPage} onRemove={(changes) => applyChanges(changes)} />
+
+          {data?.search?.matchMode === 'partial' && data.total > 0 && <PartialMatchNotice query={data.search.query} />}
 
           {listing.isError && data && (
             <Alert>
@@ -160,7 +179,9 @@ export function ListingPage() {
           )}
 
           {data ? (
-            data.total === 0 ? (
+            noSearchResults ? (
+              <NoSearchResults query={params.q ?? ''} />
+            ) : data.total === 0 ? (
               <EmptyResults
                 params={params}
                 facets={data.facets}
@@ -185,4 +206,19 @@ export function ListingPage() {
       </div>
     </div>
   );
+}
+
+/**
+ * History entries whose search has been counted. Remembered here so Back does not count it
+ * again, and stripped from the browser's history entry so a reload does not either. This is
+ * deliberately not a router navigation: one could land after the user's next search and undo it.
+ */
+const countedSearches = new Set<string>();
+
+function markSearchCounted(locationKey: string): boolean {
+  if (countedSearches.has(locationKey)) return false;
+  countedSearches.add(locationKey);
+  const state = window.history.state as { key?: string; usr?: unknown } | null;
+  if (state?.key === locationKey) window.history.replaceState({ ...state, usr: null }, '');
+  return true;
 }

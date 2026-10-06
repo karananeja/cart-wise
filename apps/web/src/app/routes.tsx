@@ -1,4 +1,5 @@
-import { useParams, type RouteObject } from 'react-router';
+import { Navigate, useParams, useSearchParams, type RouteObject } from 'react-router';
+import { normalizeQuery } from '@store/shared';
 import { NotFound } from '@/components/NotFound';
 import { HomePage } from '@/features/catalog/pages/HomePage';
 import { ListingPage } from '@/features/catalog/pages/ListingPage';
@@ -14,6 +15,7 @@ export const routes: RouteObject[] = [
       { index: true, element: <HomePage /> },
       { path: 'products', element: <ListingPage /> },
       { path: 'c/:categorySlug', element: <CategoryListingPage /> },
+      { path: 'search', element: <SearchPage /> },
       { path: 'p/:productSlug', element: <ProductPage /> },
       { path: '*', element: <NotFound /> },
     ],
@@ -24,4 +26,12 @@ export const routes: RouteObject[] = [
 function CategoryListingPage() {
   const { categorySlug } = useParams();
   return <ListingPage key={categorySlug} />;
+}
+
+/** Keyed by query so a new search starts with fresh per-page UI state. No query: browse instead. */
+function SearchPage() {
+  const [searchParams] = useSearchParams();
+  const q = normalizeQuery(searchParams.get('q') ?? undefined);
+  if (!q) return <Navigate to="/products" replace />;
+  return <ListingPage key={q} />;
 }

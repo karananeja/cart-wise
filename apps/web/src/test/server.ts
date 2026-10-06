@@ -17,13 +17,22 @@ export const handlers = [
     if (params.category && !categories.some((c) => c.slug === params.category)) {
       return HttpResponse.json({ error: { code: 'CATEGORY_NOT_FOUND', message: 'Category not found' } }, { status: 404 });
     }
+    const q = params.q?.toLowerCase();
     const items = products.filter(
       (p) =>
+        (!q || p.title.toLowerCase().includes(q) || p.categorySlug.includes(q)) &&
         (!params.category || p.categorySlug === params.category) &&
         (!params.brands.length || params.brands.includes((p.brand ?? '').toLowerCase())) &&
         (!params.rating || p.rating >= params.rating),
     );
-    return HttpResponse.json(listing(items));
+    return HttpResponse.json(listing(items, q ? { search: { query: params.q!, matchMode: 'all' } } : {}));
+  }),
+  http.get('*/api/search/suggestions', ({ request }) => {
+    const q = (new URL(request.url).searchParams.get('q') ?? '').toLowerCase();
+    return HttpResponse.json({
+      categories: categories.filter((c) => c.slug.startsWith(q)).map(({ slug, name }) => ({ slug, name })),
+      products: products.filter((p) => p.title.toLowerCase().includes(q)).slice(0, 5),
+    });
   }),
   http.post('*/api/events', async ({ request }) => {
     const body = (await request.json()) as { events: AnalyticsEvent[] };

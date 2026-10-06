@@ -17,6 +17,7 @@ test('browse: home → category → filter → sort → paginate → back', asyn
   await filters(page).getByRole('checkbox', { name: /Apple/ }).click();
   await expect(page).toHaveURL(/brand=apple/);
   await expect(page.getByRole('button', { name: 'Remove filter Apple' })).toBeVisible();
+  await expect(page.locator('main [aria-busy="true"]')).toHaveCount(0);
   const cards = page.locator('main ul li article');
   await expect(cards.first()).toBeVisible();
   for (const brand of await cards.locator('p.uppercase').allTextContents()) expect(brand.toLowerCase()).toBe('apple');
