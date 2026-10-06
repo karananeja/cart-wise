@@ -41,7 +41,7 @@ describe('sign-up', () => {
 
     const verify = await agent.post('/api/auth/verify').send({ challengeId: challenge.challengeId, code: challenge.demoCode }).expect(200);
     expect(String(verify.headers['set-cookie'])).toMatch(/session=[\w-]{40,}.*HttpOnly/);
-    expect(verify.body.user).toEqual({ name: 'Karan Aneja', email: 'karan@example.com', maskedMobile: '••••••3210' });
+    expect(verify.body.user).toEqual({ name: 'Karan Aneja', email: 'karan@example.com', mobile: '9876543210', maskedMobile: '••••••3210' });
     expect((await agent.get('/api/auth/me')).body.user.name).toBe('Karan Aneja');
   });
 

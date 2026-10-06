@@ -132,6 +132,27 @@ CREATE TABLE IF NOT EXISTS user_search_history (
   PRIMARY KEY (user_id, query_key)
 );
 
+-- Delivery addresses (F-007). Owner-only; exactly one default per user is kept by the service.
+CREATE TABLE IF NOT EXISTS addresses (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  full_name TEXT NOT NULL,
+  mobile TEXT NOT NULL,
+  pincode TEXT NOT NULL,
+  line1 TEXT NOT NULL,
+  line2 TEXT NOT NULL,
+  landmark TEXT NOT NULL,
+  city TEXT NOT NULL,
+  state TEXT NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('home', 'work', 'other')),
+  latitude REAL,
+  longitude REAL,
+  is_default INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS addresses_user ON addresses(user_id);
+
 -- Guest carts (F-004), identified by an anonymous random id held in a cookie.
 CREATE TABLE IF NOT EXISTS carts (
   id TEXT PRIMARY KEY,

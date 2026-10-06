@@ -45,7 +45,7 @@ function text(value: unknown): string {
   return typeof value === 'string' ? value : '';
 }
 
-export const publicUser = (user: SessionUser): PublicUser => ({ name: user.name, email: user.email, maskedMobile: maskMobile(user.mobile) });
+export const publicUser = (user: SessionUser): PublicUser => ({ name: user.name, email: user.email, mobile: user.mobile, maskedMobile: maskMobile(user.mobile) });
 
 export function authRouter({ db, otp, sessions, merge, limiter }: Deps): Router {
   const router = Router();

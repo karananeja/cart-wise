@@ -1,4 +1,7 @@
 import express from 'express';
+import { addressRouter, geoRouter } from './addresses/routes.js';
+import { createAddressService } from './addresses/service.js';
+import { createGeoService } from './geo/service.js';
 import { createMergeService } from './auth/merge.js';
 import { createOtpService } from './auth/otp.js';
 import { createLoginLimiter } from './auth/rateLimit.js';
@@ -17,7 +20,12 @@ import { createSearchIndex } from './search/searchIndex.js';
 import { wishlistRouter } from './wishlist/routes.js';
 import { createWishlistService } from './wishlist/service.js';
 
-export function createApp(db: Db) {
+export interface AppOptions {
+  /** Outbound HTTP for the geocoding proxy (injected in tests). */
+  fetch?: typeof fetch;
+}
+
+export function createApp(db: Db, options: AppOptions = {}) {
   const app = express();
   app.disable('x-powered-by');
   app.set('query parser', 'simple');
@@ -41,6 +49,8 @@ export function createApp(db: Db) {
   api.use(cartRouter(createCartService(db, catalog)));
   api.use(wishlistRouter(createWishlistService(db, catalog)));
   api.use(authRouter({ db, otp: createOtpService(db), sessions, merge: createMergeService(db), limiter: createLoginLimiter() }));
+  api.use(addressRouter(createAddressService(db)));
+  api.use(geoRouter(createGeoService({ fetch: options.fetch ?? fetch })));
   api.use(analyticsRouter(db));
   app.use('/api', api);
 

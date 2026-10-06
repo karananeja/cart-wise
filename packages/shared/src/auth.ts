@@ -61,6 +61,8 @@ export function checkSignup(input: Partial<Record<SignupField, unknown>>): { err
 export interface PublicUser {
   name: string;
   email: string;
+  /** The account owner's own number (pre-fills forms); shown masked in the UI. */
+  mobile: string;
   maskedMobile: string;
 }
 
