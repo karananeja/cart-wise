@@ -56,3 +56,36 @@ it('adds the F-009 payment columns to an F-008 orders table, keeping its orders'
   expect(db.prepare("SELECT offer_discount_paise FROM orders WHERE id = 'ORD-OLD'").get()).toEqual({ offer_discount_paise: 0 });
   db.close();
 });
+
+it('takes the write lock at the start of a transaction, so another connection cannot make it fail half-way', () => {
+  dir = mkdtempSync(join(tmpdir(), 'store-db-'));
+  const path = join(dir, 'store.db');
+  const db = openDatabase(path);
+  db.exec('CREATE TABLE counters (id INTEGER PRIMARY KEY, n INTEGER NOT NULL); INSERT INTO counters VALUES (1, 0)');
+  const other = new Database(path, { timeout: 0 });
+
+  // As the old deferred default did: read, another connection commits, then write → "database is locked".
+  const deferred = db.transaction(() => {
+    db.prepare('SELECT n FROM counters').get();
+    other.prepare('UPDATE counters SET n = n + 100').run();
+    db.prepare('UPDATE counters SET n = n + 1').run();
+  }).deferred;
+  expect(() => deferred()).toThrow(/locked|busy/i);
+
+  // The default is now immediate: the other connection waits (here, with no timeout, it is refused)
+  // and the transaction itself completes.
+  let otherError: unknown;
+  db.transaction(() => {
+    db.prepare('SELECT n FROM counters').get();
+    try {
+      other.prepare('UPDATE counters SET n = n + 100').run();
+    } catch (error) {
+      otherError = error;
+    }
+    db.prepare('UPDATE counters SET n = n + 1').run();
+  })();
+  expect(String(otherError)).toMatch(/locked|busy/i);
+  expect(db.prepare('SELECT n FROM counters').get()).toEqual({ n: 101 });
+  other.close();
+  db.close();
+});

@@ -18,6 +18,12 @@ export function openDatabase(path: string): Db {
   if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
   const db = new Database(path);
   db.pragma('journal_mode = WAL');
+  // Transactions take the write lock when they begin (BEGIN IMMEDIATE). A deferred transaction that
+  // reads, then writes after another connection (the seed script, a test helper) has committed
+  // fails at once with "database is locked", which no busy timeout can wait out; an immediate one
+  // just waits its turn (better-sqlite3's default 5 s). Nested transactions still use savepoints.
+  const transaction = db.transaction.bind(db);
+  db.transaction = ((fn: Parameters<typeof transaction>[0]) => transaction(fn).immediate) as typeof db.transaction;
   db.pragma('foreign_keys = ON');
   if ((db.pragma('user_version', { simple: true }) as number) < SCHEMA_VERSION) {
     db.pragma('foreign_keys = OFF');
