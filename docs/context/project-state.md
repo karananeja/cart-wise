@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-011 Store Simulation Console (inventory simulation) — specification and intent drafted, awaiting Gate 1.** F-001 to F-010 complete (accepted 2026-10-06). F-001 to F-009 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+**F-011 Store Simulation Console (inventory simulation) — Gate 1 approved 2026-10-06; in implementation.** F-001 to F-010 complete (accepted 2026-10-06). F-001 to F-009 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -99,7 +99,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 1 F-008: 2026-10-06; Gate 2 F-008: 2026-10-06.
 - Gate 1 F-009: 2026-10-06 (customer-chosen offer, any Luhn-valid card with first 6/last 4 only, bank OTP, in-page demo UPI app); Gate 2 F-009: 2026-10-06.
 - Gate 1 F-010: 2026-10-06 (order simulation in F-010; demo operator password; delivery charge not refunded on returns); Gate 2 F-010: 2026-10-06 (after return-dialog width fix).
+- Gate 1 F-011: 2026-10-06.
 
 ## Exact next action
 
-Wait for Gate 1 on F-011 (`docs/features/F-011-inventory-simulation/`). Decisions recorded 2026-10-06 (decrease/restock rules, persisted settings, tabs + log). On approval: technical-design.md, test-plan.md, implement. After F-011 the Phase 1 MVP feature list is complete.
+Implement F-011 per `docs/features/F-011-inventory-simulation/technical-design.md`: shared `simulation.ts` (done) → API `sim/inventory.ts`, `sim/scheduler.ts`, routes → web console tabs + Inventory tab → tests → E2E → acceptance.md → Gate 2.

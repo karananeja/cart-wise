@@ -1,8 +1,8 @@
 # Feature Intent
 
 **Feature:** F-011 — Store Simulation Console: inventory simulation
-**Status:** Draft — awaiting Gate 1
-**Approved by / date:**
+**Status:** Approved (Gate 1, 2026-10-06)
+**Approved by / date:** User, 2026-10-06
 
 ---
 
@@ -54,4 +54,4 @@ None. Confirmed 2026-10-06.
 
 ## 7. Approval
 
-- [ ] Approved for implementation (Gate 1)
+- [x] Approved for implementation (Gate 1) — 2026-10-06

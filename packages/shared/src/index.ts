@@ -9,3 +9,4 @@ export * from './address.js';
 export * from './checkout.js';
 export * from './payment.js';
 export * from './orders.js';
+export * from './simulation.js';
