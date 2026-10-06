@@ -9,6 +9,7 @@ import {
   type SignedInResponse,
   type SignupInput,
 } from '@store/shared';
+import { addressesKey } from '@/features/addresses/api';
 import { cartKey } from '@/features/cart/api';
 import { wishlistKey } from '@/features/wishlist/api';
 import { apiGet, apiSend } from '@/lib/api';
@@ -88,6 +89,7 @@ export function useLogout() {
       queryClient.setQueryData<MeResponse>(meKey, { user: null });
       queryClient.setQueryData(cartKey, EMPTY_CART);
       queryClient.setQueryData(wishlistKey, EMPTY_WISHLIST);
+      queryClient.removeQueries({ queryKey: addressesKey });
       navigate(window.location.pathname === '/account' ? '/' : window.location.pathname + window.location.search, {
         replace: true,
         state: { authNotice: "You've signed out." } satisfies AuthNoticeState,

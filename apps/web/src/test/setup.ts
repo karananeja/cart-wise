@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, vi } from 'vitest';
+import { resetAddresses } from './addressServer';
 import { resetAuth } from './authServer';
 import { resetCart } from './cartServer';
 import { resetWishlist } from './wishlistServer';
@@ -22,6 +23,7 @@ afterEach(() => {
   server.resetHandlers();
   resetCart();
   resetAuth();
+  resetAddresses();
   resetWishlist();
 });
 afterAll(() => server.close());

@@ -38,7 +38,7 @@ export function addUser(user: User, options: { signedIn?: boolean } = {}) {
   if (options.signedIn) signedIn = user;
 }
 
-const publicUser = (u: User) => ({ name: u.name, email: u.email, maskedMobile: maskMobile(u.mobile) });
+const publicUser = (u: User) => ({ name: u.name, email: u.email, mobile: u.mobile, maskedMobile: maskMobile(u.mobile) });
 const error = (status: number, code: string, details?: Record<string, unknown>) =>
   HttpResponse.json({ error: { code, message: code, ...(details ? { details } : {}) } }, { status });
 

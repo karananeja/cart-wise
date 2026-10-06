@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { parseListingParams, type AnalyticsEvent } from '@store/shared';
+import { addressHandlers } from './addressServer';
 import { authHandlers } from './authServer';
 import { cartHandlers } from './cartServer';
 import { wishlistHandlers } from './wishlistServer';
@@ -15,6 +16,7 @@ export const receivedEvents: AnalyticsEvent[] = [];
  */
 export const handlers = [
   ...authHandlers,
+  ...addressHandlers,
   ...cartHandlers,
   ...wishlistHandlers,
   http.get('*/api/categories', () => HttpResponse.json({ categories })),

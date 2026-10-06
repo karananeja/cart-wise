@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { AlertTriangle, Heart, ShoppingCart, Trash2, WifiOff } from 'lucide-react';
 import { Link } from 'react-router';
 import { formatPrice, type CartLineView, type CartView } from '@store/shared';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, OfflineState } from '@/components/ErrorState';
 import { StatusMessage } from '@/components/StatusMessage';
+import { UndoToast, useTimedNotice } from '@/components/UndoToast';
 import { Price } from '@/features/catalog/components/Price';
 import { ProductImage } from '@/features/catalog/components/ProductImage';
 import { RecentlyViewedRail } from '@/features/catalog/components/RecentlyViewedRail';
@@ -16,8 +17,6 @@ import { cn } from '@/lib/utils';
 import { useAddToCart, useCart, useRemoveCartLine, useUpdateCartLine } from './api';
 import { cartErrorMessage } from './messages';
 import { limitReasonFor, QuantityStepper } from './QuantityStepper';
-
-const UNDO_MS = 6000;
 
 interface RemovedLine {
   key: number;
@@ -39,14 +38,8 @@ export function CartPage() {
   const add = useAddToCart();
   const saveToWishlist = useToggleWishlist();
   const [error, setError] = useState<string>();
-  const [removed, setRemoved] = useState<RemovedLine>();
-
   // Undo is offered for a few seconds after a removal.
-  useEffect(() => {
-    if (!removed) return;
-    const timer = setTimeout(() => setRemoved(undefined), UNDO_MS);
-    return () => clearTimeout(timer);
-  }, [removed]);
+  const [removed, setRemoved] = useTimedNotice<RemovedLine>();
 
   if (!cart.data) {
     if (cart.isError) return <ErrorState what="your cart" onRetry={() => void cart.refetch()} />;
@@ -159,7 +152,7 @@ export function CartPage() {
       )}
 
       {view.lines.length > 0 && <MobileSubtotalBar cart={view} />}
-      <UndoToast removed={removed} onUndo={undo} onDismiss={() => setRemoved(undefined)} />
+      <UndoToast notice={removed} onUndo={undo} onDismiss={() => setRemoved(undefined)} />
     </div>
   );
 }
@@ -277,24 +270,6 @@ function MobileSubtotalBar({ cart }: { cart: CartView }) {
         </span>
         <span className="text-base font-semibold tabular-nums">{formatPrice(cart.totals.subtotalPaise)}</span>
       </p>
-    </div>
-  );
-}
-
-function UndoToast({ removed, onUndo, onDismiss }: { removed: RemovedLine | undefined; onUndo: () => void; onDismiss: () => void }) {
-  return (
-    <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-20 z-40 flex justify-center px-4 lg:bottom-6">
-      {removed && (
-        <div key={removed.key} className="pointer-events-auto flex max-w-md items-center gap-3 rounded-xl bg-foreground px-4 py-3 text-sm text-background shadow-lg">
-          <span className="min-w-0 truncate">{removed.message}</span>
-          <Button size="sm" variant="secondary" onClick={onUndo}>
-            Undo
-          </Button>
-          <button type="button" className="sr-only focus:not-sr-only" onClick={onDismiss}>
-            Dismiss
-          </button>
-        </div>
-      )}
     </div>
   );
 }

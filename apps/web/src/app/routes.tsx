@@ -7,6 +7,8 @@ import { ProductPage } from '@/features/catalog/pages/ProductPage';
 import { CartPage } from '@/features/cart/CartPage';
 import { WishlistPage } from '@/features/wishlist/WishlistPage';
 import { AccountPage } from '@/features/auth/AccountPage';
+import { AddressEditorPage } from '@/features/addresses/AddressEditorPage';
+import { AddressesPage } from '@/features/addresses/AddressesPage';
 import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { SignupPage } from '@/features/auth/SignupPage';
@@ -28,6 +30,9 @@ export const routes: RouteObject[] = [
       { path: 'signup', element: <SignupPage /> },
       { path: 'forgot-password', element: <ForgotPasswordPage /> },
       { path: 'account', element: <AccountPage /> },
+      { path: 'account/addresses', element: <AddressesPage /> },
+      { path: 'account/addresses/new', element: <AddressEditorPage /> },
+      { path: 'account/addresses/:id/edit', element: <AddressEditorPage /> },
       { path: 'p/:productSlug', element: <ProductPage /> },
       { path: '*', element: <NotFound /> },
     ],

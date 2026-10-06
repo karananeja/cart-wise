@@ -1,5 +1,5 @@
-import { Loader2, LogOut } from 'lucide-react';
-import { Navigate } from 'react-router';
+import { Loader2, LogOut, MapPin } from 'lucide-react';
+import { Link, Navigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLogout, useMe } from './api';
@@ -22,7 +22,11 @@ export function AccountPage() {
         <dt className="text-muted-foreground">Mobile</dt>
         <dd>{user.maskedMobile}</dd>
       </dl>
-      <p className="text-sm text-muted-foreground">Addresses and orders will appear here soon.</p>
+      <Button asChild variant="outline" className="w-fit">
+        <Link to="/account/addresses">
+          <MapPin aria-hidden /> Addresses
+        </Link>
+      </Button>
       <Button variant="outline" className="w-fit" onClick={() => logout.mutate()} disabled={logout.isPending}>
         {logout.isPending ? <Loader2 className="animate-spin" aria-hidden /> : <LogOut aria-hidden />}
         Sign out
