@@ -4,7 +4,7 @@
 
 **ID:** F-007
 **Name:** Address management (map-assisted)
-**Status:** Proposed (awaiting Gate 1)
+**Status:** Approved — In Progress (Gate 1 approved 2026-10-06)
 **Requirements:** ADDR-1, ADDR-2, STATE-1, ANL-1 (`address_added`)
 **User decision applied:** Q7 — OpenStreetMap map (Leaflet, Nominatim search), with a manual form always available (2026-10-06).
 
@@ -232,7 +232,4 @@ See FR-15. Search with no results: "No places found — try a nearby area or ent
 
 ## 22. Decisions Required From User
 
-Confirm when approving:
-1. The limit of 10 addresses.
-2. Deleting the default promotes the most recently added address.
-3. Addresses are for signed-in customers only (guests are asked to sign in at checkout anyway).
+None outstanding. Confirmed 2026-10-06: 10 addresses; deleting the default promotes the newest remaining; signed-in only.

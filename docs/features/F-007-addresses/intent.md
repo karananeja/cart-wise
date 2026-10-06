@@ -1,8 +1,8 @@
 # Feature Intent
 
 **Feature:** F-007 — Address management (map-assisted)
-**Status:** Awaiting Approval
-**Approved by / date:** —
+**Status:** Approved
+**Approved by / date:** User, 2026-10-06
 
 ---
 
@@ -40,10 +40,8 @@ Acceptance criteria 1–14 in `specification.md` §17.
 
 ## 6. Decisions needed before implementation
 
-1. Up to 10 addresses per account.
-2. Deleting the default → the newest remaining address becomes the default.
-3. Addresses for signed-in customers only.
+Resolved 2026-10-06: 10 addresses; deleting the default promotes the newest remaining; signed-in only.
 
 ## 7. Approval
 
-- [ ] Approved for implementation (Gate 1)
+- [x] Approved for implementation (Gate 1) — 2026-10-06

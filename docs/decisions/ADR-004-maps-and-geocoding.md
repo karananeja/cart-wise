@@ -1,6 +1,6 @@
 # ADR-004: Maps and Geocoding
 
-**Status:** Proposed (with F-007, 2026-10-06)
+**Status:** Accepted (with F-007 Gate 1, 2026-10-06)
 **Date:** 2026-10-06
 
 ## Decision
