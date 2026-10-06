@@ -49,9 +49,13 @@ docs             Brief, PRD, plan, decisions and per-feature specs
   banks (Aurora, Meridian, Kestrel) whose offers can be applied. Only the first 6 and last 4
   digits leave the browser.
 - **One-time codes** (sign-in, bank verification) are shown on screen; no SMS is sent.
-- **Demo operator:** `/sim/orders` moves paid orders through their lifecycle, completes delivery
-  with the customer's delivery code and advances returns. It asks for the operator password:
-  `demo-operator` by default; set `SIM_OPERATOR_PASSWORD` to change it.
+- **Demo operator console** (`/sim`, password `demo-operator` by default; set
+  `SIM_OPERATOR_PASSWORD` to change it):
+  - **Orders** moves paid orders through their lifecycle, completes delivery with the customer's
+    delivery code and advances returns.
+  - **Inventory** changes real stock (never below what checkouts hold) and can run automatic
+    decrease and restock on an interval. Both are off by default; the settings are saved in the
+    database, so they stay on across API restarts until switched off.
 
 ## Notes
 
