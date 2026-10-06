@@ -13,7 +13,11 @@ export default defineConfig({
     baseURL: `http://localhost:${WEB_PORT}`,
     trace: 'retain-on-failure',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: /simulation\.spec\.ts/ },
+    // Inventory automation changes random stock, so it runs alone after everything else.
+    { name: 'simulation', use: { ...devices['Desktop Chrome'] }, testMatch: /simulation\.spec\.ts/, dependencies: ['chromium'] },
+  ],
   webServer: [
     {
       command: `rm -f data/e2e.db data/e2e.db-wal data/e2e.db-shm && pnpm exec tsx src/server.ts`,

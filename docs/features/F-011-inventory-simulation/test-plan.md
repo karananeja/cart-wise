@@ -43,3 +43,6 @@
 
 | Run date | Command | Result | Notes |
 |---|---|---|---|
+| 2026-10-06 | `pnpm test` | 401 passed (shared 38, api 215, web 148) | |
+| 2026-10-06 | `pnpm e2e` ×11 | 46 passed in each of the last 11 runs | One earlier run failed an F-009 payment test once (not reproduced; see acceptance §3). Simulation spec runs as its own project after the others |
+| 2026-10-06 | `pnpm typecheck`, `pnpm build` | Clean | |

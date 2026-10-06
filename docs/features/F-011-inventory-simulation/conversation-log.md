@@ -8,3 +8,4 @@
 | 2026-10-06 | Layout | One console, Orders + Inventory tabs, last-20 change log | User choice |
 | 2026-10-06 | Spec + intent drafted | Presented for Gate 1 | |
 | 2026-10-06 | Gate 1 | **Approved** | |
+| 2026-10-06 | Implementation complete | Presented for Gate 2 | See acceptance.md |

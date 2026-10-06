@@ -70,3 +70,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-011 decisions | Auto decrease 1–3 units; restock to seeded level; settings off by default, persisted; one console with tabs and log | |
 | 2026-10-06 | F-011 | Spec and intent presented for Gate 1 | |
 | 2026-10-06 | F-011 Gate 1 | **Approved** | |
+| 2026-10-06 | F-011 implementation | Implemented, tested, presented for Gate 2 | |
