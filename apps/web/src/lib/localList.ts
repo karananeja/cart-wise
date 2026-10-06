@@ -17,6 +17,7 @@ export function createLocalList<T>({ storageKey, max, identity, isItem }: LocalL
   let cache: T[] | null = null;
   const listeners = new Set<() => void>();
   const addListeners = new Set<(item: T) => void>();
+  const removeListeners = new Set<(id: string | null) => void>();
 
   function read(): T[] {
     if (cache) return cache;
@@ -72,10 +73,21 @@ export function createLocalList<T>({ storageKey, max, identity, isItem }: LocalL
         addListeners.delete(listener);
       };
     },
+    /** Called with the identity of each removed item, or null when the list is cleared. */
+    onRemove(listener: (id: string | null) => void) {
+      removeListeners.add(listener);
+      return () => {
+        removeListeners.delete(listener);
+      };
+    },
     remove(id: string) {
       write(read().filter((existing) => identity(existing) !== id));
+      removeListeners.forEach((listener) => listener(id));
     },
-    clear: () => write([]),
+    clear: () => {
+      write([]);
+      removeListeners.forEach((listener) => listener(null));
+    },
     reload,
     get: read,
     useList: () => useSyncExternalStore(subscribe, read, () => empty),

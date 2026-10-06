@@ -254,6 +254,17 @@ describe('guest merge on sign-in', () => {
     expect(merged.recentlyViewed[1]!.viewedAt).toBe('2026-10-01T10:00:00.000Z');
     expect(merged.recentSearches).toEqual([{ query: 'laptop', searchedAt: '2026-10-03T10:00:00.000Z' }]);
     await request(app).post('/api/auth/sync').send(first).expect(401);
+
+    // Removing from the account means a later sync can't bring it back.
+    await agent.post('/api/auth/history/remove').send({ list: 'recentSearches', key: 'LAPTOP' }).expect(200);
+    await agent.post('/api/auth/history/remove').send({ list: 'recentlyViewed', key: 'iphone-x' }).expect(200);
+    let after = (await agent.post('/api/auth/sync').send({ recentlyViewed: [], recentSearches: [] })).body as HistoryLists;
+    expect(after).toEqual({ recentlyViewed: [expect.objectContaining({ slug: 'apple-airpods' })], recentSearches: [] });
+    await agent.post('/api/auth/history/remove').send({ list: 'recentlyViewed' }).expect(200);
+    after = (await agent.post('/api/auth/sync').send({ recentlyViewed: [], recentSearches: [] })).body as HistoryLists;
+    expect(after.recentlyViewed).toEqual([]);
+    await agent.post('/api/auth/history/remove').send({ list: 'wishlist' }).expect(400);
+    await request(app).post('/api/auth/history/remove').send({ list: 'recentlyViewed' }).expect(401);
   });
 });
 

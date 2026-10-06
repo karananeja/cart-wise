@@ -84,8 +84,9 @@ export function useLogout() {
   return useMutation({
     mutationFn: () => apiSend<{ ok: true }>('POST', '/auth/logout', {}),
     onSuccess: () => {
-      recentlyViewedStore.clear();
-      recentSearchesStore.clear();
+      // A fresh guest device, not a removal: the account keeps its history.
+      recentlyViewedStore.setAll([]);
+      recentSearchesStore.setAll([]);
       queryClient.setQueryData<MeResponse>(meKey, { user: null });
       queryClient.setQueryData(cartKey, EMPTY_CART);
       queryClient.setQueryData(wishlistKey, EMPTY_WISHLIST);

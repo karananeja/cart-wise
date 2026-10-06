@@ -1,9 +1,9 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { addRecentSearch, recentSearchesStore, reloadRecentSearches } from '@/lib/recentSearches';
+import { addRecentSearch, recentSearchesStore, reloadRecentSearches, removeRecentSearch } from '@/lib/recentSearches';
 import { recentlyViewedStore, reloadRecentlyViewed } from '@/lib/recentlyViewed';
-import { addUser, setMergeResult, syncRequests } from '@/test/authServer';
+import { addUser, historyRemovals, setMergeResult, syncRequests } from '@/test/authServer';
 import { renderRoute } from '@/test/render';
 
 const KARAN = { name: 'Karan Aneja', email: 'karan@example.com', mobile: '9876543210', password: 'correct horse battery' };
@@ -181,6 +181,8 @@ describe('signed in', () => {
     expect(await screen.findByText("You've signed out.")).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Sign in' })).toBeInTheDocument();
     expect(recentSearchesStore.get()).toEqual([]);
+    // Signing out empties this device only; the account keeps its history.
+    expect(historyRemovals).toEqual([]);
   });
 
   it('syncs history with the account, then mirrors new searches', async () => {
@@ -192,6 +194,11 @@ describe('signed in', () => {
 
     act(() => addRecentSearch('watch'));
     await waitFor(() => expect(syncRequests.at(-1)?.recentSearches.map((s) => s.query)).toEqual(['watch']));
+
+    // Removals reach the account too, so the next merge can't bring them back.
+    act(() => removeRecentSearch('Watch'));
+    act(() => recentlyViewedStore.clear());
+    await waitFor(() => expect(historyRemovals).toEqual([{ list: 'recentSearches', key: 'watch' }, { list: 'recentlyViewed' }]));
   });
 
   it('shows account details, and sends guests to sign in first', async () => {

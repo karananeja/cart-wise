@@ -17,6 +17,7 @@ let signedIn: User | undefined;
 let challenges = new Map<string, { purpose: string; mobile: string; code: string; attempts: number; pending?: User }>();
 let nextId = 1;
 export const syncRequests: HistoryLists[] = [];
+export const historyRemovals: { list: string; key?: string }[] = [];
 /** What the merge step reports on sign-in (set by tests). */
 export let mergeResult = { cart: false, wishlist: false };
 
@@ -26,6 +27,7 @@ export function resetAuth() {
   challenges = new Map();
   nextId = 1;
   syncRequests.length = 0;
+  historyRemovals.length = 0;
   mergeResult = { cart: false, wishlist: false };
 }
 
@@ -106,6 +108,10 @@ export const authHandlers = [
   }),
   http.post('*/api/auth/logout', () => {
     signedIn = undefined;
+    return HttpResponse.json({ ok: true });
+  }),
+  http.post('*/api/auth/history/remove', async ({ request }) => {
+    historyRemovals.push((await request.json()) as { list: string; key?: string });
     return HttpResponse.json({ ok: true });
   }),
   http.post('*/api/auth/sync', async ({ request }) => {

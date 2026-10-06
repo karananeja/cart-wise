@@ -60,6 +60,8 @@ export function createMergeService(db: Db) {
     DELETE FROM user_search_history WHERE user_id = @u AND query_key NOT IN (
       SELECT query_key FROM user_search_history WHERE user_id = @u ORDER BY searched_at DESC LIMIT ${MAX_ACCOUNT_SEARCHES})`);
   const listSearches = db.prepare('SELECT query, searched_at AS searchedAt FROM user_search_history WHERE user_id = ? ORDER BY searched_at DESC');
+  const removeViewed = db.prepare('DELETE FROM user_recently_viewed WHERE user_id = @u AND (@key IS NULL OR slug = @key)');
+  const removeSearch = db.prepare('DELETE FROM user_search_history WHERE user_id = @u AND (@key IS NULL OR query_key = @key)');
 
   return {
     /**
@@ -129,6 +131,12 @@ export function createMergeService(db: Db) {
         recentSearches: listSearches.all(userId) as HistoryLists['recentSearches'],
       };
     }),
+
+    /** Removes one entry (or, with no key, the whole list) from the account copy, so it can't sync back. */
+    removeHistory(userId: number, list: 'recentlyViewed' | 'recentSearches', key: string | null) {
+      if (list === 'recentlyViewed') removeViewed.run({ u: userId, key });
+      else removeSearch.run({ u: userId, key: key === null ? null : (normalizeQuery(key) ?? key).toLowerCase() });
+    },
   };
 }
 

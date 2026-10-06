@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { createHash, randomBytes } from 'node:crypto';
 import { Router, type Request, type Response } from 'express';
 import {
@@ -16,6 +17,9 @@ import { HttpError } from '../http/errors.js';
 import { currentUser, type SessionUser } from '../http/owner.js';
 import { WISHLIST_COOKIE } from '../wishlist/routes.js';
 import { historySchema, type MergeService } from './merge.js';
+
+/** One entry (slug or search text), or the whole list when `key` is left out. */
+const historyRemoval = z.strictObject({ list: z.enum(['recentlyViewed', 'recentSearches']), key: z.string().min(1).max(200).optional() });
 import type { OtpService } from './otp.js';
 import { hashPassword, verifyPassword } from './passwords.js';
 import type { LoginLimiter } from './rateLimit.js';
@@ -203,6 +207,14 @@ export function authRouter({ db, otp, sessions, merge, limiter }: Deps): Router 
     const parsed = historySchema.safeParse(req.body);
     if (!parsed.success) throw new HttpError(400, 'BAD_REQUEST', 'Invalid request');
     res.json(merge.syncHistory(user.id, parsed.data));
+  });
+
+  router.post('/auth/history/remove', (req, res) => {
+    const user = requireUser(res);
+    const parsed = historyRemoval.safeParse(req.body);
+    if (!parsed.success) throw new HttpError(400, 'BAD_REQUEST', 'Invalid request');
+    merge.removeHistory(user.id, parsed.data.list, parsed.data.key ?? null);
+    res.json({ ok: true });
   });
 
   return router;
