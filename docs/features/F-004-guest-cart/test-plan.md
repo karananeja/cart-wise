@@ -31,3 +31,14 @@ Screenshots of the product page after adding, the cart with an issue, and the em
 
 | Run date | Command | Result | Notes |
 |---|---|---|---|
+| 2026-10-06 | `pnpm test` | 192 passed (shared 16, api 107, web 69) | |
+| 2026-10-06 | `pnpm e2e --repeat-each=3 --workers=2` | 63 passed (21 tests × 3) | All feature suites; cart stock-drop test edits the E2E database directly |
+| 2026-10-06 | `pnpm typecheck`, `pnpm build` | Clean / succeeds | |
+| 2026-10-06 | Manual (screenshots) | Pass after fixes | Size prompt, added state, cart desktop and mobile, mobile menu; no console errors |
+
+### Defects found and fixed during testing
+
+- Schema edit dropped the `analytics_events` CREATE statement (caught immediately by the API tests).
+- Mobile header wrapped to three rows once the cart icon was added. "All products" now moves into the Categories menu below 640 px.
+- On mobile, the cart line total sat directly above the unit price and looked duplicated at quantity 1. It now sits beside the quantity controls.
+- Test-only: an expected price rounding (₹8.94, not ₹8.95) and a cart-link matcher that also matched the "Cartwise" logo.

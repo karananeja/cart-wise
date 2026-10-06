@@ -4,6 +4,7 @@ import { NotFound } from '@/components/NotFound';
 import { HomePage } from '@/features/catalog/pages/HomePage';
 import { ListingPage } from '@/features/catalog/pages/ListingPage';
 import { ProductPage } from '@/features/catalog/pages/ProductPage';
+import { CartPage } from '@/features/cart/CartPage';
 import { RootLayout } from './RootLayout';
 import { RouteError } from './RouteError';
 
@@ -16,6 +17,7 @@ export const routes: RouteObject[] = [
       { path: 'products', element: <ListingPage /> },
       { path: 'c/:categorySlug', element: <CategoryListingPage /> },
       { path: 'search', element: <SearchPage /> },
+      { path: 'cart', element: <CartPage /> },
       { path: 'p/:productSlug', element: <ProductPage /> },
       { path: '*', element: <NotFound /> },
     ],

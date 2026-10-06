@@ -4,7 +4,7 @@
 
 **ID:** F-004
 **Name:** Guest cart (with Add to cart on the product page)
-**Status:** Approved — In Progress (Gate 1 approved 2026-10-06)
+**Status:** Acceptance — awaiting Gate 2 (Gate 1 approved 2026-10-06)
 **Requirements:** CART-1..4, PDP-2, INV-1, INV-3, STATE-1, ANL-1 (`cart_item_added`, `cart_item_removed`)
 
 ---

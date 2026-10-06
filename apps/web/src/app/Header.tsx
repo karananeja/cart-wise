@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useCategories } from '@/features/catalog/api';
+import { HeaderCartLink } from '@/features/cart/HeaderCartLink';
 import { SearchBox } from '@/features/search/SearchBox';
 import { STORE_NAME } from './store';
 
@@ -33,6 +34,11 @@ export function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-h-[70dvh] w-[min(32rem,calc(100vw-2rem))] overflow-y-auto">
+              {/* On phones "All products" lives here, keeping the header to one row plus search. */}
+              <DropdownMenuItem asChild className="font-medium sm:hidden">
+                <Link to="/products">All products</Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="sm:hidden" />
               <DropdownMenuLabel>Shop by category</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {categories.data ? (
@@ -48,11 +54,12 @@ export function Header() {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button asChild variant="ghost">
+          <Button asChild variant="ghost" className="hidden sm:inline-flex">
             <NavLink to="/products" end className="aria-[current=page]:bg-muted">
               All products
             </NavLink>
           </Button>
+          <HeaderCartLink />
         </nav>
       </div>
     </header>

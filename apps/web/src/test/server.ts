@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { parseListingParams, type AnalyticsEvent } from '@store/shared';
+import { cartHandlers } from './cartServer';
 import { categories, listing, productDetails, products } from './fixtures';
 
 /** Analytics events received by the mock API during a test. */
@@ -11,6 +12,7 @@ export const receivedEvents: AnalyticsEvent[] = [];
  * the component tests rely on. The real query logic is covered by the API tests.
  */
 export const handlers = [
+  ...cartHandlers,
   http.get('*/api/categories', () => HttpResponse.json({ categories })),
   http.get('*/api/products', ({ request }) => {
     const params = parseListingParams(new URL(request.url).searchParams);

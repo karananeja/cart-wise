@@ -1,3 +1,4 @@
+import { useId, type Ref } from 'react';
 import type { ProductSize } from '@store/shared';
 import { cn } from '@/lib/utils';
 
@@ -5,15 +6,19 @@ interface SizeSelectorProps {
   sizes: ProductSize[];
   value: string | undefined;
   onChange: (size: string) => void;
+  /** Shown under the sizes, e.g. "Please select a size". */
+  error?: string;
+  ref?: Ref<HTMLFieldSetElement>;
 }
 
 /**
  * One button per size (native radios, so keyboard and screen readers behave as a group).
  * Sold-out sizes stay visible, struck through and not selectable (F-003 spec FR-9).
  */
-export function SizeSelector({ sizes, value, onChange }: SizeSelectorProps) {
+export function SizeSelector({ sizes, value, onChange, error, ref }: SizeSelectorProps) {
+  const errorId = useId();
   return (
-    <fieldset className="flex flex-col gap-2">
+    <fieldset ref={ref} className="flex flex-col gap-2" aria-describedby={error ? errorId : undefined} aria-invalid={error ? true : undefined}>
       <legend className="mb-2 text-sm font-medium">Size</legend>
       <div className="flex flex-wrap gap-2">
         {sizes.map((size) => {
@@ -44,6 +49,11 @@ export function SizeSelector({ sizes, value, onChange }: SizeSelectorProps) {
           );
         })}
       </div>
+      {error && (
+        <p id={errorId} role="alert" className="text-sm font-medium text-destructive">
+          {error}
+        </p>
+      )}
     </fieldset>
   );
 }

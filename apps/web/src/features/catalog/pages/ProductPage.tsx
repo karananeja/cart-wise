@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
 import { Truck } from 'lucide-react';
 import type { ProductDetail } from '@store/shared';
@@ -13,6 +13,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, OfflineState } from '@/components/ErrorState';
 import { NotFound } from '@/components/NotFound';
+import { AddToCartButton } from '@/features/cart/AddToCartButton';
 import { ApiError } from '@/lib/api';
 import { track } from '@/lib/analytics';
 import { recordProductView } from '@/lib/recentlyViewed';
@@ -97,8 +98,16 @@ function PurchasePanel({ product: p }: { product: ProductDetail }) {
   const requested = searchParams.get('size');
   const selected = p.sizes.find((s) => s.label === requested && s.availability.status !== 'out_of_stock');
   const shipping = p.specifications.find((s) => s.label === 'Shipping')?.value;
+  const sizeGroup = useRef<HTMLFieldSetElement>(null);
+  const [sizeError, setSizeError] = useState<string>();
+
+  const requireSize = () => {
+    setSizeError('Please select a size');
+    sizeGroup.current?.querySelector<HTMLInputElement>('input:not(:disabled)')?.focus();
+  };
 
   const selectSize = (label: string) => {
+    setSizeError(undefined);
     const next = new URLSearchParams(searchParams);
     next.set('size', label);
     setSearchParams(next, { replace: true, preventScrollReset: true });
@@ -114,8 +123,11 @@ function PurchasePanel({ product: p }: { product: ProductDetail }) {
         </a>
       </div>
       <Price pricePaise={p.pricePaise} mrpPaise={p.mrpPaise} discountPercent={p.discountPercent} size="lg" />
-      {p.sizes.length > 0 && <SizeSelector sizes={p.sizes} value={selected?.label} onChange={selectSize} />}
+      {p.sizes.length > 0 && (
+        <SizeSelector ref={sizeGroup} sizes={p.sizes} value={selected?.label} onChange={selectSize} error={sizeError} />
+      )}
       <AvailabilityLine product={p} selectedSize={selected?.label} />
+      <AddToCartButton product={p} selectedSize={selected?.label} onSizeRequired={requireSize} />
       {shipping && (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
           <Truck className="size-4" aria-hidden /> {shipping}

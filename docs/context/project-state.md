@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-004 Guest cart — specification and intent drafted, awaiting Gate 1.** F-001, F-002 and F-003 complete (accepted 2026-10-06).
+**F-004 Guest cart — implemented and tested, awaiting Gate 2.** F-001, F-002 and F-003 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -21,7 +21,7 @@ Phase 1 — MVP.
 
 ## In progress
 
-None. Waiting for Gate 1 approval of F-004.
+None. Waiting for Gate 2 acceptance of F-004.
 
 ## Remaining
 
@@ -47,11 +47,12 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 - `apps/web/src/lib/analytics.ts` — event client
 - `apps/api/src/search/` — search index (MiniSearch + term processing, swapped-letter variants)
 - `apps/api/src/inventory/sizes.ts` — size sets; `apps/web/src/lib/localList.ts` — bounded local lists (recent searches, recently viewed)
+- `apps/api/src/cart/` — cart rules, service (cookie identity, limits, expiry), routes; `apps/web/src/features/cart/` — Add to cart, cart page, hooks
 - `apps/web/src/features/search/SearchBox.tsx` — header combobox; `apps/web/src/lib/recentSearches.ts` — history store
 
 ## Tests
 
-- `pnpm test`: 162 passing (shared 16, api 89, web 57). `pnpm e2e`: 17 passing (stable over 3 repeats). Typecheck clean. Build succeeds.
+- `pnpm test`: 192 passing (shared 16, api 107, web 69). `pnpm e2e`: 21 passing (stable over 3 repeats). Typecheck clean. Build succeeds.
 - No failing tests.
 
 ## Known bugs / limitations
@@ -76,7 +77,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 2 F-002: 2026-10-06.
 - Gate 1 F-003: 2026-10-06.
 - Gate 2 F-003: 2026-10-06.
+- Gate 1 F-004: 2026-10-06 (10 per line, 30-day carts, Go to cart).
 
 ## Exact next action
 
-Wait for Gate 1 approval of F-004 (`features/F-004-guest-cart/`), including confirmation of the 10-per-line limit, 30-day guest cart lifetime and "Go to cart" behaviour. On approval: technical design (carts and cart_lines tables, anonymous cookie, cart view builder, optimistic mutations), test plan, implement, test, present for Gate 2.
+Wait for Gate 2 acceptance of F-004. On acceptance: mark complete, then prepare F-005 (Wishlist) specification and intent for Gate 1.
