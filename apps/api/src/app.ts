@@ -7,6 +7,8 @@ import { catalogRouter } from './catalog/routes.js';
 import type { Db } from './db/database.js';
 import { errorHandler, notFoundHandler } from './http/errors.js';
 import { createSearchIndex } from './search/searchIndex.js';
+import { wishlistRouter } from './wishlist/routes.js';
+import { createWishlistService } from './wishlist/service.js';
 
 export function createApp(db: Db) {
   const app = express();
@@ -23,6 +25,7 @@ export function createApp(db: Db) {
   // Built once from the seeded catalog; holds only ids, so prices and stock stay live.
   api.use(catalogRouter(catalog, createSearchIndex(catalog.listSearchDocuments())));
   api.use(cartRouter(createCartService(db, catalog)));
+  api.use(wishlistRouter(createWishlistService(db, catalog)));
   api.use(analyticsRouter(db));
   app.use('/api', api);
 

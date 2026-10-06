@@ -79,6 +79,20 @@ CREATE TABLE IF NOT EXISTS cart_lines (
 -- NULLs are distinct in a plain UNIQUE, so unsized lines need the expression.
 CREATE UNIQUE INDEX IF NOT EXISTS cart_lines_unit ON cart_lines(cart_id, product_id, IFNULL(variant_id, 0));
 
+-- Guest wishlists (F-005): products, not sizes. Same anonymous-cookie pattern as carts.
+CREATE TABLE IF NOT EXISTS wishlists (
+  id TEXT PRIMARY KEY,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS wishlist_items (
+  wishlist_id TEXT NOT NULL REFERENCES wishlists(id) ON DELETE CASCADE,
+  product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  added_at TEXT NOT NULL,
+  PRIMARY KEY (wishlist_id, product_id)
+);
+
 CREATE TABLE IF NOT EXISTS analytics_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,

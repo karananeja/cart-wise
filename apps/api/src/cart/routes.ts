@@ -1,26 +1,14 @@
 import type { Request, Response } from 'express';
 import { Router } from 'express';
 import { addToCartSchema, updateCartLineSchema } from '@store/shared';
+import { readCookie, setGuestCookie } from '../http/cookies.js';
 import { HttpError } from '../http/errors.js';
 import { CART_LIFETIME_DAYS, type CartService } from './service.js';
 
 export const CART_COOKIE = 'cart_id';
 
-function readCookie(req: Request, name: string): string | undefined {
-  for (const part of (req.headers.cookie ?? '').split(';')) {
-    const [key, ...value] = part.trim().split('=');
-    if (key === name) return decodeURIComponent(value.join('='));
-  }
-  return undefined;
-}
-
 function setCartCookie(res: Response, cartId: string) {
-  res.cookie(CART_COOKIE, cartId, {
-    httpOnly: true,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: CART_LIFETIME_DAYS * 24 * 60 * 60 * 1000,
-  });
+  setGuestCookie(res, CART_COOKIE, cartId, CART_LIFETIME_DAYS);
 }
 
 function parse<T>(schema: { safeParse: (v: unknown) => { success: true; data: T } | { success: false } }, body: unknown): T {
