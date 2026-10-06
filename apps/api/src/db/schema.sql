@@ -334,6 +334,8 @@ CREATE TABLE IF NOT EXISTS analytics_events (
   name TEXT NOT NULL,
   properties TEXT NOT NULL,
   visitor_id TEXT NOT NULL,
+  -- Account id for server-recorded account actions (orders, payments); null for client events.
+  user_id INTEGER,
   occurred_at TEXT NOT NULL,
   received_at TEXT NOT NULL
 );

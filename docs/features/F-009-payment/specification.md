@@ -185,9 +185,9 @@ Shoppers also decide where to buy based on bank offers, so they want to see them
 | `payment_started` | An attempt begins (Pay pressed, UPI request sent, or QR shown) | orderId, method (`card` / `upi_id` / `upi_qr`), amountPaise, offerId? |
 | `payment_failed` | An attempt fails | orderId, method, reason (`declined`, `insufficient_funds`, `verification_failed`, `upi_declined`, `upi_expired`, `cancelled`, `hold_expired`) |
 | `payment_completed` | Payment succeeds | orderId, method, amountPaise, discountPaise, offerId? |
-| `order_created` | The order is confirmed | orderId, itemCount, totalPaise |
+| `order_created` | The order is confirmed | orderId, itemCount, totalPaise, productIds (comma-separated) |
 
-These events are recorded by the server, at the state change, so they're counted once. (`orderId` added in the MVP wrap-up, 2026-10-06, so a payment can be joined to its order.)
+These events are recorded by the server, at the state change, so they're counted once. (MVP wrap-up, 2026-10-06: `orderId` added so a payment can be joined to its order; server events also store the account id, and `order_created` its product ids — user decision.)
 
 ## 6. Non-Functional Requirements
 

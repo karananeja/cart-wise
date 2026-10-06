@@ -124,7 +124,11 @@ describe('card payment', () => {
     expect(cart.lines.map((l) => l.product.slug)).toEqual(['apple-airpods']);
 
     expect(events('payment_completed')).toEqual([{ orderId: order.id, method: 'card', amountPaise: 5_400_00, discountPaise: 600_00, offerId: 'aurora-credit-10' }]);
-    expect(events('order_created')).toEqual([{ orderId: order.id, itemCount: 2, totalPaise: 5_400_00 }]);
+    const iphoneId = (db.prepare("SELECT id FROM products WHERE slug = 'iphone-x'").get() as { id: number }).id;
+    expect(events('order_created')).toEqual([{ orderId: order.id, itemCount: 2, totalPaise: 5_400_00, productIds: String(iphoneId) }]);
+    // Server events carry the account id (user decision 2026-10-06); the visitor id is kept too.
+    const stored = db.prepare("SELECT visitor_id AS visitorId, user_id AS userId FROM analytics_events WHERE name = 'order_created'").get() as { visitorId: string; userId: number };
+    expect(stored).toEqual({ visitorId: 'visitor-12345', userId: (db.prepare('SELECT user_id FROM orders WHERE id = ?').get(order.id) as { user_id: number }).user_id });
   });
 
   it('keeps cart lines the customer topped up after checkout', async () => {

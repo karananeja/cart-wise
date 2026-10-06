@@ -120,8 +120,10 @@ export function createPaymentService({ db, orders, record, clock = Date.now }: D
 
   const reload = (id: string) => attemptById.get(id) as AttemptRow;
 
+  const actorFor = (row: AttemptRow) => ({ visitorId: row.visitor_id, userId: (orderRow.get(row.order_id) as { user_id: number }).user_id });
+
   const fail = (row: AttemptRow, reason: PaymentFailureReason): AttemptRow => {
-    if (failRow.run(reason, iso(clock()), row.id).changes) record('payment_failed', { orderId: row.order_id, method: row.method, reason }, row.visitor_id);
+    if (failRow.run(reason, iso(clock()), row.id).changes) record('payment_failed', { orderId: row.order_id, method: row.method, reason }, actorFor(row));
     return reload(row.id);
   };
 
@@ -189,8 +191,9 @@ export function createPaymentService({ db, orders, record, clock = Date.now }: D
     addHistory.run(order.id, 'payment_successful', now);
     addHistory.run(order.id, 'confirmed', now);
 
-    record('payment_completed', { orderId: order.id, method: row.method, amountPaise: paidPaise, discountPaise: row.discount_paise, offerId: row.offer_id }, row.visitor_id);
-    record('order_created', { orderId: order.id, itemCount: order.item_count, totalPaise: paidPaise }, row.visitor_id);
+    const actor = { visitorId: row.visitor_id, userId: order.user_id };
+    record('payment_completed', { orderId: order.id, method: row.method, amountPaise: paidPaise, discountPaise: row.discount_paise, offerId: row.offer_id }, actor);
+    record('order_created', { orderId: order.id, itemCount: order.item_count, totalPaise: paidPaise, productIds: [...new Set(lines.map((l) => l.product_id))].join(',') }, actor);
     return reload(row.id);
   });
 
@@ -267,7 +270,7 @@ export function createPaymentService({ db, orders, record, clock = Date.now }: D
       }
 
       insertAttempt.run(base);
-      record('payment_started', { orderId, method: input.method, amountPaise: amountPaise - base.discountPaise, offerId: base.offerId }, visitorId);
+      record('payment_started', { orderId, method: input.method, amountPaise: amountPaise - base.discountPaise, offerId: base.offerId }, { visitorId, userId });
       return view(reload(id), demoCode ? { demoCode } : {});
     }),
 

@@ -129,8 +129,9 @@ export function createOrderService({ db, carts, addresses, record, clock = Date.
   const end = db.transaction((orderId: string, status: OrderStatus) => {
     setStatus.run(status, iso(clock()), orderId);
     const reason: PaymentFailureReason = status === 'payment_expired' ? 'hold_expired' : 'cancelled';
+    const userId = (db.prepare('SELECT user_id FROM orders WHERE id = ?').get(orderId) as { user_id: number }).user_id;
     for (const a of pendingAttempts.all(orderId) as { id: string; method: PaymentMethod; visitor_id: string }[]) {
-      if (failAttempt.run(reason, iso(clock()), a.id).changes) record('payment_failed', { orderId, method: a.method, reason }, a.visitor_id);
+      if (failAttempt.run(reason, iso(clock()), a.id).changes) record('payment_failed', { orderId, method: a.method, reason }, { visitorId: a.visitor_id, userId });
     }
     release(orderId);
   });

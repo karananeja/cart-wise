@@ -8,7 +8,7 @@ export function Footer() {
         <p className="flex items-start gap-2">
           <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
           <span>
-            <strong className="font-medium text-foreground">Demo store.</strong> Products, ratings, reviews and payments are simulated. No real
+            <strong className="font-medium text-foreground">Demo store.</strong> Products, ratings, reviews, stock levels and payments are simulated. No real
             orders are placed and no money is charged.
           </span>
         </p>

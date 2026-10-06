@@ -9,7 +9,11 @@ let queue: AnalyticsEvent[] = [];
 let timer: ReturnType<typeof setTimeout> | undefined;
 let memoryVisitorId: string | undefined;
 
-/** Anonymous random id; not linked to any personal data. Falls back to memory if storage is blocked. */
+/**
+ * Random per-browser id. Client events carry only this; server events for account actions
+ * (orders, payments) also record the account id, so a signed-in visitor's events can be joined
+ * to their account (user decision 2026-10-06). Falls back to memory if storage is blocked.
+ */
 export function visitorId(): string {
   try {
     const existing = localStorage.getItem(VISITOR_KEY);

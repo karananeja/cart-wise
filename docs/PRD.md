@@ -82,6 +82,8 @@ Real payment gateways, real notifications (email/SMS/push), multi-vendor marketp
 
 ## 8. Success measures
 
+**Analytics identity (user decision, 2026-10-06):** client events use a random per-browser id. Server events for orders and payments also record the account id, and `order_created` lists its product ids, so repeat purchase and Wishlist → Purchase can be computed. The visitor id therefore links to an account once a signed-in customer places an order.
+
 The analytics event set and funnels in brief §20 (Search → Product → Cart → Checkout → Payment → Purchase, abandonment, AOV, repeat purchase) are captured locally so the funnel can be demonstrated.
 
 ## 9. Open questions

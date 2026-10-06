@@ -22,9 +22,9 @@ Every MVP requirement ID (DISC, SRCH, HIST, PDP, RV, CART, WISH, AUTH, ADDR, CHK
 | 2 | Account, Your orders and the address editor treated a *failed* sign-in check as "signed out" and redirected a signed-in user to sign-in; editing an address whose fetch failed said "not found" | STATE-1 | **Fixed** (`854c1ba`). The shared `QueryFallback` shows the error state |
 | 3 | Pages opened offline (account, orders, confirmation, payment, operator orders, product rails) showed a skeleton forever, because the requests were paused | STATE-1 | **Fixed** (`854c1ba`). Offline state shown; rails are left out. 7 new tests; each fails without the fix |
 | 4 | Server payment and order events carried no `orderId`, so a payment couldn't be joined to its order | ANL-2 | **Fixed** (`6df5acf`) |
-| 5 | Funnels by person (repeat purchase) and by product (Wishlist → Purchase) aren't computable: events are keyed by an anonymous browser id and `order_created` carries no product ids | ANL-2 | **Decision needed** (privacy model) |
+| 5 | Funnels by person (repeat purchase) and by product (Wishlist → Purchase) aren't computable: events are keyed by an anonymous browser id and `order_created` carries no product ids | ANL-2 | **Decided: add them** (user, 2026-10-06). Server events store the account id (new `user_id` column); `order_created` lists product ids |
 | 6 | `recommendation_clicked` is never emitted, because there is no recommendation surface yet | ANL-1 | Arrives with the Phase 2 discovery work |
-| 7 | The storefront demo notice doesn't say stock levels are simulated and can change automatically | NFR-8 | **Decision needed** (copy) |
+| 7 | The storefront demo notice doesn't say stock levels are simulated and can change automatically | NFR-8 | **Decided: mention stock** (user, 2026-10-06). The footer now says stock levels are simulated |
 | 8 | Cancelling an *unpaid* hold records no `order_cancelled` | ANL-1 | Kept as is: unpaid holds aren't orders to the customer (F-010 FR-4). Recorded here |
 
 **Stale docs corrected** (`6df5acf`): PRD status and the simulation-console row, the price rate (₹96 = $1), project state, plan header, ADR-001 decision note, the rating observation, CHK-3 wording.
@@ -36,10 +36,16 @@ Every MVP requirement ID (DISC, SRCH, HIST, PDP, RV, CART, WISH, AUTH, ADDR, CHK
 
 ## 3. Test status
 
-- 408 unit, API and component tests (shared 38, API 215, web 155).
+- 408 unit, API and component tests (shared 38, API 215, web 155). The web suite is stable over 18 consecutive runs, after fixing three timing- and order-dependent tests.
 - 46 E2E tests, stable over repeated runs.
 - Typecheck and build clean.
 
-## 4. Backlog triage
+## 4. Decisions applied
+
+- **Analytics identity:** server events for orders and payments store the account id (new `user_id` column), and `order_created` lists its product ids. Client events keep the random per-browser id. Documented in the PRD and in the analytics client.
+- **Demo notice:** the footer now says stock levels are simulated.
+- **Phase 2:** product discovery first (F-012).
+
+## 5. Backlog triage
 
 See `backlog.md` (Triage column).

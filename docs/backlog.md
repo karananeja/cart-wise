@@ -12,5 +12,4 @@ Triage (MVP wrap-up, 2026-10-06): **Phase 2** = fits the brief's next phase; **L
 | 2026-10-06 | Catalog re-import / refresh command with diff | Discovery | Snapshot import is enough for MVP | Later |
 | 2026-10-06 | Brand landing pages | F-001 scoping | Brand is already a filter | Later |
 | 2026-10-06 | Product weight/dimensions in specifications | F-001 | Needs units; DummyJSON provides none | Drop? |
-| 2026-10-06 | Account-level analytics identity (user id on server events) and product ids on `order_created` | MVP wrap-up | Enables repeat-purchase and Wishlist → Purchase funnels; changes the anonymous-events privacy stance | Needs decision |
 | 2026-10-06 | Automated accessibility checks (axe) in component/E2E tests | MVP wrap-up | Accessibility is built in but not machine-verified | Later |

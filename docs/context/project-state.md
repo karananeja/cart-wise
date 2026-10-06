@@ -100,4 +100,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-MVP wrap-up findings presented (`docs/mvp-wrap-up.md`). Waiting for the user on: (1) analytics identity (account id / product ids on events, or keep anonymous); (2) storefront demo notice mentioning simulated stock; (3) which Phase 2 track first. Then specify the chosen Phase 2 feature (F-012) for Gate 1.
+Draft F-012 Product discovery (Phase 2, user choice 2026-10-06): related products, frequently bought together, continue shopping, `recommendation_clicked`, deterministic rules (brief §17). Gather any product decisions, then present spec + intent for Gate 1.

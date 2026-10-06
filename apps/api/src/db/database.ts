@@ -44,6 +44,8 @@ function upgradeInPlace(db: Db) {
   ensureColumn(db, 'orders', 'offer_discount_paise', 'INTEGER NOT NULL DEFAULT 0');
   ensureColumn(db, 'orders', 'paid_paise', 'INTEGER');
   ensureColumn(db, 'orders', 'paid_at', 'TEXT');
+  // Account id on server analytics events (MVP wrap-up decision, 2026-10-06).
+  ensureColumn(db, 'analytics_events', 'user_id', 'INTEGER');
   // Lifecycle (F-010).
   ensureColumn(db, 'orders', 'delivered_at', 'TEXT');
   ensureColumn(db, 'orders', 'cancelled_at', 'TEXT');
