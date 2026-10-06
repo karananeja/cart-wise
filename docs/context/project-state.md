@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**Next: F-010 Orders — gathering decisions Q9 (cancel/return/refund) and Q16 (delivery OTP).** F-001 to F-009 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+**F-010 Orders — specification and intent drafted, awaiting Gate 1.** F-001 to F-009 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -70,7 +70,6 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Pending questions for the user
 
-- Q16 delivery OTP details (for F-010/F-011).
 - Currency corrected to ₹96 = $1 (2026-10-06); card offers (PAY-5, fictional banks) and simulated UPI (PAY-6) added to F-009.
 
 - Store name: "Cartwise" kept as placeholder (user did not address it).
@@ -101,4 +100,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Prepare F-010 (Orders: history, details, cancel/return/refund, delivery OTP). F-010 needs Q9 (cancel/return/refund rules) and Q16 (delivery OTP details).
+Wait for Gate 1 on F-010 (`docs/features/F-010-orders/`). Q9 and Q16 resolved 2026-10-06. Open (spec §22): order simulation (`/sim/orders`) built in F-010 (answers Q6); operator access (Q14); delivery charge not refunded on returns. On approval: technical-design.md, test-plan.md, implement.

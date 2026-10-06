@@ -49,13 +49,13 @@ Recommendation: import all categories except `vehicle` and `motorcycle` (~184 pr
 | Q6 | Store Simulation Console is in brief §16 but not in the MVP priority list. Include in MVP? | F-010 | Yes — without it the order lifecycle cannot be demonstrated |
 | Q7 | **Resolved 2026-10-06 (user):** OpenStreetMap (Leaflet + Nominatim via our API), manual form always available | F-007 | ADR-004 |
 | Q8 | **Resolved 2026-10-06 (user):** Standard (3–5 days) free on ₹999+, else ₹49; Express (1–2 days) ₹149 | F-008 | — |
-| Q9 | Cancellation / return / refund rules (which states allow which action, refund timing) | F-010 | Cancel before Shipped; return within N days of Delivered; simulated instant refund |
+| Q9 | **Resolved 2026-10-06 (user):** customer can cancel before Shipped (Confirmed or Processing); returns within 7 days of Delivered, choosing items (full quantity of each) with a reason; refunds go to the original method — cancellation refunds immediately, returns go Return Requested → Picked Up → Refunded (advanced from the Simulation Console), with stock back on sale at pickup | F-010 | — |
 | Q10 | **Resolved 2026-10-06 (user):** reserve at payment start, hold 10 minutes, release on cancel/failure/expiry | F-008 | — |
 | Q11 | **Resolved 2026-10-06 (user):** prices inclusive of GST; summary notes "Inclusive of all taxes" | F-008 | — |
 | Q12 | **Resolved 2026-10-06 (user):** cart merge takes the larger quantity, capped by stock and 10 | F-006 | — |
 | Q13 | **Resolved 2026-10-06 (user):** simulated mobile OTP verification; sign-in by mobile + OTP; forgot password via simulated code | F-006 | — |
 | Q17 | **Resolved 2026-10-06 (user):** card offers use fictional banks; the offers engine, product-page banner and discount at payment are built together in F-009. Stacking rule to confirm in the F-009 spec (recommendation: one offer per order) | F-009 | — |
-| Q16 | Delivery OTP details: when the code is generated (on Out for Delivery), where the customer sees it (order page and order list), length (4 digits), wrong-code behaviour (message + limited attempts), regeneration | F-010 / F-011 | Generate a 4-digit code on Out for Delivery; show it on the order page; 3 wrong attempts lock delivery for that attempt until a new code is issued; confirm in F-010 spec |
+| Q16 | **Resolved 2026-10-06 (user):** 4-digit code created on Out for Delivery, shown on the order page and in the order list; the console enters it to mark Delivered; 3 wrong codes block delivery until the console issues a new code | F-010 / F-011 | — |
 | Q14 | Simulation console access control | F-011 | Local demo route with a visible "Demo operator" label, no separate admin auth |
 
 ## Observations about the inputs

@@ -60,3 +60,5 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-009 Gate 1 | **Approved** | |
 | 2026-10-06 | F-009 implementation | Implemented, tested, presented for Gate 2 | |
 | 2026-10-06 | F-009 Gate 2 | **Accepted** | |
+| 2026-10-06 | F-010 decisions | Q9: cancel before Shipped; 7-day item returns; staged refunds to original method. Q16: 4-digit delivery code, 3 tries | |
+| 2026-10-06 | F-010 | Spec and intent presented for Gate 1 | Decisions: order simulation in F-010, operator access, delivery charge on returns |
