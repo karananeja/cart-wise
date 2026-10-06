@@ -5,6 +5,7 @@ import { resetAddresses } from './addressServer';
 import { resetAuth } from './authServer';
 import { resetCart } from './cartServer';
 import { resetCheckout } from './checkoutServer';
+import { resetDiscovery } from './discoveryServer';
 import { resetOrders } from './ordersServer';
 import { resetPayments } from './paymentServer';
 import { resetSim } from './simServer';
@@ -31,6 +32,7 @@ afterEach(() => {
   server.resetHandlers();
   resetCart();
   resetCheckout();
+  resetDiscovery();
   resetPayments();
   resetOrders();
   resetSim();

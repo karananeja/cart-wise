@@ -5,6 +5,7 @@ import { addressHandlers } from './addressServer';
 import { authHandlers } from './authServer';
 import { cartHandlers } from './cartServer';
 import { checkoutHandlers } from './checkoutServer';
+import { discoveryHandlers } from './discoveryServer';
 import { ordersHandlers } from './ordersServer';
 import { paymentHandlers } from './paymentServer';
 import { simHandlers } from './simServer';
@@ -20,6 +21,7 @@ export const receivedEvents: AnalyticsEvent[] = [];
  */
 export const handlers = [
   ...authHandlers,
+  ...discoveryHandlers,
   ...addressHandlers,
   ...cartHandlers,
   ...paymentHandlers,

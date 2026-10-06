@@ -11,6 +11,7 @@ import { UndoToast, useTimedNotice } from '@/components/UndoToast';
 import { Price } from '@/features/catalog/components/Price';
 import { ProductImage } from '@/features/catalog/components/ProductImage';
 import { RecentlyViewedRail } from '@/features/catalog/components/RecentlyViewedRail';
+import { CartDiscovery } from '@/features/discovery/CartDiscovery';
 import { useToggleWishlist } from '@/features/wishlist/api';
 import { useOnlineStatus } from '@/lib/useOnlineStatus';
 import { cn } from '@/lib/utils';
@@ -150,6 +151,9 @@ export function CartPage() {
           <CartSummary cart={view} />
         </div>
       )}
+
+      {/* After the lines and the checkout action, never between them (F-012 FR-10). */}
+      <CartDiscovery cart={view} />
 
       {view.lines.length > 0 && <MobileSubtotalBar cart={view} />}
       <UndoToast notice={removed} onUndo={undo} onDismiss={() => setRemoved(undefined)} />

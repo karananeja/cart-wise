@@ -15,7 +15,7 @@ export function useCart() {
   });
 }
 
-type AddInput = AddToCartRequest & { source: 'product_page' | 'undo' | 'wishlist'; productId: number; pricePaise: number };
+type AddInput = AddToCartRequest & { source: 'product_page' | 'undo' | 'wishlist' | 'recommendation'; productId: number; pricePaise: number };
 
 export function useAddToCart() {
   const queryClient = useQueryClient();

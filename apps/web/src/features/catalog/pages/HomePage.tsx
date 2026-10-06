@@ -1,4 +1,6 @@
+import { STORE_NAME } from '@/app/store';
 import { ErrorState, OfflineState } from '@/components/ErrorState';
+import { ContinueShopping } from '@/features/discovery/ContinueShopping';
 import { useCategories } from '../api';
 import { CategoryGrid, CategoryGridSkeleton } from '../components/CategoryGrid';
 import { ProductRail } from '../components/ProductRail';
@@ -9,11 +11,15 @@ export function HomePage() {
 
   return (
     <div className="flex flex-col gap-12">
+      {/* The page heading comes first so the sections below (h2) are in order for screen readers. */}
+      <h1 className="sr-only">{STORE_NAME}</h1>
+      {/* Returning visitors pick up where they left off (F-012); first-time visitors see nothing here. */}
+      <ContinueShopping />
       <section aria-labelledby="categories-heading" className="flex flex-col gap-5">
         <div>
-          <h1 id="categories-heading" className="text-2xl font-semibold tracking-tight sm:text-3xl">
+          <h2 id="categories-heading" className="text-2xl font-semibold tracking-tight sm:text-3xl">
             Shop by category
-          </h1>
+          </h2>
           <p className="text-muted-foreground">Everything from skincare to smartphones, in one place.</p>
         </div>
         {categories.data ? (

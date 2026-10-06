@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, OfflineState } from '@/components/ErrorState';
 import { NotFound } from '@/components/NotFound';
 import { AddToCartButton } from '@/features/cart/AddToCartButton';
+import { ProductDiscovery } from '@/features/discovery/ProductDiscovery';
 import { OfferBanner } from '@/features/payment/OfferBanner';
 import { WishlistToggle } from '@/features/wishlist/WishlistToggle';
 import { ApiError } from '@/lib/api';
@@ -27,9 +28,17 @@ import { RecentlyViewedRail } from '../components/RecentlyViewedRail';
 import { ReviewList } from '../components/ReviewList';
 import { SizeSelector } from '../components/SizeSelector';
 
+/** Only an existing, in-stock size from the URL counts as selected (spec FR-10). */
+function useSelectedSize(p: ProductDetail | undefined) {
+  const [searchParams] = useSearchParams();
+  const requested = searchParams.get('size');
+  return p?.sizes.find((s) => s.label === requested && s.availability.status !== 'out_of_stock');
+}
+
 export function ProductPage() {
   const { productSlug = '' } = useParams();
   const product = useProduct(productSlug);
+  const selectedSize = useSelectedSize(product.data);
   useTrackProductView(product.data);
 
   if (product.error instanceof ApiError && product.error.isNotFound) return <NotFound title="We couldn't find that product" />;
@@ -88,6 +97,7 @@ export function ProductPage() {
         )}
       </section>
 
+      <ProductDiscovery product={p} selectedSize={selectedSize?.label} />
       <ReviewList reviews={p.reviews} rating={p.rating} />
       <RecentlyViewedRail excludeSlug={p.slug} />
     </div>
@@ -96,9 +106,7 @@ export function ProductPage() {
 
 function PurchasePanel({ product: p }: { product: ProductDetail }) {
   const [searchParams, setSearchParams] = useSearchParams();
-  // Only an existing, in-stock size from the URL counts as selected (spec FR-10).
-  const requested = searchParams.get('size');
-  const selected = p.sizes.find((s) => s.label === requested && s.availability.status !== 'out_of_stock');
+  const selected = useSelectedSize(p);
   const shipping = p.specifications.find((s) => s.label === 'Shipping')?.value;
   const sizeGroup = useRef<HTMLFieldSetElement>(null);
   const [sizeError, setSizeError] = useState<string>();
