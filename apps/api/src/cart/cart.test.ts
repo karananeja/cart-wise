@@ -52,8 +52,8 @@ describe('cart', () => {
 
     const cart = res.body as CartView;
     expect(cart.lines).toHaveLength(1);
-    expect(cart.lines[0]).toMatchObject({ size: null, quantity: 1, issue: 'none', linePricePaise: 894, lineMrpPaise: 999 });
-    expect(cart.totals).toEqual({ itemCount: 1, mrpPaise: 999, discountPaise: 105, subtotalPaise: 894 });
+    expect(cart.lines[0]).toMatchObject({ size: null, quantity: 1, issue: 'none', linePricePaise: 85853, lineMrpPaise: 95904 });
+    expect(cart.totals).toEqual({ itemCount: 1, mrpPaise: 95904, discountPaise: 10051, subtotalPaise: 85853 });
   });
 
   it('keeps the cart across requests and isolates different browsers', async () => {

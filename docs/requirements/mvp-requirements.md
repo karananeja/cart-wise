@@ -79,6 +79,8 @@ Derived from `PROJECT_BRIEF.md`. IDs are stable. "Feature" is the planned featur
 | PAY-2 | Deterministic success and failure paths, retry | §13 |
 | PAY-3 | Failure preserves cart | §13 |
 | PAY-4 | No real card data stored; masked display only | §13 |
+| PAY-5 | **Card offers:** simulated bank/card offers (e.g. instant discount for a card type, with minimum order and cap). The product page shows a banner naming the card with the best offer for that product's price; offers apply at payment | User request 2026-10-06 |
+| PAY-6 | **UPI (simulated):** pay by UPI ID (collect request approved in a simulated UPI app screen) or UPI QR, with success, failure and timeout paths | User request 2026-10-06 |
 
 ## Orders — F-010
 

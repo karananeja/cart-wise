@@ -63,7 +63,36 @@ export function seedDatabase(db: Db, snapshot: CatalogSnapshot = loadSnapshot())
     }
   })();
 
+  setPriceRate(db, USD_TO_INR_RATE);
   return { products: products.length, categories: categories.length };
+}
+
+const RATE_KEY = 'usd_to_inr_rate';
+
+function setPriceRate(db: Db, rate: number) {
+  db.prepare('INSERT INTO app_settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value').run(RATE_KEY, String(rate));
+}
+
+/** The rate the stored prices were calculated with. Databases from before it was recorded used 1:1. */
+export function storedPriceRate(db: Db): number {
+  const row = db.prepare('SELECT value FROM app_settings WHERE key = ?').get(RATE_KEY) as { value: string } | undefined;
+  return row ? Number(row.value) : 1;
+}
+
+/**
+ * Re-prices products from the snapshot when the configured rate differs from the one the
+ * database was priced with. Only prices change: stock, carts, wishlists and accounts are kept.
+ * Returns whether anything was re-priced.
+ */
+export function repriceIfRateChanged(db: Db, snapshot: CatalogSnapshot = loadSnapshot()): boolean {
+  if (!isSeeded(db) || storedPriceRate(db) === USD_TO_INR_RATE) return false;
+  const { products } = mapCatalog(snapshot.products, USD_TO_INR_RATE);
+  const update = db.prepare('UPDATE products SET mrp_paise = ?, price_paise = ?, discount_percent = ? WHERE id = ?');
+  db.transaction(() => {
+    for (const p of products) update.run(p.mrpPaise, p.pricePaise, p.discountPercent, p.id);
+    setPriceRate(db, USD_TO_INR_RATE);
+  })();
+  return true;
 }
 
 export function isSeeded(db: Db): boolean {

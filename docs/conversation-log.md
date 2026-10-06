@@ -40,3 +40,6 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-006 | Spec, intent and ADR-003 presented for Gate 1 | |
 | 2026-10-06 | F-006 Gate 1 | **Approved**; ADR-003 accepted | |
 | 2026-10-06 | F-006 implementation | Implemented, tested, presented for Gate 2 | |
+| 2026-10-06 | Currency (Q2 correction) | ₹96 = $1; re-priced in place | Implemented immediately |
+| 2026-10-06 | Card offers | New requirement PAY-5: best-card-offer banner on product page; offers apply at payment | Timing and offer rules: Q17 |
+| 2026-10-06 | UPI | New requirement PAY-6: simulated UPI payment flow | F-009 |

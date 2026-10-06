@@ -49,7 +49,7 @@ export function clearFilterGroup(group: FilterGroup): Partial<ListingParams> {
   }
 }
 
-const NICE_BOUNDS = [50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000];
+const NICE_BOUNDS = [50, 100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000, 250000, 500000, 1000000, 2500000, 5000000];
 
 /**
  * Up to four preset ranges spread across the available price range, using round numbers.

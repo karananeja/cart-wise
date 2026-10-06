@@ -1,3 +1,9 @@
+-- Small key/value facts about the database itself (e.g. the price conversion rate used).
+CREATE TABLE IF NOT EXISTS app_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS categories (
   slug TEXT PRIMARY KEY,
   name TEXT NOT NULL,

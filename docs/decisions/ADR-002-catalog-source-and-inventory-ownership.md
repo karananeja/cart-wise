@@ -20,7 +20,7 @@ Import DummyJSON products into the application's database as a catalog snapshot,
 
 ## Decision
 
-- An import script fetches DummyJSON and saves the raw response as a committed snapshot file (`apps/api/data/catalog/dummyjson-products.json`). A seed step maps the snapshot to the app `Product` model (with `externalCatalogId`), converts prices at the configured rate (currently 1:1) and loads all categories into the database. Because the snapshot is committed, a fresh clone runs without contacting DummyJSON and every seed is identical.
+- An import script fetches DummyJSON and saves the raw response as a committed snapshot file (`apps/api/data/catalog/dummyjson-products.json`). A seed step maps the snapshot to the app `Product` model (with `externalCatalogId`), converts prices at the configured rate (₹96 per $1 since 2026-10-06; changing it re-prices products in place on the next start) and loads all categories into the database. Because the snapshot is committed, a fresh clone runs without contacting DummyJSON and every seed is identical.
 - A separate `inventory` table (`productId`, `onHand`, `reserved`) is seeded deterministically by the application. DummyJSON stock fields are discarded.
 - Availability shown to users is derived from application inventory only: `available = onHand − reserved`; 0 → Out of stock; 1–5 → "Only N left"; otherwise In stock.
 

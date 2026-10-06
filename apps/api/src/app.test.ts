@@ -114,7 +114,7 @@ describe('GET /api/products/:slug', () => {
     expect(res.body.product).toMatchObject({
       title: 'Essence Mascara Lash Princess',
       categoryName: 'Beauty',
-      mrpPaise: 999,
+      mrpPaise: 95904,
       discountPercent: 10,
     });
     expect(res.body.product.imageUrls.length).toBeGreaterThan(0);
