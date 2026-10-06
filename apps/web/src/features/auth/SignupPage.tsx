@@ -41,7 +41,6 @@ export function SignupPage() {
   return (
     <AuthLayout
       title={challenge ? 'Verify your mobile' : 'Create your account'}
-      description={challenge ? undefined : 'Takes a minute. No address needed until checkout.'}
       footer={
         <>
           Already have an account? <AuthLink to={`/login${carry()}`}>Sign in</AuthLink>

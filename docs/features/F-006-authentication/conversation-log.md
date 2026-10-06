@@ -10,3 +10,4 @@
 | 2026-10-06 | Gate 1 | **Approved**; interpretations confirmed; ADR-003 accepted | |
 | 2026-10-06 | Implementation complete | Presented for Gate 2 | See acceptance.md |
 | 2026-10-06 | Gate 2 | **Accepted** by user | |
+| 2026-10-06 | Sign-up copy | Removed the subtitle "Takes a minute. No address needed until checkout." (user feedback: looks bad) | |
