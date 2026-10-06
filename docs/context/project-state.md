@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-008 Checkout — specification and intent drafted, awaiting Gate 1.** F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+**F-008 Checkout — implemented and tested, awaiting Gate 2.** F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -51,11 +51,12 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 - `apps/api/src/wishlist/`, `apps/web/src/features/wishlist/` — wishlist API, hearts, page, size picker; `apps/api/src/http/cookies.ts` — guest cookies
 - `apps/api/src/auth/` (validation, passwords, otp, sessions, rateLimit, merge, routes), `apps/api/src/http/owner.ts` (user/guest owner), `apps/web/src/features/auth/`
 - `apps/api/src/addresses/`, `apps/api/src/geo/` (Nominatim proxy), `apps/web/src/features/addresses/` (LocationPicker, lazy MapView)
+- `apps/api/src/orders/` (quote, atomic holds, expiry sweep), `apps/web/src/features/checkout/` (CheckoutPage, PaymentPage, HoldCountdown)
 - `apps/web/src/features/search/SearchBox.tsx` — header combobox; `apps/web/src/lib/recentSearches.ts` — history store
 
 ## Tests
 
-- `pnpm test`: 272 passing (shared 20, api 154, web 98). `pnpm e2e`: 32 passing (stable over 3 repeats). Typecheck clean. Build succeeds (Leaflet lazy-loaded).
+- `pnpm test`: 296 passing (shared 22, api 166, web 108). `pnpm e2e`: 34 passing (stable over 3 repeats). Typecheck clean. Build succeeds.
 - No failing tests.
 
 ## Known bugs / limitations
@@ -97,4 +98,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Wait for Gate 1 approval of F-008 (`features/F-008-checkout/`): confirm one-page checkout with three visible sections, and that restarting checkout cancels the previous unpaid hold. On approval: technical design (orders/order_lines, atomic reservation, expiry sweep, quote endpoint), implement, test (incl. concurrent last-unit), present for Gate 2.
+Wait for Gate 2 acceptance of F-008. On acceptance: mark complete, then prepare F-009 (Simulated payment: card, UPI, card offers with fictional banks and product-page best-offer banner). F-009 needs: offer catalogue and stacking rule (Q17), test-card behaviours (success/failure), UPI flow details.

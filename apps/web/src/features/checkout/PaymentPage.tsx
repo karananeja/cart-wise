@@ -38,8 +38,8 @@ export function PaymentPage() {
   }
 
   return (
-    <div className="mx-auto grid w-full max-w-4xl items-start gap-8 lg:grid-cols-[1fr_20rem]">
-      <div className="flex flex-col gap-5">
+    <div className="mx-auto grid w-full max-w-4xl grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_20rem]">
+      <div className="flex min-w-0 flex-col gap-5">
         <div>
           <p className="text-sm text-muted-foreground">Order {o.id}</p>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Payment</h1>
@@ -48,7 +48,7 @@ export function PaymentPage() {
         <div className="flex flex-col gap-2 rounded-xl border p-5">
           <p className="text-sm text-muted-foreground">Amount to pay</p>
           <p className="text-3xl font-semibold tabular-nums">{formatPrice(o.totals.totalPaise)}</p>
-          <p className="text-sm text-muted-foreground">Card and UPI payment, with card offers, are added in the next step of this project.</p>
+          <p className="text-sm text-muted-foreground">Payment options will appear here.</p>
         </div>
         <div className="text-sm text-muted-foreground">
           <p>
@@ -72,7 +72,7 @@ export function PaymentPage() {
           Cancel and return to cart
         </Button>
       </div>
-      <OrderSummary totals={o.totals}>
+      <OrderSummary totals={o.totals} className="min-w-0">
         <ul className="flex flex-col gap-1 border-t pt-3 text-sm">
           {o.lines.map((line) => (
             <li key={`${line.productId}-${line.size}`} className="flex justify-between gap-2">

@@ -26,8 +26,12 @@ export function CheckoutPage() {
   const me = useMe();
   const signedIn = Boolean(me.data?.user);
   const [params, setParams] = useSearchParams();
-  const addressId = Number(params.get('addressId')) || undefined;
-  const delivery: DeliveryOption = isDeliveryOption(params.get('delivery')) ? (params.get('delivery') as DeliveryOption) : 'standard';
+  // Choices update instantly in state (URL updates are deferred transitions, which would make the
+  // radios lag); the URL mirrors them so reloads and returns from sign-in/add-address keep them.
+  const [addressId, setAddressId] = useState(() => Number(params.get('addressId')) || undefined);
+  const [delivery, setDelivery] = useState<DeliveryOption>(() =>
+    isDeliveryOption(params.get('delivery')) ? (params.get('delivery') as DeliveryOption) : 'standard',
+  );
   const quote = useCheckoutQuote(addressId, delivery, signedIn);
   const create = useCreateOrder();
   const navigate = useNavigate();
@@ -48,9 +52,12 @@ export function CheckoutPage() {
   const q = quote.data;
   if (q.blockers.includes('EMPTY_CART')) return <Navigate to="/cart" replace />;
 
-  const select = (changes: Record<string, string>) => {
+  const select = (changes: { addressId?: number; delivery?: DeliveryOption }) => {
+    if (changes.addressId !== undefined) setAddressId(changes.addressId);
+    if (changes.delivery) setDelivery(changes.delivery);
     const next = new URLSearchParams(params);
-    for (const [key, value] of Object.entries(changes)) next.set(key, value);
+    if (changes.addressId !== undefined) next.set('addressId', String(changes.addressId));
+    if (changes.delivery) next.set('delivery', changes.delivery);
     setParams(next, { replace: true, preventScrollReset: true });
   };
   const here = `/checkout?${params}`;
@@ -103,13 +110,14 @@ export function CheckoutPage() {
         </Alert>
       )}
 
-      <div className="grid items-start gap-8 lg:grid-cols-[1fr_22rem]">
-        <div className="flex flex-col gap-6">
+      {/* min-w-0 lets the columns shrink below long (truncated) product titles on narrow screens. */}
+      <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_22rem]">
+        <div className="flex min-w-0 flex-col gap-6">
           <Section number={1} title="Delivery address">
-            <AddressSection quote={q} returnTo={here} onSelect={(id) => select({ addressId: String(id) })} />
+            <AddressSection quote={q} returnTo={here} onSelect={(id) => select({ addressId: id })} />
           </Section>
           <Section number={2} title="Delivery">
-            <DeliverySection quote={q} onSelect={(option) => select({ delivery: option })} />
+            <DeliverySection quote={q} selected={delivery} onSelect={(option) => select({ delivery: option })} />
           </Section>
           <Section number={3} title="Review items" action={<Link to="/cart" className="text-sm font-medium hover:underline">Edit cart</Link>}>
             <ul className="flex flex-col divide-y">
@@ -129,7 +137,7 @@ export function CheckoutPage() {
           </Section>
         </div>
 
-        <OrderSummary totals={q.totals} className="lg:sticky lg:top-24">
+        <OrderSummary totals={q.totals} className="min-w-0 lg:sticky lg:top-24">
           {q.address && (
             <p className="text-xs text-muted-foreground">
               Delivering to {q.address.fullName}, {q.address.city} {q.address.pincode} ·{' '}
@@ -241,7 +249,8 @@ function AddressSection({ quote, returnTo, onSelect }: { quote: CheckoutQuote; r
   );
 }
 
-function DeliverySection({ quote, onSelect }: { quote: CheckoutQuote; onSelect: (option: DeliveryOption) => void }) {
+/** The radio follows the customer's choice immediately; prices refresh when the new quote arrives. */
+function DeliverySection({ quote, selected, onSelect }: { quote: CheckoutQuote; selected: DeliveryOption; onSelect: (option: DeliveryOption) => void }) {
   return (
     <fieldset className="grid gap-3 sm:grid-cols-2">
       <legend className="sr-only">Choose delivery speed</legend>
@@ -252,7 +261,7 @@ function DeliverySection({ quote, onSelect }: { quote: CheckoutQuote; onSelect: 
         >
           <span className="flex items-center justify-between gap-2">
             <span className="flex items-center gap-2 font-medium">
-              <input type="radio" name="delivery" value={option.option} checked={quote.selectedDelivery === option.option} onChange={() => onSelect(option.option)} />
+              <input type="radio" name="delivery" value={option.option} checked={selected === option.option} onChange={() => onSelect(option.option)} />
               {option.label}
             </span>
             <span className="font-medium tabular-nums">{option.pricePaise === 0 ? 'Free' : formatPrice(option.pricePaise)}</span>
