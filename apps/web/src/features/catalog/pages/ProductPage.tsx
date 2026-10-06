@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, OfflineState } from '@/components/ErrorState';
 import { NotFound } from '@/components/NotFound';
 import { AddToCartButton } from '@/features/cart/AddToCartButton';
+import { WishlistToggle } from '@/features/wishlist/WishlistToggle';
 import { ApiError } from '@/lib/api';
 import { track } from '@/lib/analytics';
 import { recordProductView } from '@/lib/recentlyViewed';
@@ -127,7 +128,10 @@ function PurchasePanel({ product: p }: { product: ProductDetail }) {
         <SizeSelector ref={sizeGroup} sizes={p.sizes} value={selected?.label} onChange={selectSize} error={sizeError} />
       )}
       <AvailabilityLine product={p} selectedSize={selected?.label} />
-      <AddToCartButton product={p} selectedSize={selected?.label} onSizeRequired={requireSize} />
+      <div className="flex flex-wrap items-start gap-3">
+        <AddToCartButton product={p} selectedSize={selected?.label} onSizeRequired={requireSize} />
+        <WishlistToggle product={p} variant="inline" />
+      </div>
       {shipping && (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
           <Truck className="size-4" aria-hidden /> {shipping}

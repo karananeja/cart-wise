@@ -22,7 +22,7 @@ Order follows the brief's journey and dependencies: each feature builds on the o
 | F-002 | Search + search history | SRCH-1..4, HIST-1 | F-001 | **Complete** (accepted 2026-10-06) |
 | F-003 | Product details, sizes, reviews + recently viewed | PDP-1, PDP-3, RV-1 | F-001 | **Complete** (accepted 2026-10-06) |
 | F-004 | Guest cart (incl. Add to cart on the product page, PDP-2) | CART-1..4, PDP-2 | F-003 | **Complete** (accepted 2026-10-06) |
-| F-005 | Wishlist | WISH-1..2 | F-003 | In progress (Gate 1 approved 2026-10-06) |
+| F-005 | Wishlist | WISH-1..2 | F-003 | Implemented and tested — awaiting Gate 2 sign-off |
 | F-006 | Authentication + guest state merge | AUTH-1..4 | F-004, F-005 | Not started |
 | F-007 | Address management | ADDR-1..2 | F-006 | Not started |
 | F-008 | Checkout (address, delivery, summary, reservation) | CHK-1..3, INV-2 | F-007 | Not started |

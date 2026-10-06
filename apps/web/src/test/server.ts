@@ -2,6 +2,7 @@ import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { parseListingParams, type AnalyticsEvent } from '@store/shared';
 import { cartHandlers } from './cartServer';
+import { wishlistHandlers } from './wishlistServer';
 import { categories, listing, productDetails, products } from './fixtures';
 
 /** Analytics events received by the mock API during a test. */
@@ -13,6 +14,7 @@ export const receivedEvents: AnalyticsEvent[] = [];
  */
 export const handlers = [
   ...cartHandlers,
+  ...wishlistHandlers,
   http.get('*/api/categories', () => HttpResponse.json({ categories })),
   http.get('*/api/products', ({ request }) => {
     const params = parseListingParams(new URL(request.url).searchParams);

@@ -29,3 +29,11 @@ Screenshots on the preview ports (5274/3201): cards with hearts, wishlist page, 
 
 | Run date | Command | Result | Notes |
 |---|---|---|---|
+| 2026-10-06 | `pnpm test` | 209 passed (shared 16, api 114, web 79) | Wishlist component tests stable over 3 runs |
+| 2026-10-06 | `pnpm e2e --repeat-each=3 --workers=2` | 72 passed (24 tests × 3) | |
+| 2026-10-06 | `pnpm typecheck`, `pnpm build` | Clean / succeeds | |
+| 2026-10-06 | Manual (preview ports 5274/3201) | Pass | Card hearts, product page Saved, wishlist page, size picker (desktop and bottom-anchored mobile); no console errors |
+
+### Defects found during testing
+
+- The ProductCard unit test rendered without a query provider once cards gained the heart; test harness updated (no product defect).

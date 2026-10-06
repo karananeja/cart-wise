@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import type { ProductSummary } from '@store/shared';
@@ -7,9 +8,11 @@ import { ProductCard } from './ProductCard';
 
 const renderCard = (p: ProductSummary) =>
   render(
-    <MemoryRouter>
-      <ProductCard product={p} />
-    </MemoryRouter>,
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <MemoryRouter>
+        <ProductCard product={p} />
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 
 describe('ProductCard', () => {

@@ -4,7 +4,7 @@
 
 **ID:** F-005
 **Name:** Wishlist
-**Status:** Approved — In Progress (Gate 1 approved 2026-10-06)
+**Status:** Acceptance — awaiting Gate 2 (Gate 1 approved 2026-10-06)
 **Requirements:** WISH-1, WISH-2, STATE-1, ANL-1 (`wishlist_added`, `wishlist_removed`)
 
 ---

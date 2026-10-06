@@ -40,7 +40,7 @@ export function apiGet<T>(path: string, signal?: AbortSignal): Promise<T> {
 }
 
 /** Sends a JSON body (POST/PATCH/DELETE). Cookies go with it, as for any same-origin request. */
-export function apiSend<T>(method: 'POST' | 'PATCH' | 'DELETE', path: string, body?: unknown): Promise<T> {
+export function apiSend<T>(method: 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: string, body?: unknown): Promise<T> {
   return request<T>(path, {
     method,
     headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },

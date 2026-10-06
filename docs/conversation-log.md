@@ -34,3 +34,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-004 Gate 2 | **Accepted** | |
 | 2026-10-06 | F-005 | Spec and intent presented for Gate 1 | |
 | 2026-10-06 | F-005 Gate 1 | **Approved** as proposed | |
+| 2026-10-06 | F-005 implementation | Implemented, tested, presented for Gate 2 | |

@@ -2,6 +2,7 @@ import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import { resetCart } from './cartServer';
+import { resetWishlist } from './wishlistServer';
 import { server } from './server';
 
 // jsdom gaps used by Radix primitives and the listing page.
@@ -19,5 +20,6 @@ afterEach(() => {
   cleanup();
   server.resetHandlers();
   resetCart();
+  resetWishlist();
 });
 afterAll(() => server.close());

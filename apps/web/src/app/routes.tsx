@@ -5,6 +5,7 @@ import { HomePage } from '@/features/catalog/pages/HomePage';
 import { ListingPage } from '@/features/catalog/pages/ListingPage';
 import { ProductPage } from '@/features/catalog/pages/ProductPage';
 import { CartPage } from '@/features/cart/CartPage';
+import { WishlistPage } from '@/features/wishlist/WishlistPage';
 import { RootLayout } from './RootLayout';
 import { RouteError } from './RouteError';
 
@@ -18,6 +19,7 @@ export const routes: RouteObject[] = [
       { path: 'c/:categorySlug', element: <CategoryListingPage /> },
       { path: 'search', element: <SearchPage /> },
       { path: 'cart', element: <CartPage /> },
+      { path: 'wishlist', element: <WishlistPage /> },
       { path: 'p/:productSlug', element: <ProductPage /> },
       { path: '*', element: <NotFound /> },
     ],

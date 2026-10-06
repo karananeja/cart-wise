@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, ShoppingCart, Trash2, WifiOff } from 'lucide-react';
+import { AlertTriangle, Heart, ShoppingCart, Trash2, WifiOff } from 'lucide-react';
 import { Link } from 'react-router';
 import { formatPrice, type CartLineView, type CartView } from '@store/shared';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -10,6 +10,7 @@ import { StatusMessage } from '@/components/StatusMessage';
 import { Price } from '@/features/catalog/components/Price';
 import { ProductImage } from '@/features/catalog/components/ProductImage';
 import { RecentlyViewedRail } from '@/features/catalog/components/RecentlyViewedRail';
+import { useToggleWishlist } from '@/features/wishlist/api';
 import { useOnlineStatus } from '@/lib/useOnlineStatus';
 import { cn } from '@/lib/utils';
 import { useAddToCart, useCart, useRemoveCartLine, useUpdateCartLine } from './api';
@@ -20,6 +21,8 @@ const UNDO_MS = 6000;
 
 interface RemovedLine {
   key: number;
+  /** What the toast says, e.g. "Removed X" or "Moved X to wishlist". */
+  message: string;
   title: string;
   productSlug: string;
   productId: number;
@@ -34,6 +37,7 @@ export function CartPage() {
   const update = useUpdateCartLine();
   const remove = useRemoveCartLine();
   const add = useAddToCart();
+  const saveToWishlist = useToggleWishlist();
   const [error, setError] = useState<string>();
   const [removed, setRemoved] = useState<RemovedLine>();
 
@@ -58,10 +62,11 @@ export function CartPage() {
     update.mutate({ lineId: line.id, quantity }, { onError });
   };
 
-  const removeLine = (line: CartLineView) => {
+  const removeLine = (line: CartLineView, message = `Removed ${line.product.title}`) => {
     setError(undefined);
     setRemoved({
       key: Date.now(),
+      message,
       title: line.product.title,
       productSlug: line.product.slug,
       productId: line.product.id,
@@ -77,6 +82,15 @@ export function CartPage() {
           onError(e);
         },
       },
+    );
+  };
+
+  // Save first; only take the line out of the cart once the product is safely saved.
+  const moveToWishlist = (line: CartLineView) => {
+    setError(undefined);
+    saveToWishlist.mutate(
+      { product: line.product, save: true, source: 'cart' },
+      { onSuccess: () => removeLine(line, `Moved ${line.product.title} to wishlist`), onError },
     );
   };
 
@@ -132,6 +146,7 @@ export function CartPage() {
                   disabled={!online}
                   onQuantity={(q) => changeQuantity(line, q)}
                   onRemove={() => removeLine(line)}
+                  onMoveToWishlist={() => moveToWishlist(line)}
                 />
               ))}
             </ul>
@@ -154,11 +169,13 @@ function CartLine({
   disabled,
   onQuantity,
   onRemove,
+  onMoveToWishlist,
 }: {
   line: CartLineView;
   disabled: boolean;
   onQuantity: (quantity: number) => void;
   onRemove: () => void;
+  onMoveToWishlist: () => void;
 }) {
   const { product } = line;
   const href = `/p/${product.slug}${line.size ? `?size=${encodeURIComponent(line.size)}` : ''}`;
@@ -196,6 +213,9 @@ function CartLine({
           )}
           <Button variant="ghost" size="sm" onClick={onRemove} disabled={disabled} aria-label={`Remove ${product.title}${line.size ? `, size ${line.size}` : ''}`}>
             <Trash2 aria-hidden /> Remove
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onMoveToWishlist} disabled={disabled} aria-label={`Move ${product.title} to wishlist`}>
+            <Heart aria-hidden /> Move to wishlist
           </Button>
           {!unavailable && (
             <p className="ml-auto text-sm font-semibold tabular-nums">
@@ -266,7 +286,7 @@ function UndoToast({ removed, onUndo, onDismiss }: { removed: RemovedLine | unde
     <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-20 z-40 flex justify-center px-4 lg:bottom-6">
       {removed && (
         <div key={removed.key} className="pointer-events-auto flex max-w-md items-center gap-3 rounded-xl bg-foreground px-4 py-3 text-sm text-background shadow-lg">
-          <span className="min-w-0 truncate">Removed {removed.title}</span>
+          <span className="min-w-0 truncate">{removed.message}</span>
           <Button size="sm" variant="secondary" onClick={onUndo}>
             Undo
           </Button>

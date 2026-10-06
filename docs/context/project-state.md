@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-005 Wishlist — specification and intent drafted, awaiting Gate 1.** F-001 to F-004 complete (accepted 2026-10-06).
+**F-005 Wishlist — implemented and tested, awaiting Gate 2.** F-001 to F-004 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -21,7 +21,7 @@ Phase 1 — MVP.
 
 ## In progress
 
-None. Waiting for Gate 1 approval of F-005.
+None. Waiting for Gate 2 acceptance of F-005.
 
 ## Remaining
 
@@ -48,11 +48,12 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 - `apps/api/src/search/` — search index (MiniSearch + term processing, swapped-letter variants)
 - `apps/api/src/inventory/sizes.ts` — size sets; `apps/web/src/lib/localList.ts` — bounded local lists (recent searches, recently viewed)
 - `apps/api/src/cart/` — cart rules, service (cookie identity, limits, expiry), routes; `apps/web/src/features/cart/` — Add to cart, cart page, hooks
+- `apps/api/src/wishlist/`, `apps/web/src/features/wishlist/` — wishlist API, hearts, page, size picker; `apps/api/src/http/cookies.ts` — guest cookies
 - `apps/web/src/features/search/SearchBox.tsx` — header combobox; `apps/web/src/lib/recentSearches.ts` — history store
 
 ## Tests
 
-- `pnpm test`: 193 passing (shared 16, api 107, web 70). `pnpm e2e`: 21 passing (stable over 3 repeats). Typecheck clean. Build succeeds.
+- `pnpm test`: 209 passing (shared 16, api 114, web 79). `pnpm e2e`: 24 passing (stable over 3 repeats). Typecheck clean. Build succeeds.
 - No failing tests.
 
 ## Known bugs / limitations
@@ -85,7 +86,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 2 F-003: 2026-10-06.
 - Gate 1 F-004: 2026-10-06 (10 per line, 30-day carts; Go to cart later changed to an in-place stepper).
 - Gate 2 F-004: 2026-10-06.
+- Gate 1 F-005: 2026-10-06 (product-level, 100 items, 90 days, hearts on cards).
 
 ## Exact next action
 
-Wait for Gate 1 approval of F-005 (`features/F-005-wishlist/`), including confirmation of product-level saving, 100-item cap, 90-day lifetime and hearts on cards. On approval: technical design (wishlists and wishlist_items tables, `wishlist_id` cookie, shared saved-ids query, size picker dialog, cart Move to wishlist), test plan, implement, test on ports 5174/3101 (E2E) and 5274/3201 (preview), present for Gate 2.
+Wait for Gate 2 acceptance of F-005. On acceptance: mark complete, then prepare F-006 (Authentication + guest state merge) specification and intent for Gate 1. F-006 needs Q12 (merge conflict rules) and Q13 (verification/password reset), and touches the security model, so options will be presented.

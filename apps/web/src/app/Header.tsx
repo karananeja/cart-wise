@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useCategories } from '@/features/catalog/api';
 import { HeaderCartLink } from '@/features/cart/HeaderCartLink';
+import { HeaderWishlistLink } from '@/features/wishlist/HeaderWishlistLink';
 import { SearchBox } from '@/features/search/SearchBox';
 import { STORE_NAME } from './store';
 
@@ -59,6 +60,7 @@ export function Header() {
               All products
             </NavLink>
           </Button>
+          <HeaderWishlistLink />
           <HeaderCartLink />
         </nav>
       </div>
