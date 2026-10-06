@@ -81,3 +81,5 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-012 implementation | Implemented, tested, presented for Gate 2 | |
 | 2026-10-06 | F-012 Gate 2 review | Personalised rails moved below the category grid and recently viewed | |
 | 2026-10-06 | F-012 Gate 2 review | Homepage reordered per user; SQLite transaction-lock fix for intermittent failures | |
+| 2026-10-06 | Account menu | User: profile dropdown cut off the email → fixed (menu sized to content, long emails wrap) | |
+| 2026-10-06 | Electronics variants | Storage (phones/tablets) and RAM+storage (laptops); price steps up per tier; no colour; accessories/watches unchanged; build as F-013 after F-012 | User choice |

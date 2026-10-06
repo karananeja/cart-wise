@@ -101,4 +101,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Wait for Gate 2 acceptance of F-012 (`docs/features/F-012-product-discovery/acceptance.md`). Raised for the user: companions are ranked by rating first (a premium accessory can be suggested for a phone) — optional price cap is a product change. After acceptance: next Phase 2 track (reviews, retention, analytics funnel view) by user choice.
+Wait for Gate 2 acceptance of F-012 (homepage reordered per user; account menu email fix; SQLite lock fix). Still open: optional price cap on "Pairs well with" companions. Then specify F-013 Electronics variants (decided 2026-10-06: storage for phones/tablets, RAM+storage for laptops, price steps per tier, no colour, accessories/watches unchanged) for Gate 1.
