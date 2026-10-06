@@ -4,7 +4,7 @@
 
 **ID:** F-011
 **Name:** Store Simulation Console — inventory simulation
-**Status:** Acceptance — awaiting Gate 2 (Gate 1 approved 2026-10-06)
+**Status:** Complete (Gate 1 and Gate 2 approved 2026-10-06)
 **Requirements:** SIM-1, SIM-2, INV-1, INV-3, STATE-1. SIM-3 and SIM-4 were delivered in F-010.
 
 **User decisions applied (2026-10-06):**

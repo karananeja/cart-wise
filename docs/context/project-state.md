@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-011 Store Simulation Console (inventory simulation) — implemented and tested, awaiting Gate 2.** F-001 to F-010 complete (accepted 2026-10-06). F-001 to F-009 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+**Phase 1 MVP feature list complete — F-001 to F-011 accepted 2026-10-06.** Next: MVP wrap-up and Phase 2 sequencing (user to choose). F-001 to F-010 complete (accepted 2026-10-06). F-001 to F-009 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -100,8 +100,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 1 F-008: 2026-10-06; Gate 2 F-008: 2026-10-06.
 - Gate 1 F-009: 2026-10-06 (customer-chosen offer, any Luhn-valid card with first 6/last 4 only, bank OTP, in-page demo UPI app); Gate 2 F-009: 2026-10-06.
 - Gate 1 F-010: 2026-10-06 (order simulation in F-010; demo operator password; delivery charge not refunded on returns); Gate 2 F-010: 2026-10-06 (after return-dialog width fix).
-- Gate 1 F-011: 2026-10-06.
+- Gate 1 F-011: 2026-10-06; Gate 2 F-011: 2026-10-06.
 
 ## Exact next action
 
-Wait for Gate 2 acceptance of F-011 (`docs/features/F-011-inventory-simulation/acceptance.md`). On acceptance: mark complete. That completes the Phase 1 MVP feature list (F-001–F-011); next, propose an MVP wrap-up (full-journey review, backlog triage) and Phase 2 sequencing for the user to choose.
+Phase 1 complete. Proposed to the user (awaiting choice): MVP wrap-up (full-journey review against the brief, backlog triage, production-readiness notes) and Phase 2 sequencing (brief §24: reviews, related products, frequently bought together, continue shopping, order tracking timeline, notifications, price-drop/back-in-stock, discovery homepage). Optional AI features need separate proposals (CLAUDE.md §14).

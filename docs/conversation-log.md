@@ -71,3 +71,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-011 | Spec and intent presented for Gate 1 | |
 | 2026-10-06 | F-011 Gate 1 | **Approved** | |
 | 2026-10-06 | F-011 implementation | Implemented, tested, presented for Gate 2 | |
+| 2026-10-06 | F-011 Gate 2 | **Accepted** — Phase 1 MVP feature list complete | |
