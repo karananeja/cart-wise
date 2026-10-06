@@ -6,6 +6,7 @@ import { createWishlistService } from './wishlist/service.js';
 import { createAddressService } from './addresses/service.js';
 import { createOrderService } from './orders/service.js';
 import { openDatabase } from './db/database.js';
+import { createEventRecorder } from './analytics/record.js';
 import { isSeeded, repriceIfRateChanged, seedDatabase } from './db/seed.js';
 import { DEFAULT_DB_PATH } from './paths.js';
 
@@ -33,7 +34,7 @@ deleteExpiredGuestData();
 setInterval(deleteExpiredGuestData, 60 * 60 * 1000).unref();
 
 // Unpaid holds past 10 minutes give their stock back (F-008).
-const orders = createOrderService({ db, carts, addresses: createAddressService(db) });
+const orders = createOrderService({ db, carts, addresses: createAddressService(db), record: createEventRecorder(db) });
 orders.sweepExpired();
 setInterval(() => orders.sweepExpired(), 30 * 1000).unref();
 

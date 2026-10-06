@@ -7,8 +7,12 @@ import {
   type CheckoutQuote,
   type DeliveryOption,
   type Order,
+  type OrderHistoryStatus,
   type OrderStatus,
+  type PaymentFailureReason,
+  type PaymentMethod,
 } from '@store/shared';
+import type { RecordEvent } from '../analytics/record.js';
 import type { AddressService } from '../addresses/service.js';
 import type { CartService } from '../cart/service.js';
 import type { Db } from '../db/database.js';
@@ -28,6 +32,12 @@ interface OrderRow {
   created_at: string;
   hold_expires_at: string;
   hold_released_at: string | null;
+  payment_method: PaymentMethod | null;
+  payment_label: string | null;
+  offer_id: string | null;
+  offer_discount_paise: number;
+  paid_paise: number | null;
+  paid_at: string | null;
 }
 
 interface LineRow {
@@ -52,10 +62,11 @@ interface Deps {
   db: Db;
   carts: CartService;
   addresses: AddressService;
+  record: RecordEvent;
   clock?: () => number;
 }
 
-export function createOrderService({ db, carts, addresses, clock = Date.now }: Deps) {
+export function createOrderService({ db, carts, addresses, record, clock = Date.now }: Deps) {
   const iso = (ms: number) => new Date(ms).toISOString();
 
   const cartLines = db.prepare(`
@@ -81,6 +92,9 @@ export function createOrderService({ db, carts, addresses, clock = Date.now }: D
   const expiredPending = db.prepare("SELECT id FROM orders WHERE status = 'pending_payment' AND hold_expires_at < ?");
   const setStatus = db.prepare('UPDATE orders SET status = ?, updated_at = ? WHERE id = ?');
   const markReleased = db.prepare('UPDATE orders SET hold_released_at = ? WHERE id = ? AND hold_released_at IS NULL');
+  const history = db.prepare('SELECT status, at FROM order_status_history WHERE order_id = ? ORDER BY id');
+  const pendingAttempts = db.prepare("SELECT id, method, visitor_id FROM payment_attempts WHERE order_id = ? AND status = 'pending'");
+  const failAttempt = db.prepare("UPDATE payment_attempts SET status = 'failed', failure_reason = ?, completed_at = ? WHERE id = ? AND status = 'pending'");
 
   const pickAddress = (userId: number, addressId: number | undefined): Address | null => {
     const list = addresses.list(userId);
@@ -95,8 +109,13 @@ export function createOrderService({ db, carts, addresses, clock = Date.now }: D
     }
   };
 
+  /** Ends an unpaid order: any payment in progress fails with it, and the stock goes back on sale. */
   const end = db.transaction((orderId: string, status: OrderStatus) => {
     setStatus.run(status, iso(clock()), orderId);
+    const reason: PaymentFailureReason = status === 'payment_expired' ? 'hold_expired' : 'cancelled';
+    for (const a of pendingAttempts.all(orderId) as { id: string; method: PaymentMethod; visitor_id: string }[]) {
+      if (failAttempt.run(reason, iso(clock()), a.id).changes) record('payment_failed', { method: a.method, reason }, a.visitor_id);
+    }
     release(orderId);
   });
 
@@ -129,6 +148,18 @@ export function createOrderService({ db, carts, addresses, clock = Date.now }: D
     },
     createdAt: row.created_at,
     holdExpiresAt: row.hold_expires_at,
+    payment:
+      row.paid_at && row.payment_method
+        ? {
+            method: row.payment_method,
+            label: row.payment_label ?? '',
+            offerId: row.offer_id,
+            offerDiscountPaise: row.offer_discount_paise,
+            paidPaise: row.paid_paise ?? 0,
+            paidAt: row.paid_at,
+          }
+        : null,
+    history: history.all(row.id) as { status: OrderHistoryStatus; at: string }[],
   });
 
   function quote(userId: number, addressId: number | undefined, delivery: DeliveryOption): CheckoutQuote {
@@ -159,6 +190,11 @@ export function createOrderService({ db, carts, addresses, clock = Date.now }: D
   return {
     quote,
     sweepExpired,
+    /** The order as the API shows it; null when it isn't this user's. No sweep. */
+    view(userId: number, orderId: string): Order | null {
+      const row = findOrder.get(orderId, userId) as OrderRow | undefined;
+      return row ? toOrder(row) : null;
+    },
 
     /**
      * Creates a Pending Payment order and holds its stock, all in one transaction: if any line

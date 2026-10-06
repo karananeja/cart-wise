@@ -1,5 +1,6 @@
 import type { Address } from './address.js';
 import type { CartView } from './cart.js';
+import type { OrderPayment } from './payment.js';
 
 /** Delivery rules (user decision Q8, 2026-10-06). */
 export const FREE_DELIVERY_THRESHOLD_PAISE = 999_00;
@@ -68,7 +69,10 @@ export interface CheckoutQuote {
   blockers: CheckoutBlocker[];
 }
 
-export type OrderStatus = 'pending_payment' | 'payment_expired' | 'cancelled';
+export type OrderStatus = 'pending_payment' | 'payment_expired' | 'cancelled' | 'confirmed';
+
+/** Lifecycle steps recorded with their time (F-009 records the first two; F-010 adds the rest). */
+export type OrderHistoryStatus = 'payment_successful' | 'confirmed';
 
 export interface OrderLine {
   productId: number;
@@ -91,4 +95,7 @@ export interface Order {
   createdAt: string;
   /** When the payment hold ends (pending orders). */
   holdExpiresAt: string;
+  /** Set once paid (F-009). */
+  payment: OrderPayment | null;
+  history: { status: OrderHistoryStatus; at: string }[];
 }

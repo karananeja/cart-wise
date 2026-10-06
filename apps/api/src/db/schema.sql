@@ -168,7 +168,14 @@ CREATE TABLE IF NOT EXISTS orders (
   created_at TEXT NOT NULL,
   hold_expires_at TEXT NOT NULL,
   hold_released_at TEXT,
-  updated_at TEXT NOT NULL
+  updated_at TEXT NOT NULL,
+  -- Set when paid (F-009).
+  payment_method TEXT,
+  payment_label TEXT,
+  offer_id TEXT,
+  offer_discount_paise INTEGER NOT NULL DEFAULT 0,
+  paid_paise INTEGER,
+  paid_at TEXT
 );
 CREATE INDEX IF NOT EXISTS orders_user ON orders(user_id, status);
 
@@ -186,6 +193,42 @@ CREATE TABLE IF NOT EXISTS order_lines (
   unit_mrp_paise INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS order_lines_order ON order_lines(order_id);
+
+-- Simulated payment attempts (F-009). Only masked card details exist here: network, the
+-- fictional bank and card type, and the last 4 digits. No full number, expiry or CVV.
+CREATE TABLE IF NOT EXISTS payment_attempts (
+  id TEXT PRIMARY KEY,
+  order_id TEXT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  method TEXT NOT NULL CHECK (method IN ('card', 'upi_id', 'upi_qr')),
+  status TEXT NOT NULL CHECK (status IN ('pending', 'succeeded', 'failed')),
+  failure_reason TEXT,
+  amount_paise INTEGER NOT NULL,
+  discount_paise INTEGER NOT NULL DEFAULT 0,
+  offer_id TEXT,
+  card_network TEXT,
+  card_bank TEXT,
+  card_type TEXT,
+  card_last4 TEXT,
+  upi_id TEXT,
+  otp_hash TEXT,
+  otp_attempts INTEGER NOT NULL DEFAULT 0,
+  visitor_id TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  completed_at TEXT
+);
+CREATE INDEX IF NOT EXISTS payment_attempts_order ON payment_attempts(order_id);
+-- At most one attempt in progress per order.
+CREATE UNIQUE INDEX IF NOT EXISTS payment_attempts_pending ON payment_attempts(order_id) WHERE status = 'pending';
+
+-- Lifecycle steps with their time, for the order timeline (F-009 onwards).
+CREATE TABLE IF NOT EXISTS order_status_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  order_id TEXT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  status TEXT NOT NULL,
+  at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS order_status_history_order ON order_status_history(order_id);
 
 -- Guest carts (F-004), identified by an anonymous random id held in a cookie.
 CREATE TABLE IF NOT EXISTS carts (

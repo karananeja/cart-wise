@@ -34,3 +34,25 @@ it('upgrades a version 1 database: rebuilds seeded tables and keeps analytics', 
   expect(isSeeded(db)).toBe(true);
   db.close();
 });
+
+it('adds the F-009 payment columns to an F-008 orders table, keeping its orders', () => {
+  dir = mkdtempSync(join(tmpdir(), 'store-db-'));
+  const path = join(dir, 'store.db');
+  const first = openDatabase(path);
+  seedDatabase(first);
+  first.close();
+
+  // Strip the payment columns, as an F-008 database had them.
+  const old = new Database(path);
+  for (const c of ['payment_method', 'payment_label', 'offer_id', 'offer_discount_paise', 'paid_paise', 'paid_at']) old.exec(`ALTER TABLE orders DROP COLUMN ${c}`);
+  old.exec(`INSERT INTO users (id, name, email, mobile, password_hash, mobile_verified_at, created_at) VALUES (1, 'A', 'a@x.in', '9000000000', 'h', 't', 't');
+    INSERT INTO orders (id, user_id, status, address, delivery, item_count, mrp_paise, discount_paise, delivery_paise, total_paise, created_at, hold_expires_at, updated_at)
+    VALUES ('ORD-OLD', 1, 'cancelled', '{}', '{}', 1, 1, 0, 0, 1, 't', 't', 't')`);
+  old.close();
+
+  const db = openDatabase(path);
+  const columns = (db.prepare('PRAGMA table_info(orders)').all() as { name: string }[]).map((c) => c.name);
+  expect(columns).toEqual(expect.arrayContaining(['payment_method', 'payment_label', 'offer_id', 'offer_discount_paise', 'paid_paise', 'paid_at']));
+  expect(db.prepare("SELECT offer_discount_paise FROM orders WHERE id = 'ORD-OLD'").get()).toEqual({ offer_discount_paise: 0 });
+  db.close();
+});

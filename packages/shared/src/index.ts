@@ -7,3 +7,4 @@ export * from './wishlist.js';
 export * from './auth.js';
 export * from './address.js';
 export * from './checkout.js';
+export * from './payment.js';

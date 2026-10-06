@@ -37,6 +37,13 @@ export function openDatabase(path: string): Db {
 function upgradeInPlace(db: Db) {
   ensureColumn(db, 'carts', 'user_id', 'INTEGER REFERENCES users(id) ON DELETE CASCADE');
   ensureColumn(db, 'wishlists', 'user_id', 'INTEGER REFERENCES users(id) ON DELETE CASCADE');
+  // Order payment fields (F-009).
+  ensureColumn(db, 'orders', 'payment_method', 'TEXT');
+  ensureColumn(db, 'orders', 'payment_label', 'TEXT');
+  ensureColumn(db, 'orders', 'offer_id', 'TEXT');
+  ensureColumn(db, 'orders', 'offer_discount_paise', 'INTEGER NOT NULL DEFAULT 0');
+  ensureColumn(db, 'orders', 'paid_paise', 'INTEGER');
+  ensureColumn(db, 'orders', 'paid_at', 'TEXT');
   // One cart and one wishlist per account.
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS carts_user ON carts(user_id) WHERE user_id IS NOT NULL');
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS wishlists_user ON wishlists(user_id) WHERE user_id IS NOT NULL');
