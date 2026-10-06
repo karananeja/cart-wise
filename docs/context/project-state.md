@@ -8,7 +8,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## Current feature
 
-**F-014 EMI + Razorpay (test mode) — being specified.** F-013 accepted 2026-10-06; previously (`docs/features/F-013-electronics-variants/`). F-012 accepted 2026-10-06.
+**F-014 EMI + Razorpay (test mode) — specified, awaiting Gate 1** (`docs/features/F-014-emi-and-razorpay/`, ADR-005 proposed). F-013 accepted 2026-10-06; previously (`docs/features/F-013-electronics-variants/`). F-012 accepted 2026-10-06.
 
 ## Completed
 
@@ -19,7 +19,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## In progress
 
-F-014 specification (EMI normal + no-cost; Razorpay test mode alongside the demo payment).
+F-014 Gate 1 (D1 EMI terms, D2 offer stacking, D3 Razorpay refunds).
 
 ## Remaining
 
@@ -105,4 +105,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Write F-014 specification, intent and ADR-005 (Razorpay test-mode integration) and present for Gate 1.
+Get Gate 1 approval for F-014 with D1–D3 answered and ADR-005 accepted; then technical design (payment_attempts rebuild for the method check, raw-body webhook route, env loading via --env-file-if-exists) and implementation. Payment code map: shared/payment.ts, api/payments/{routes,service}.ts, orders/lifecycle.ts refunds, web/features/payment/*.

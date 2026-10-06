@@ -89,3 +89,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-013 implementation | Implemented, tested, presented for Gate 2 | Also fixes reseed remapping of carts, orders and holds |
 | 2026-10-06 | F-013 Gate 2 | **Accepted** | |
 | 2026-10-06 | New requirement: EMI + Razorpay | Razorpay **test keys only** (live keys refused; no real money, CLAUDE.md rule kept); customer chooses Razorpay or demo payment; EMI (normal + no-cost) simulated in demo mode and through Razorpay in Razorpay mode | To be specified as F-014 with ADR-005 |
+| 2026-10-06 | F-014 | Spec, intent and ADR-005 presented for Gate 1 | Decisions: EMI terms, offer stacking, Razorpay refunds |
