@@ -140,8 +140,9 @@ function emiOf(row: AttemptRow): EmiPlan | undefined {
     chargedPaise: row.amount_paise - row.discount_paise,
     discountPaise: noCost ? row.discount_paise : 0,
     monthlyPaise: row.emi_monthly_paise ?? 0,
+    lastMonthlyPaise: noCost ? row.amount_paise - (row.emi_monthly_paise ?? 0) * (row.emi_tenure - 1) : (row.emi_monthly_paise ?? 0),
     interestPaise: row.emi_interest_paise ?? 0,
-    totalPaise: (row.emi_monthly_paise ?? 0) * row.emi_tenure,
+    totalPaise: noCost ? row.amount_paise : (row.emi_monthly_paise ?? 0) * row.emi_tenure,
   };
 }
 

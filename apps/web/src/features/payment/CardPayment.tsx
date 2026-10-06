@@ -18,13 +18,15 @@ import { ApiError } from '@/lib/api';
 import { useOnlineStatus } from '@/lib/useOnlineStatus';
 import { usePaymentQuote, useStartPayment } from './api';
 import { BankVerification } from './BankVerification';
+import { EmiPlans, sameChoice, type EmiChoice } from './EmiPlans';
+import type { SummaryExtras } from './summary';
 import { failureMessage, offerMismatchMessage, paymentErrorMessage } from './messages';
 import { PaymentFailure } from './PaymentFailure';
 
 interface CardPaymentProps {
   order: Order;
-  /** Tells the page which bank offer (if any) the summary should show. */
-  onOfferChange: (offer: { bankName: string; discountPaise: number } | null) => void;
+  /** Tells the page what the summary should show: the bank offer, or the No Cost EMI discount and plan. */
+  onSummaryChange: (extras: SummaryExtras) => void;
   onPaid: (order: Order) => void;
   onHoldEnded: () => void;
 }
@@ -49,7 +51,7 @@ function expiryError(value: string): string | undefined {
  * Card payment with a customer-chosen bank offer (spec FR-2, FR-5, FR-9–FR-12). The full number,
  * expiry and CVV never leave this component: only the first 6 and last 4 digits are sent.
  */
-export function CardPayment({ order, onOfferChange, onPaid, onHoldEnded }: CardPaymentProps) {
+export function CardPayment({ order, onSummaryChange, onPaid, onHoldEnded }: CardPaymentProps) {
   const [offerChoice, setOfferChoice] = useState<string | null>(null);
   const [digits, setDigits] = useState('');
   const [expiry, setExpiry] = useState('');
@@ -57,6 +59,10 @@ export function CardPayment({ order, onOfferChange, onPaid, onHoldEnded }: CardP
   const [errors, setErrors] = useState<{ number?: string; expiry?: string; cvv?: string }>({});
   const [attempt, setAttempt] = useState<PaymentAttemptView>();
   const [failure, setFailure] = useState<string>();
+  const [mode, setMode] = useState<'full' | 'emi'>('full');
+  const [emiChoice, setEmiChoice] = useState<EmiChoice | null>(null);
+  const [emiError, setEmiError] = useState<string>();
+  const [offerNote, setOfferNote] = useState<string>();
   const online = useOnlineStatus();
 
   const offerId = offerChoice && offerChoice !== NO_OFFER ? offerChoice : null;
@@ -67,15 +73,47 @@ export function CardPayment({ order, onOfferChange, onPaid, onHoldEnded }: CardP
   const card = bin ? recogniseCard(bin) : null;
   const applied = q?.selected?.applies ? q.selected : null;
   const appliedOffer = applied ? OFFERS.find((o) => o.id === applied.offerId) : undefined;
-  const amountToPay = q?.amountToPayPaise ?? order.totals.totalPaise;
+  const emiQuote = bin ? q?.emi : undefined;
+  const payInEmi = mode === 'emi' && emiQuote?.eligible === true;
+  const plan = payInEmi ? emiQuote.plans.find((p) => sameChoice(emiChoice, p)) : undefined;
+  const amountToPay = plan ? plan.chargedPaise : (q?.amountToPayPaise ?? order.totals.totalPaise);
   const suggested = q?.suggestedOfferId ? OFFERS.find((o) => o.id === q.suggestedOfferId) : undefined;
   const suggestedSaving = q?.offers.find((o) => o.offerId === q.suggestedOfferId)?.discountPaise ?? 0;
   const mismatch = bin ? offerMismatchMessage(q?.selected ?? null) : undefined;
 
   useEffect(() => {
-    onOfferChange(appliedOffer && applied ? { bankName: appliedOffer.bankName, discountPaise: applied.discountPaise } : null);
+    onSummaryChange({
+      bankOffer: appliedOffer && applied && !plan?.noCost ? { bankName: appliedOffer.bankName, discountPaise: applied.discountPaise } : null,
+      noCostDiscountPaise: plan?.noCost ? plan.discountPaise : 0,
+      emi: plan ?? null,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appliedOffer?.id, applied?.discountPaise]);
+  }, [appliedOffer?.id, applied?.discountPaise, plan?.tenure, plan?.noCost, plan?.chargedPaise]);
+
+  // A different card can end EMI eligibility: back to paying in full.
+  useEffect(() => {
+    if (emiQuote && !emiQuote.eligible) {
+      setMode('full');
+      setEmiChoice(null);
+    }
+  }, [emiQuote]);
+
+  /** No Cost EMI is the order's one offer (D2): choosing it drops a chosen bank offer, and vice versa. */
+  const choosePlan = (chosen: EmiChoice) => {
+    setEmiError(undefined);
+    setEmiChoice(chosen);
+    if (chosen.noCost && offerId) {
+      setOfferChoice(NO_OFFER);
+      setOfferNote('No Cost EMI is this order’s offer, so the bank offer was removed.');
+    } else setOfferNote(undefined);
+  };
+  const chooseOffer = (id: string) => {
+    setOfferChoice(id);
+    if (id !== NO_OFFER && emiChoice?.noCost) {
+      setEmiChoice(null);
+      setOfferNote('A bank offer can’t be combined with No Cost EMI. Choose another EMI plan or pay in full.');
+    } else setOfferNote(undefined);
+  };
 
   const validate = () => {
     const next: typeof errors = {};
@@ -90,13 +128,23 @@ export function CardPayment({ order, onOfferChange, onPaid, onHoldEnded }: CardP
     event.preventDefault();
     setFailure(undefined);
     if (!validate()) return;
+    if (payInEmi && !plan) {
+      setEmiError('Choose an EMI plan');
+      return;
+    }
     start.mutate(
-      { method: 'card', bin: digits.slice(0, 6), last4: digits.slice(-4), ...(applied ? { offerId: applied.offerId } : {}) },
+      {
+        method: 'card',
+        bin: digits.slice(0, 6),
+        last4: digits.slice(-4),
+        ...(applied && !plan?.noCost ? { offerId: applied.offerId } : {}),
+        ...(plan ? { emi: { tenure: plan.tenure, noCost: plan.noCost } } : {}),
+      },
       {
         onSuccess: (result) => setAttempt(result.attempt),
         onError: (error) => {
           if (error instanceof ApiError && ['HOLD_EXPIRED', 'ORDER_NOT_PENDING'].includes(error.code)) onHoldEnded();
-          if (error instanceof ApiError && error.code === 'OFFER_NOT_APPLICABLE') void quote.refetch();
+          if (error instanceof ApiError && ['OFFER_NOT_APPLICABLE', 'EMI_NOT_AVAILABLE'].includes(error.code)) void quote.refetch();
         },
       },
     );
@@ -138,7 +186,7 @@ export function CardPayment({ order, onOfferChange, onPaid, onHoldEnded }: CardP
               key={offer.id}
               className="flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm has-[:checked]:border-foreground has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60 has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50"
             >
-              <input type="radio" name="offer" className="mt-1" value={offer.id} checked={offerChoice === offer.id} disabled={short > 0} onChange={() => setOfferChoice(offer.id)} />
+              <input type="radio" name="offer" className="mt-1" value={offer.id} checked={offerChoice === offer.id} disabled={short > 0} onChange={() => chooseOffer(offer.id)} />
               <span className="flex flex-1 flex-col gap-0.5">
                 <span className="font-medium">
                   {offer.bankName} — {offer.headline}
@@ -156,7 +204,7 @@ export function CardPayment({ order, onOfferChange, onPaid, onHoldEnded }: CardP
           );
         })}
         <label className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 text-sm has-[:checked]:border-foreground has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50">
-          <input type="radio" name="offer" value={NO_OFFER} checked={offerChoice === NO_OFFER} onChange={() => setOfferChoice(NO_OFFER)} />
+          <input type="radio" name="offer" value={NO_OFFER} checked={offerChoice === NO_OFFER} onChange={() => chooseOffer(NO_OFFER)} />
           <span className="font-medium">No offer</span>
         </label>
       </fieldset>
@@ -215,23 +263,37 @@ export function CardPayment({ order, onOfferChange, onPaid, onHoldEnded }: CardP
         </details>
       </div>
 
+      <EmiPlans
+        quote={emiQuote}
+        mode={mode}
+        onModeChange={(next) => {
+          setMode(next);
+          setEmiError(undefined);
+          if (next === 'full') setEmiChoice(null);
+        }}
+        choice={emiChoice}
+        onChoose={choosePlan}
+        error={emiError}
+      />
+
       <div aria-live="polite" className="flex flex-col gap-2 empty:hidden">
+        {offerNote && <p className="text-sm text-muted-foreground">{offerNote}</p>}
         {mismatch && (
           <Alert role="status">
             <AlertDescription>{mismatch} You'll pay the full amount with this card.</AlertDescription>
           </Alert>
         )}
-        {suggested && (
+        {suggested && !plan?.noCost && (
           <Alert role="status">
             <AlertDescription className="flex flex-wrap items-center justify-between gap-2">
               Your card qualifies for the {suggested.bankName} offer (−{formatPrice(suggestedSaving)})
-              <Button type="button" size="sm" variant="outline" onClick={() => setOfferChoice(suggested.id)}>
+              <Button type="button" size="sm" variant="outline" onClick={() => chooseOffer(suggested.id)}>
                 Apply
               </Button>
             </AlertDescription>
           </Alert>
         )}
-        {appliedOffer && applied && (
+        {appliedOffer && applied && !plan?.noCost && (
           <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
             {appliedOffer.bankName} offer: −{formatPrice(applied.discountPaise)}
           </p>

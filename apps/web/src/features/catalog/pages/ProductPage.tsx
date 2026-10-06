@@ -15,6 +15,7 @@ import { ErrorState, OfflineState } from '@/components/ErrorState';
 import { NotFound } from '@/components/NotFound';
 import { AddToCartButton } from '@/features/cart/AddToCartButton';
 import { ProductDiscovery } from '@/features/discovery/ProductDiscovery';
+import { EmiBanner } from '@/features/payment/EmiBanner';
 import { OfferBanner } from '@/features/payment/OfferBanner';
 import { WishlistToggle } from '@/features/wishlist/WishlistToggle';
 import { ApiError } from '@/lib/api';
@@ -146,7 +147,10 @@ function PurchasePanel({ product: p }: { product: ProductDetail }) {
         size="lg"
         from={p.hasOptions && !option}
       />
-      <OfferBanner pricePaise={shown.pricePaise} outOfStock={p.availability.status === 'out_of_stock'} />
+      <div className="flex flex-col gap-1.5">
+        <OfferBanner pricePaise={shown.pricePaise} outOfStock={p.availability.status === 'out_of_stock'} />
+        <EmiBanner pricePaise={shown.pricePaise} outOfStock={p.availability.status === 'out_of_stock'} />
+      </div>
       {p.sizes.length > 0 && (
         <SizeSelector ref={sizeGroup} sizes={p.sizes} value={selected?.label} onChange={selectSize} error={sizeError} />
       )}

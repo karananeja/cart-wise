@@ -60,6 +60,7 @@ function SimOrderRow({ order }: { order: SimOrder }) {
             setNotice(`Wrong code. ${left} ${left === 1 ? 'attempt' : 'attempts'} left.`);
           } else if (e.code === 'DELIVERY_LOCKED') setNotice('Delivery is blocked after 3 wrong codes. Issue a new code.');
           else if (e.code === 'INVALID_TRANSITION') setNotice('This order has already moved on. The list is refreshed.');
+          else if (e.code === 'GATEWAY_UNAVAILABLE') setNotice("Razorpay didn't take the refund. It stays initiated — retry in a moment.");
           else setNotice('Something went wrong. Please try again.');
         },
       },
@@ -148,6 +149,26 @@ function SimOrderRow({ order }: { order: SimOrder }) {
               {r.status === 'picked_up' && (
                 <Button size="sm" variant="outline" disabled={action.isPending} onClick={() => run(`/returns/${r.id}/refund`)}>
                   Complete refund
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {order.provider === 'razorpay' && order.gatewayRefunds.length > 0 && (
+        <div className="flex flex-col gap-2 border-t pt-3">
+          <h3 className="font-medium">Razorpay refunds (test mode)</h3>
+          {order.gatewayRefunds.map((refund) => (
+            <div key={refund.id} className="flex flex-wrap items-center gap-3">
+              <span>
+                {refund.returnId ? `Return ${refund.returnId}` : 'Cancellation'} · {formatPrice(refund.amountPaise)} ·{' '}
+                {refund.status === 'refunded' ? 'Refunded by Razorpay' : 'Waiting for Razorpay'}
+                {refund.failure && <span className="block text-xs text-amber-800 dark:text-amber-300">Last attempt failed: {refund.failure}</span>}
+              </span>
+              {refund.status === 'initiated' && !refund.returnId && (
+                <Button size="sm" variant="outline" disabled={action.isPending} onClick={() => run(`/refunds/${refund.id}/retry`)}>
+                  Retry refund
                 </Button>
               )}
             </div>

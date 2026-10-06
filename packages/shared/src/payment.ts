@@ -321,7 +321,7 @@ export interface OrderPayment {
   paidAt: string;
   provider: PaymentProvider;
   /** The EMI plan, when paid in EMI with the demo payment. */
-  emi: { tenure: number; monthlyPaise: number; interestPaise: number; noCost: boolean } | null;
+  emi: { tenure: number; monthlyPaise: number; lastMonthlyPaise: number; interestPaise: number; noCost: boolean } | null;
 }
 
 export const PAYMENT_FAILURE_MESSAGES: Record<PaymentFailureReason, string> = {

@@ -8,6 +8,7 @@ import { NotFound } from '@/components/NotFound';
 import { formatEstimate, useOrder } from '@/features/checkout/api';
 import { ProductImage } from '@/features/catalog/components/ProductImage';
 import { ApiError } from '@/lib/api';
+import { emiCostText, instalments, notChargedNote, offerName } from '@/features/payment/emiText';
 
 /** After a successful payment (spec FR-23). Reloadable; owner only (the API returns 404 otherwise). */
 export function ConfirmationPage() {
@@ -60,13 +61,24 @@ export function ConfirmationPage() {
               <dd className="text-right text-emerald-700 tabular-nums dark:text-emerald-400">
                 {formatPrice(savings)}
                 {o.payment.offerDiscountPaise > 0 && (
-                  <span className="block text-xs text-muted-foreground">incl. {formatPrice(o.payment.offerDiscountPaise)} bank offer</span>
+                  <span className="block text-xs text-muted-foreground">
+                    incl. {formatPrice(o.payment.offerDiscountPaise)} {offerName(o.payment).replace(/^B/, 'b')}
+                  </span>
                 )}
               </dd>
             </>
           )}
+          {o.payment.emi && (
+            <>
+              <dt className="text-muted-foreground">EMI</dt>
+              <dd className="text-right tabular-nums">
+                {instalments(o.payment.emi)}
+                <span className="block text-xs text-muted-foreground">{emiCostText(o.payment.emi)}</span>
+              </dd>
+            </>
+          )}
         </dl>
-        <p className="text-xs text-muted-foreground">Demo payment — no money was charged.</p>
+        <p className="text-xs text-muted-foreground">{notChargedNote(o.payment)}</p>
       </section>
 
       <section aria-labelledby="delivery-details" className="flex flex-col gap-2 rounded-xl border p-5 text-sm">

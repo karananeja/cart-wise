@@ -4,7 +4,10 @@ import {
   cardOutcome,
   CARD_OTP_ATTEMPTS,
   demoPaymentUri,
+  emiPlan,
+  emiQuote,
   findOffer,
+  NO_COST_EMI_OFFER_ID,
   isUpiId,
   offerDiscountPaise,
   offerEligibility,
@@ -33,12 +36,21 @@ interface Stored {
 
 let attempts = new Map<string, Stored>();
 let nextId = 1;
+let razorpayEnabled = false;
+/** A signature the mock accepts from the stubbed Razorpay Checkout. */
+export const GOOD_SIGNATURE = 'a'.repeat(64);
+
+/** Razorpay (F-014) is off unless a test turns it on. */
+export function setRazorpayEnabled(enabled: boolean) {
+  razorpayEnabled = enabled;
+}
 /** Bodies posted to start a payment, so tests can check what left the browser. */
 export const paymentRequests: unknown[] = [];
 
 export function resetPayments() {
   attempts = new Map();
   nextId = 1;
+  razorpayEnabled = false;
   paymentRequests.length = 0;
 }
 
@@ -59,12 +71,13 @@ function quote(order: Order, offerId: string | null, bin: string | null): Paymen
     selected,
     suggestedOfferId: suggested?.offerId ?? null,
     amountToPayPaise: total - (selected?.applies ? selected.discountPaise : 0),
+    emi: emiQuote(card, total, selected?.applies ? selected.discountPaise : 0),
   };
 }
 
-function complete(stored: Stored): Order {
+function complete(stored: Stored, label = stored.view.label): Order {
   const order = getOrder(stored.view.orderId)!;
-  stored.view = { ...stored.view, status: 'succeeded', demoCode: undefined };
+  stored.view = { ...stored.view, status: 'succeeded', demoCode: undefined, gateway: undefined, label };
   const now = new Date().toISOString();
   const paid: Order = {
     ...order,
@@ -76,6 +89,16 @@ function complete(stored: Stored): Order {
       offerDiscountPaise: stored.view.discountPaise,
       paidPaise: stored.view.amountPaise,
       paidAt: now,
+      provider: stored.view.method === 'razorpay' ? 'razorpay' : 'demo',
+      emi: stored.view.emi
+        ? {
+            tenure: stored.view.emi.tenure,
+            monthlyPaise: stored.view.emi.monthlyPaise,
+            lastMonthlyPaise: stored.view.emi.lastMonthlyPaise,
+            interestPaise: stored.view.emi.interestPaise,
+            noCost: stored.view.emi.noCost,
+          }
+        : null,
     },
     history: [
       { status: 'payment_successful', at: now },
@@ -83,7 +106,7 @@ function complete(stored: Stored): Order {
     ],
   };
   saveOrder(paid);
-  removeOrdered(order.lines.map((l) => ({ slug: l.slug, size: l.size, quantity: l.quantity })));
+  removeOrdered(order.lines.map((l) => ({ slug: l.slug, size: l.size, option: l.option, quantity: l.quantity })));
   return paid;
 }
 
@@ -93,6 +116,19 @@ function fail(stored: Stored, reason: PaymentAttemptView['failureReason']) {
 
 export const paymentHandlers = [
   http.get('*/api/offers', () => HttpResponse.json({ offers: OFFERS })),
+  http.get('*/api/payments/config', () =>
+    HttpResponse.json({ razorpay: { enabled: razorpayEnabled, keyId: razorpayEnabled ? 'rzp_test_mock' : null, testMode: true } }),
+  ),
+  http.post('*/api/payments/:id/razorpay/verify', async ({ params, request }) => {
+    const stored = attempts.get(String(params.id));
+    if (!stored) return error(404, 'PAYMENT_NOT_FOUND');
+    const body = (await request.json()) as { razorpayOrderId: string; razorpaySignature: string };
+    if (body.razorpaySignature !== GOOD_SIGNATURE || body.razorpayOrderId !== stored.view.gateway?.orderId) {
+      if (stored.view.status !== 'succeeded') return error(400, 'GATEWAY_SIGNATURE_INVALID');
+    }
+    if (stored.view.status === 'pending') complete(stored, 'Razorpay · Visa •••• 1111');
+    return HttpResponse.json({ attempt: stored.view, order: getOrder(stored.view.orderId) });
+  }),
   http.get('*/api/orders/:id/payment-quote', ({ params, request }) => {
     const order = getOrder(String(params.id));
     if (!order) return error(404, 'ORDER_NOT_FOUND');
@@ -124,18 +160,42 @@ export const paymentHandlers = [
       const card = recogniseCard(body.bin);
       const offer = findOffer(body.offerId);
       if (body.offerId && (!offer || !offerEligibility(offer, order.totals.totalPaise, card).applies)) return error(409, 'OFFER_NOT_APPLICABLE');
-      const discountPaise = offer ? offerDiscountPaise(offer, order.totals.totalPaise) : 0;
+      let discountPaise = offer ? offerDiscountPaise(offer, order.totals.totalPaise) : 0;
+      let offerId = offer?.id ?? null;
+      let emi: PaymentAttemptView['emi'];
+      if (body.emi) {
+        const q = emiQuote(card, order.totals.totalPaise, discountPaise);
+        if (!q.eligible || !card.bank) return error(409, 'EMI_NOT_AVAILABLE', { reason: q.reason });
+        if (body.emi.noCost && offerId) return error(409, 'OFFER_NOT_APPLICABLE', { reason: 'NO_COST_EMI' });
+        emi = emiPlan(card.bank, body.emi.noCost ? order.totals.totalPaise : order.totals.totalPaise - discountPaise, body.emi.tenure, body.emi.noCost);
+        if (emi.noCost) {
+          offerId = NO_COST_EMI_OFFER_ID;
+          discountPaise = emi.discountPaise;
+        }
+      }
       stored = {
         view: {
           ...base,
-          offerId: offer?.id ?? null,
+          offerId,
           discountPaise,
+          ...(emi ? { emi } : {}),
           amountPaise: order.totals.totalPaise - discountPaise,
           label: cardLabel(card, body.last4),
           demoCode: DEMO_OTP,
           otpAttemptsLeft: CARD_OTP_ATTEMPTS,
         },
         last4: body.last4,
+        otpTries: 0,
+      };
+    } else if (body.method === 'razorpay') {
+      if (!razorpayEnabled) return error(404, 'RAZORPAY_DISABLED');
+      stored = {
+        view: {
+          ...base,
+          label: 'Razorpay',
+          expiresAt: order.holdExpiresAt,
+          gateway: { keyId: 'rzp_test_mock', orderId: `order_mock${nextId}`, amountPaise: order.totals.totalPaise, prefill: { name: 'Karan Aneja', email: 'karan@example.com', contact: '+919876543210' } },
+        },
         otpTries: 0,
       };
     } else if (body.method === 'upi_id') {

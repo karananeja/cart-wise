@@ -43,7 +43,7 @@ export function seedOrder(overrides: Partial<Order> & { id: string }): Order {
     totals: { itemCount: lines.reduce((n, l) => n + l.quantity, 0), mrpPaise: mrp, discountPaise: mrp - subtotal, deliveryPaise, totalPaise: subtotal + deliveryPaise },
     createdAt: NOW,
     holdExpiresAt: NOW,
-    payment: { method: 'card', label: 'Aurora Bank Visa •••• 4242', offerId: offer ? 'aurora-credit-10' : null, offerDiscountPaise: offer, paidPaise: subtotal + deliveryPaise - offer, paidAt: NOW },
+    payment: { method: 'card', label: 'Aurora Bank Visa •••• 4242', offerId: offer ? 'aurora-credit-10' : null, offerDiscountPaise: offer, paidPaise: subtotal + deliveryPaise - offer, paidAt: NOW, provider: 'demo', emi: null },
     history: [
       { status: 'payment_successful', at: NOW },
       { status: 'confirmed', at: NOW },

@@ -210,7 +210,14 @@ export function createOrderService({ db, carts, addresses, record, clock = Date.
             provider: row.payment_provider ?? 'demo',
             emi:
               row.emi_tenure !== null
-                ? { tenure: row.emi_tenure, monthlyPaise: row.emi_monthly_paise ?? 0, interestPaise: row.emi_interest_paise ?? 0, noCost: row.emi_no_cost === 1 }
+                ? {
+                    tenure: row.emi_tenure,
+                    monthlyPaise: row.emi_monthly_paise ?? 0,
+                    // No-cost instalments add up to the order total exactly; the last takes the rounding.
+                    lastMonthlyPaise: row.emi_no_cost === 1 ? row.total_paise - (row.emi_monthly_paise ?? 0) * (row.emi_tenure - 1) : (row.emi_monthly_paise ?? 0),
+                    interestPaise: row.emi_interest_paise ?? 0,
+                    noCost: row.emi_no_cost === 1,
+                  }
                 : null,
           }
         : null,

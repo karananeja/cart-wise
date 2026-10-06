@@ -23,6 +23,12 @@ export function paymentErrorMessage(error: unknown): string {
       return 'Your hold expired before the payment completed. You have not been charged.';
     case 'ORDER_NOT_PENDING':
       return 'This order can no longer be paid.';
+    case 'EMI_NOT_AVAILABLE':
+      return "That EMI plan isn't available for this card. Choose another plan or pay in full.";
+    case 'GATEWAY_UNAVAILABLE':
+      return 'Razorpay is unavailable right now. You have not been charged — try again, or use the demo payment.';
+    case 'GATEWAY_SIGNATURE_INVALID':
+      return "We couldn't confirm this payment with Razorpay. You have not been charged twice — try again.";
     default:
       return 'Something went wrong. You have not been charged.';
   }

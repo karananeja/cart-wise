@@ -24,6 +24,8 @@ export interface EmiPlan {
   /** Store-funded discount; 0 for normal EMI. */
   discountPaise: number;
   monthlyPaise: number;
+  /** The last instalment, which takes up rupee rounding so no-cost totals are exact. */
+  lastMonthlyPaise: number;
   /** Interest the customer pays the bank; 0 for no-cost EMI. */
   interestPaise: number;
   /** What the customer repays in total. */
@@ -62,13 +64,15 @@ export function emiPlan(bank: BankId, amountPaise: number, tenure: number, noCos
   const k = emiFactor(ratePercent, tenure);
   if (noCost) {
     const chargedPaise = toRupee(amountPaise / (tenure * k));
+    const monthlyPaise = Math.floor(amountPaise / tenure / 100) * 100;
     return {
       tenure,
       ratePercent,
       noCost: true,
       chargedPaise,
       discountPaise: amountPaise - chargedPaise,
-      monthlyPaise: toRupee(amountPaise / tenure),
+      monthlyPaise,
+      lastMonthlyPaise: amountPaise - monthlyPaise * (tenure - 1),
       interestPaise: 0,
       totalPaise: amountPaise,
     };
@@ -81,6 +85,7 @@ export function emiPlan(bank: BankId, amountPaise: number, tenure: number, noCos
     chargedPaise: amountPaise,
     discountPaise: 0,
     monthlyPaise,
+    lastMonthlyPaise: monthlyPaise,
     interestPaise: monthlyPaise * tenure - amountPaise,
     totalPaise: monthlyPaise * tenure,
   };

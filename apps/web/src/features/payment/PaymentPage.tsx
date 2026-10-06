@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CreditCard, Info, Loader2, Smartphone, TimerOff, XCircle } from 'lucide-react';
+import { CreditCard, Info, Landmark, Loader2, Smartphone, TimerOff, XCircle } from 'lucide-react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { formatPrice, type Order } from '@store/shared';
 import { Button } from '@/components/ui/button';
@@ -12,12 +12,16 @@ import { formatEstimate, useCancelOrder, useOrder } from '@/features/checkout/ap
 import { HoldCountdown } from '@/features/checkout/HoldCountdown';
 import { OrderSummary } from '@/features/checkout/OrderSummary';
 import { ApiError } from '@/lib/api';
+import { usePaymentConfig } from './api';
 import { CardPayment } from './CardPayment';
+import { RazorpayPayment } from './RazorpayPayment';
+import { NO_EXTRAS, type SummaryExtras } from './summary';
 import { UpiPayment } from './UpiPayment';
 
 /**
- * The payment step for a held order: Card (with a customer-chosen bank offer) or UPI, all
- * simulated (F-009). Failures keep the order, the hold and the cart; success confirms the order.
+ * The payment step for a held order: the demo Card (bank offers, EMI) and UPI, simulated (F-009,
+ * F-014), and Razorpay in test mode when configured (ADR-005). Failures keep the order, the hold
+ * and the cart; success confirms the order.
  */
 export function PaymentPage() {
   const { orderId = '' } = useParams();
@@ -25,7 +29,8 @@ export function PaymentPage() {
   const cancel = useCancelOrder();
   const navigate = useNavigate();
   const [tab, setTab] = useState('card');
-  const [bankOffer, setBankOffer] = useState<{ bankName: string; discountPaise: number } | null>(null);
+  const [extras, setExtras] = useState<SummaryExtras>(NO_EXTRAS);
+  const razorpayEnabled = usePaymentConfig().data?.razorpay.enabled === true;
 
   if (order.error instanceof ApiError && order.error.isNotFound) return <NotFound title="We couldn't find that order" />;
   if (!order.data) return <QueryFallback query={order} what="your order" loading={<Skeleton className="mx-auto h-96 w-full max-w-3xl" />} />;
@@ -57,14 +62,15 @@ export function PaymentPage() {
         </div>
         <HoldCountdown expiresAt={o.holdExpiresAt} onExpire={() => void order.refetch()} />
         <p className="flex items-center gap-2 rounded-lg border border-dashed px-3 py-2 text-sm text-muted-foreground">
-          <Info className="size-4 shrink-0" aria-hidden /> Demo payment — no money is charged. Banks, cards and the UPI app are simulated.
+          <Info className="size-4 shrink-0" aria-hidden /> Demo payment — no money is charged. Banks, cards and the UPI app are simulated
+          {razorpayEnabled ? '; Razorpay runs in test mode.' : '.'}
         </p>
 
         <Tabs
           value={tab}
           onValueChange={(value) => {
             setTab(value);
-            if (value !== 'card') setBankOffer(null);
+            if (value !== 'card') setExtras(NO_EXTRAS);
           }}
         >
           <TabsList aria-label="Payment method" className="w-full sm:w-fit">
@@ -74,13 +80,23 @@ export function PaymentPage() {
             <TabsTrigger value="upi">
               <Smartphone aria-hidden /> UPI
             </TabsTrigger>
+            {razorpayEnabled && (
+              <TabsTrigger value="razorpay">
+                <Landmark aria-hidden /> Razorpay
+              </TabsTrigger>
+            )}
           </TabsList>
           <TabsContent value="card">
-            <CardPayment order={o} onOfferChange={setBankOffer} onPaid={onPaid} onHoldEnded={onHoldEnded} />
+            <CardPayment order={o} onSummaryChange={setExtras} onPaid={onPaid} onHoldEnded={onHoldEnded} />
           </TabsContent>
           <TabsContent value="upi">
             <UpiPayment order={o} onPaid={onPaid} onHoldEnded={onHoldEnded} />
           </TabsContent>
+          {razorpayEnabled && (
+            <TabsContent value="razorpay">
+              <RazorpayPayment order={o} onPaid={onPaid} onHoldEnded={onHoldEnded} />
+            </TabsContent>
+          )}
         </Tabs>
 
         <div className="text-sm text-muted-foreground">
@@ -105,7 +121,7 @@ export function PaymentPage() {
           Cancel and return to cart
         </Button>
       </div>
-      <OrderSummary totals={o.totals} payment={{ bankOffer }} className="min-w-0 lg:sticky lg:top-24">
+      <OrderSummary totals={o.totals} payment={extras} className="min-w-0 lg:sticky lg:top-24">
         <ul className="flex flex-col gap-1 border-t pt-3 text-sm">
           {o.lines.map((line) => (
             <li key={line.id} className="flex justify-between gap-2">

@@ -10,6 +10,7 @@ import { formatEstimate } from '@/features/checkout/api';
 import { ProductImage } from '@/features/catalog/components/ProductImage';
 import { ApiError } from '@/lib/api';
 import { useOnlineStatus } from '@/lib/useOnlineStatus';
+import { emiCostText, instalments, offerName } from '@/features/payment/emiText';
 import { useOrderDetails } from './api';
 import { CancelOrderDialog } from './CancelOrderDialog';
 import { DeliveryCode } from './DeliveryCode';
@@ -140,7 +141,7 @@ export function OrderPage() {
             <dd className="text-right tabular-nums">{o.totals.deliveryPaise ? formatPrice(o.totals.deliveryPaise) : 'Free'}</dd>
             {o.payment.offerDiscountPaise > 0 && (
               <>
-                <dt className="text-muted-foreground">Bank offer</dt>
+                <dt className="text-muted-foreground">{offerName(o.payment)}</dt>
                 <dd className="text-right text-emerald-700 tabular-nums dark:text-emerald-400">−{formatPrice(o.payment.offerDiscountPaise)}</dd>
               </>
             )}
@@ -148,6 +149,11 @@ export function OrderPage() {
             <dd className="text-right font-semibold tabular-nums">{formatPrice(o.payment.paidPaise)}</dd>
           </dl>
           <p className="text-muted-foreground">{o.payment.label}</p>
+          {o.payment.emi && (
+            <p className="text-muted-foreground">
+              EMI {instalments(o.payment.emi)} · {emiCostText(o.payment.emi)}
+            </p>
+          )}
           {o.refunds.length > 0 && (
             <div className="flex flex-col gap-1 border-t pt-3">
               <h3 className="font-medium">Refunds</h3>

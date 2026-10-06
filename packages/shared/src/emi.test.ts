@@ -8,7 +8,7 @@ describe('emiPlan', () => {
   it('computes reducing-balance instalments, rounded to the rupee', () => {
     expect(emiFactor(14, 6)).toBeCloseTo(0.17354, 4);
     expect(emiPlan('aurora', 60_000_00, 3, false)).toEqual({
-      tenure: 3, ratePercent: 14, noCost: false, chargedPaise: 60_000_00, discountPaise: 0, monthlyPaise: 20_468_00, interestPaise: 1_404_00, totalPaise: 61_404_00,
+      tenure: 3, ratePercent: 14, noCost: false, chargedPaise: 60_000_00, discountPaise: 0, monthlyPaise: 20_468_00, lastMonthlyPaise: 20_468_00, interestPaise: 1_404_00, totalPaise: 61_404_00,
     });
     expect(emiPlan('aurora', 60_000_00, 6, false)).toMatchObject({ monthlyPaise: 10_412_00, interestPaise: 2_472_00 });
     expect(emiPlan('aurora', 60_000_00, 12, false)).toMatchObject({ monthlyPaise: 5_387_00 });
@@ -18,8 +18,12 @@ describe('emiPlan', () => {
   it('makes no-cost instalments add up exactly to the price, funded by a store discount', () => {
     const plan = emiPlan('aurora', 60_000_00, 6, true);
     expect(plan).toEqual({
-      tenure: 6, ratePercent: 14, noCost: true, chargedPaise: 57_624_00, discountPaise: 2_376_00, monthlyPaise: 10_000_00, interestPaise: 0, totalPaise: 60_000_00,
+      tenure: 6, ratePercent: 14, noCost: true, chargedPaise: 57_624_00, discountPaise: 2_376_00, monthlyPaise: 10_000_00, lastMonthlyPaise: 10_000_00, interestPaise: 0, totalPaise: 60_000_00,
     });
+    // When the price doesn't divide evenly, the last instalment makes the total exact.
+    const uneven = emiPlan('aurora', 80_000_00, 6, true);
+    expect([uneven.monthlyPaise, uneven.lastMonthlyPaise]).toEqual([13_333_00, 13_335_00]);
+    expect(uneven.monthlyPaise * 5 + uneven.lastMonthlyPaise).toBe(80_000_00);
     // The bank's normal instalments on what is charged repay the price (within rupee rounding).
     expect(emiPlan('aurora', plan.chargedPaise, 6, false).totalPaise).toBeCloseTo(60_000_00, -3);
   });

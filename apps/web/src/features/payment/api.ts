@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Order, PaymentAttemptView, PaymentInput, PaymentQuote } from '@store/shared';
+import type { Order, PaymentAttemptView, PaymentConfig, PaymentInput, PaymentQuote } from '@store/shared';
 import { cartKey } from '@/features/cart/api';
 import { orderKey } from '@/features/checkout/api';
 import { visitorId } from '@/lib/analytics';
@@ -86,5 +86,24 @@ export function useAttempt(id: string | undefined) {
     },
     enabled: Boolean(id),
     refetchInterval: (query) => (query.state.data?.attempt.status === 'pending' ? 2000 : false),
+  });
+}
+
+/** Whether Razorpay (test mode) is configured on the server (F-014). */
+export function usePaymentConfig() {
+  return useQuery({
+    queryKey: ['payment-config'],
+    queryFn: ({ signal }) => apiGet<PaymentConfig>('/payments/config', signal),
+    staleTime: Infinity,
+  });
+}
+
+/** Razorpay Checkout's success response, checked by the server before the order is confirmed. */
+export function useVerifyRazorpay() {
+  const apply = useApplyResult();
+  return useMutation({
+    mutationFn: ({ attemptId, ...response }: { attemptId: string; razorpayPaymentId: string; razorpayOrderId: string; razorpaySignature: string }) =>
+      apiSend<AttemptResult>('POST', `/payments/${encodeURIComponent(attemptId)}/razorpay/verify`, response),
+    onSuccess: apply,
   });
 }

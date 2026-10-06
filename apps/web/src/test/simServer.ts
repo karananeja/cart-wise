@@ -145,6 +145,8 @@ function sim(order: Order): SimOrder {
     nextStatus: nextStatus(order.status),
     deliveryAttemptsLeft: order.status === 'out_for_delivery' ? DELIVERY_CODE_ATTEMPTS - (attempts.get(order.id) ?? 0) : null,
     returns: order.returns.map((r) => ({ id: r.id, status: r.status, itemCount: r.lines.length, refundPaise: r.refundPaise })),
+    provider: order.payment?.provider ?? 'demo',
+    gatewayRefunds: [],
   };
 }
 
