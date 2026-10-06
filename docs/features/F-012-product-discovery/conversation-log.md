@@ -12,3 +12,4 @@
 | 2026-10-06 | Implementation complete | Presented for Gate 2 | See acceptance.md; FR-8 clarified (no duplicate Add to cart) |
 | 2026-10-06 | Gate 2 review | User: Because you viewed/bought should go below, not on top → moved below Shop by category and Recently viewed; cart reminder stays on top | Re-presented for Gate 2 |
 | 2026-10-06 | Gate 2 review | User: homepage order Shop by category → Top rated → Biggest discounts → the rest; cart reminder stays on top → done. Root cause of intermittent E2E failures found (SQLite lock) and fixed | Re-presented for Gate 2 |
+| 2026-10-06 | Gate 2 | **Accepted** | Companion price cap left in backlog |

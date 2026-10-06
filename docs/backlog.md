@@ -14,3 +14,4 @@ Triage (MVP wrap-up, 2026-10-06): **Phase 2** = fits the brief's next phase; **L
 | 2026-10-06 | Product weight/dimensions in specifications | F-001 | Needs units; DummyJSON provides none | Drop? |
 | 2026-10-06 | Automated accessibility checks (axe) in component/E2E tests | MVP wrap-up | Accessibility is built in but not machine-verified | Later |
 | 2026-10-06 | Electronics variants: storage for phones and tablets, RAM + storage for laptops; price steps up per tier; no colour; accessories and watches unchanged | User feedback (F-012 Gate 2 review) | Decided by user; to be specified as F-013 after F-012 sign-off | Next (F-013) |
+| 2026-10-06 | Price cap for "Pairs well with" companions (e.g. companion ≤ 50% of the main product's price, falling back to the current rule) | F-012 acceptance (known limitation) | Product change; offered at F-012 Gate 2, user accepted F-012 without choosing | Later (awaiting user decision) |
