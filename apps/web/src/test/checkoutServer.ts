@@ -12,6 +12,9 @@ export function resetCheckout() {
   nextId = 1;
 }
 
+export const getOrder = (id: string) => orders.get(id);
+export const saveOrder = (order: Order) => orders.set(order.id, order);
+
 /** Lets tests simulate the hold running out. */
 export function expireOrder(id: string) {
   const order = orders.get(id)!;
@@ -67,6 +70,8 @@ export const checkoutHandlers = [
       totals: q.totals,
       createdAt: new Date().toISOString(),
       holdExpiresAt: new Date(Date.now() + PAYMENT_HOLD_MS).toISOString(),
+      payment: null,
+      history: [],
     };
     orders.set(order.id, order);
     return HttpResponse.json({ order }, { status: 201 });

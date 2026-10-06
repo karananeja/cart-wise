@@ -89,7 +89,15 @@ export const shirt = productDetail({
   ],
 });
 
+/** Cheaper products for bank-offer thresholds (F-009); product pages only, not listings. */
+const priced = (id: number, slug: string, title: string, pricePaise: number, overrides: Partial<ProductDetail> = {}) =>
+  productDetail({ id, slug, title, pricePaise, mrpPaise: pricePaise, discountPercent: 0, categorySlug: 'accessories', categoryName: 'Accessories', sizes: [], ...overrides });
+
 export const productDetails: ProductDetail[] = [
   ...products.map((p) => productDetail({ ...p, categoryName: p.categorySlug === 'phones' ? 'Phones' : 'Laptops' })),
   shirt,
+  priced(60, 'usb-cable', 'USB Cable', 1_200_00),
+  priced(61, 'phone-case', 'Phone Case', 800_00),
+  priced(62, 'headphones', 'Headphones', 6_000_00),
+  priced(63, 'sold-out-speaker', 'Sold-out Speaker', 6_000_00, { availability: { status: 'out_of_stock' } }),
 ];

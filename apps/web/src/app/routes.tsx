@@ -6,7 +6,8 @@ import { ListingPage } from '@/features/catalog/pages/ListingPage';
 import { ProductPage } from '@/features/catalog/pages/ProductPage';
 import { CartPage } from '@/features/cart/CartPage';
 import { CheckoutPage } from '@/features/checkout/CheckoutPage';
-import { PaymentPage } from '@/features/checkout/PaymentPage';
+import { PaymentPage } from '@/features/payment/PaymentPage';
+import { ConfirmationPage } from '@/features/orders/ConfirmationPage';
 import { WishlistPage } from '@/features/wishlist/WishlistPage';
 import { AccountPage } from '@/features/auth/AccountPage';
 import { AddressEditorPage } from '@/features/addresses/AddressEditorPage';
@@ -29,6 +30,7 @@ export const routes: RouteObject[] = [
       { path: 'cart', element: <CartPage /> },
       { path: 'checkout', element: <CheckoutPage /> },
       { path: 'checkout/pay/:orderId', element: <PaymentPage /> },
+      { path: 'orders/:orderId/confirmation', element: <ConfirmationPage /> },
       { path: 'wishlist', element: <WishlistPage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'signup', element: <SignupPage /> },

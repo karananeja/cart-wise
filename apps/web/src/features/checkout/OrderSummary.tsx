@@ -2,7 +2,16 @@ import type { ReactNode } from 'react';
 import { formatPrice, type CheckoutTotals } from '@store/shared';
 import { cn } from '@/lib/utils';
 
-export function OrderSummary({ totals, className, children }: { totals: CheckoutTotals; className?: string; children?: ReactNode }) {
+interface OrderSummaryProps {
+  totals: CheckoutTotals;
+  /** Payment page (F-009): adds the chosen bank offer and the amount to pay. */
+  payment?: { bankOffer: { bankName: string; discountPaise: number } | null };
+  className?: string;
+  children?: ReactNode;
+}
+
+export function OrderSummary({ totals, payment, className, children }: OrderSummaryProps) {
+  const offer = payment?.bankOffer;
   return (
     <section aria-labelledby="order-summary" className={cn('flex flex-col gap-3 rounded-xl border p-5', className)}>
       <h2 id="order-summary" className="text-lg font-semibold">
@@ -21,8 +30,25 @@ export function OrderSummary({ totals, className, children }: { totals: Checkout
         )}
         <dt className="text-muted-foreground">Delivery</dt>
         <dd className="text-right tabular-nums">{totals.deliveryPaise === 0 ? 'Free' : formatPrice(totals.deliveryPaise)}</dd>
-        <dt className="border-t pt-3 text-base font-semibold">Total to pay</dt>
-        <dd className="border-t pt-3 text-right text-base font-semibold tabular-nums">{formatPrice(totals.totalPaise)}</dd>
+        {payment ? (
+          <>
+            <dt className="text-muted-foreground">Order total</dt>
+            <dd className="text-right tabular-nums">{formatPrice(totals.totalPaise)}</dd>
+            {offer && (
+              <>
+                <dt className="text-muted-foreground">Bank offer ({offer.bankName})</dt>
+                <dd className="text-right text-emerald-700 tabular-nums dark:text-emerald-400">−{formatPrice(offer.discountPaise)}</dd>
+              </>
+            )}
+            <dt className="border-t pt-3 text-base font-semibold">Amount to pay</dt>
+            <dd className="border-t pt-3 text-right text-base font-semibold tabular-nums">{formatPrice(totals.totalPaise - (offer?.discountPaise ?? 0))}</dd>
+          </>
+        ) : (
+          <>
+            <dt className="border-t pt-3 text-base font-semibold">Total to pay</dt>
+            <dd className="border-t pt-3 text-right text-base font-semibold tabular-nums">{formatPrice(totals.totalPaise)}</dd>
+          </>
+        )}
       </dl>
       <p className="text-xs text-muted-foreground">Inclusive of all taxes</p>
       {children}

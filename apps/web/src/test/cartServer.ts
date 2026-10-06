@@ -24,6 +24,15 @@ export function resetCart() {
   stockOverrides.clear();
 }
 
+/** Paid orders take their quantities out of the cart (F-009). */
+export function removeOrdered(ordered: { slug: string; size: string | null; quantity: number }[]) {
+  for (const o of ordered) {
+    const line = lines.find((l) => l.slug === o.slug && l.size === o.size);
+    if (line) line.quantity -= o.quantity;
+  }
+  lines = lines.filter((l) => l.quantity > 0);
+}
+
 export function setStock(slug: string, size: string | null, available: number) {
   stockOverrides.set(`${slug}|${size ?? ''}`, available);
 }

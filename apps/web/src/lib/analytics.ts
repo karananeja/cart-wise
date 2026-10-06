@@ -10,7 +10,7 @@ let timer: ReturnType<typeof setTimeout> | undefined;
 let memoryVisitorId: string | undefined;
 
 /** Anonymous random id; not linked to any personal data. Falls back to memory if storage is blocked. */
-function visitorId(): string {
+export function visitorId(): string {
   try {
     const existing = localStorage.getItem(VISITOR_KEY);
     if (existing) return existing;

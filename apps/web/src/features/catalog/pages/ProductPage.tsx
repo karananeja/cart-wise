@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, OfflineState } from '@/components/ErrorState';
 import { NotFound } from '@/components/NotFound';
 import { AddToCartButton } from '@/features/cart/AddToCartButton';
+import { OfferBanner } from '@/features/payment/OfferBanner';
 import { WishlistToggle } from '@/features/wishlist/WishlistToggle';
 import { ApiError } from '@/lib/api';
 import { track } from '@/lib/analytics';
@@ -124,6 +125,7 @@ function PurchasePanel({ product: p }: { product: ProductDetail }) {
         </a>
       </div>
       <Price pricePaise={p.pricePaise} mrpPaise={p.mrpPaise} discountPercent={p.discountPercent} size="lg" />
+      <OfferBanner pricePaise={p.pricePaise} outOfStock={p.availability.status === 'out_of_stock'} />
       {p.sizes.length > 0 && (
         <SizeSelector ref={sizeGroup} sizes={p.sizes} value={selected?.label} onChange={selectSize} error={sizeError} />
       )}
