@@ -4,7 +4,7 @@ import { formatPrice, ORDER_STATUS_LABELS, type OrderSummary } from '@store/shar
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ErrorState } from '@/components/ErrorState';
+import { ErrorState, OfflineState, QueryFallback } from '@/components/ErrorState';
 import { StatusMessage } from '@/components/StatusMessage';
 import { useMe } from '@/features/auth/api';
 import { formatEstimate } from '@/features/checkout/api';
@@ -19,19 +19,25 @@ export function OrdersPage() {
   const me = useMe();
   const orders = useOrders();
 
-  if (!me.isPending && !me.data?.user) return <Navigate to="/login?returnTo=%2Faccount%2Forders" replace />;
+  if (me.data && !me.data.user) return <Navigate to="/login?returnTo=%2Faccount%2Forders" replace />;
+  if (!me.data && (me.isError || me.fetchStatus === 'paused')) {
+    return <QueryFallback query={me} what="your orders" loading={null} />;
+  }
 
   const list = orders.data?.pages.flatMap((p) => p.orders) ?? [];
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Your orders</h1>
-      {orders.isPending || me.isPending ? (
+      {orders.fetchStatus === 'paused' && !list.length ? (
+        <OfflineState what="your orders" />
+      ) : orders.isPending || me.isPending ? (
         <div className="flex flex-col gap-4" role="status" aria-label="Loading your orders">
           <Skeleton className="h-32 rounded-xl" />
           <Skeleton className="h-32 rounded-xl" />
         </div>
       ) : orders.isError && !list.length ? (
         <ErrorState what="your orders" onRetry={() => void orders.refetch()} />
+
       ) : !list.length ? (
         <StatusMessage
           icon={<Package />}

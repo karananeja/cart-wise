@@ -21,6 +21,9 @@ export function ProductRail({ title, description, params, seeAllHref }: ProductR
   const listing = useProductListing({ ...DEFAULT_LISTING_PARAMS, ...params, pageSize: RAIL_SIZE });
   const headingId = `rail-${title.toLowerCase().replace(/\W+/g, '-')}`;
 
+  // Offline with nothing loaded yet: leave the rail out rather than show placeholders that never fill.
+  if (!listing.data && listing.fetchStatus === 'paused') return null;
+
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-4">
       <div className="flex items-end justify-between gap-4">

@@ -1,3 +1,4 @@
+import { QueryFallback } from '@/components/ErrorState';
 import { useState } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router';
 import { safeReturnTo, type AddressErrors, type AddressInput } from '@store/shared';
@@ -40,9 +41,11 @@ export function AddressEditorPage() {
   const [method, setMethod] = useState<'map' | 'manual'>('map');
   const [draft, setDraft] = useState<AddressInput>();
 
-  if (me.isPending) return <Skeleton className="mx-auto h-96 w-full max-w-2xl" />;
+  const placeholder = <Skeleton className="mx-auto h-96 w-full max-w-2xl" />;
+  // Only a confirmed "signed out" sends to sign-in; a failed or offline check says so instead.
+  if (!me.data) return <QueryFallback query={me} what="your account" loading={placeholder} />;
   if (!user) return <Navigate to={`/login?returnTo=${encodeURIComponent(location.pathname)}`} replace />;
-  if (editing && addresses.isPending) return <Skeleton className="mx-auto h-96 w-full max-w-2xl" />;
+  if (editing && !addresses.data) return <QueryFallback query={addresses} what="this address" loading={placeholder} />;
 
   const existing = editing ? addresses.data?.find((a) => a.id === Number(id)) : undefined;
   if (editing && !existing) return <NotFound title="We couldn't find that address" />;

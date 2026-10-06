@@ -4,7 +4,7 @@ import { formatPrice, ORDER_STATUS_LABELS, type SimOrder } from '@store/shared';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ErrorState } from '@/components/ErrorState';
+import { QueryFallback } from '@/components/ErrorState';
 import { FormField } from '@/features/auth/components';
 import { formatDateTime } from '@/features/orders/format';
 import { ApiError } from '@/lib/api';
@@ -28,8 +28,7 @@ function SimOrderList() {
     if (expired) queryClient.setQueryData(simSessionKey, { signedIn: false });
   }, [expired, queryClient]);
 
-  if (orders.isPending) return <Skeleton className="h-40 rounded-xl" />;
-  if (orders.isError) return <ErrorState what="orders" onRetry={() => void orders.refetch()} />;
+  if (!orders.data) return <QueryFallback query={orders} what="orders" loading={<Skeleton className="h-40 rounded-xl" />} />;
   if (!orders.data.length) return <p className="text-sm text-muted-foreground">No paid orders yet.</p>;
   return (
     <ul className="flex flex-col gap-4">

@@ -1,14 +1,16 @@
 import { Loader2, LogOut, MapPin, Package } from 'lucide-react';
 import { Link, Navigate } from 'react-router';
 import { Button } from '@/components/ui/button';
+import { QueryFallback } from '@/components/ErrorState';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useLogout, useMe } from './api';
 
 export function AccountPage() {
   const me = useMe();
   const logout = useLogout();
-  if (me.isPending) return <Skeleton className="mx-auto h-48 w-full max-w-md" />;
-  const user = me.data?.user;
+  // Only a confirmed "signed out" sends to sign-in; a failed or offline check says so instead.
+  if (!me.data) return <QueryFallback query={me} what="your account" loading={<Skeleton className="mx-auto h-48 w-full max-w-md" />} />;
+  const user = me.data.user;
   if (!user) return <Navigate to="/login?returnTo=%2Faccount" replace />;
 
   return (

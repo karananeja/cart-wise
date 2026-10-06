@@ -5,7 +5,7 @@ import { formatPrice, type Order } from '@store/shared';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ErrorState } from '@/components/ErrorState';
+import { QueryFallback } from '@/components/ErrorState';
 import { NotFound } from '@/components/NotFound';
 import { StatusMessage } from '@/components/StatusMessage';
 import { formatEstimate, useCancelOrder, useOrder } from '@/features/checkout/api';
@@ -28,7 +28,7 @@ export function PaymentPage() {
   const [bankOffer, setBankOffer] = useState<{ bankName: string; discountPaise: number } | null>(null);
 
   if (order.error instanceof ApiError && order.error.isNotFound) return <NotFound title="We couldn't find that order" />;
-  if (!order.data) return order.isError ? <ErrorState what="your order" onRetry={() => void order.refetch()} /> : <Skeleton className="mx-auto h-96 w-full max-w-3xl" />;
+  if (!order.data) return <QueryFallback query={order} what="your order" loading={<Skeleton className="mx-auto h-96 w-full max-w-3xl" />} />;
 
   const o = order.data;
   const backToCart = (

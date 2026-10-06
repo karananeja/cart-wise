@@ -3,7 +3,7 @@ import { Link, Navigate, useParams } from 'react-router';
 import { formatPrice } from '@store/shared';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ErrorState } from '@/components/ErrorState';
+import { QueryFallback } from '@/components/ErrorState';
 import { NotFound } from '@/components/NotFound';
 import { formatEstimate, useOrder } from '@/features/checkout/api';
 import { ProductImage } from '@/features/catalog/components/ProductImage';
@@ -16,13 +16,17 @@ export function ConfirmationPage() {
 
   if (order.error instanceof ApiError && order.error.isNotFound) return <NotFound title="We couldn't find that order" />;
   if (!order.data) {
-    return order.isError ? (
-      <ErrorState what="your order" onRetry={() => void order.refetch()} />
-    ) : (
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-4" role="status" aria-label="Loading your order">
-        <Skeleton className="h-24 rounded-xl" />
-        <Skeleton className="h-64 rounded-xl" />
-      </div>
+    return (
+      <QueryFallback
+        query={order}
+        what="your order"
+        loading={
+          <div className="mx-auto flex w-full max-w-2xl flex-col gap-4" role="status" aria-label="Loading your order">
+            <Skeleton className="h-24 rounded-xl" />
+            <Skeleton className="h-64 rounded-xl" />
+          </div>
+        }
+      />
     );
   }
 
