@@ -273,6 +273,20 @@ CREATE TABLE IF NOT EXISTS refunds (
 );
 CREATE INDEX IF NOT EXISTS refunds_order ON refunds(order_id);
 
+-- Stock changes made by the Simulation Console (F-011), newest kept. No foreign keys: a catalog
+-- reseed must not break the log.
+CREATE TABLE IF NOT EXISTS inventory_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  at TEXT NOT NULL,
+  product_id INTEGER NOT NULL,
+  variant_id INTEGER,
+  title TEXT NOT NULL,
+  size TEXT,
+  from_on_hand INTEGER NOT NULL,
+  to_on_hand INTEGER NOT NULL,
+  source TEXT NOT NULL CHECK (source IN ('manual', 'auto_decrease', 'auto_restock'))
+);
+
 -- Demo operator sessions (F-010, Q14). Only a hash of the token is stored.
 CREATE TABLE IF NOT EXISTS operator_sessions (
   token_hash TEXT PRIMARY KEY,

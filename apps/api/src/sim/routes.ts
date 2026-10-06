@@ -1,16 +1,39 @@
 import { Router, type RequestHandler } from 'express';
 import { z } from 'zod';
+import { INVENTORY_FILTERS, MAX_ON_HAND, SIM_INTERVALS, type InventoryFilter, type SimAutomation } from '@store/shared';
 import type { LoginLimiter } from '../auth/rateLimit.js';
 import { readCookie } from '../http/cookies.js';
 import { HttpError } from '../http/errors.js';
 import type { OrderLifecycle } from '../orders/lifecycle.js';
+import type { InventorySimulation } from './inventory.js';
 import { OPERATOR_COOKIE, OPERATOR_SESSION_MS, type OperatorAccess } from './operator.js';
+import type { SimScheduler } from './scheduler.js';
+
+const unitBody = z.strictObject({
+  productId: z.number().int().positive(),
+  variantId: z.number().int().positive().nullable(),
+  onHand: z.number().int().min(0).max(MAX_ON_HAND),
+});
+const automationBody = z.strictObject({
+  autoDecrease: z.boolean(),
+  autoRestock: z.boolean(),
+  intervalSeconds: z.union(SIM_INTERVALS.map((s) => z.literal(s)) as [z.ZodLiteral<10>, z.ZodLiteral<30>, z.ZodLiteral<60>, z.ZodLiteral<300>]),
+});
+
+interface SimDeps {
+  access: OperatorAccess;
+  lifecycle: OrderLifecycle;
+  limiter: LoginLimiter;
+  simulation: InventorySimulation;
+  /** Present when the API runs automation (server); absent in tests. */
+  scheduler?: SimScheduler;
+}
 
 /**
- * Demo operator API (F-010, SIM-3, SIM-4). Separate from customer sessions: a signed-in
+ * Demo operator API (F-010 orders, F-011 inventory). Separate from customer sessions: a signed-in
  * customer gets nothing here without the operator cookie.
  */
-export function simRouter(access: OperatorAccess, lifecycle: OrderLifecycle, limiter: LoginLimiter): Router {
+export function simRouter({ access, lifecycle, limiter, simulation, scheduler }: SimDeps): Router {
   const router = Router();
 
   router.get('/sim/session', (req, res) => {
@@ -64,6 +87,43 @@ export function simRouter(access: OperatorAccess, lifecycle: OrderLifecycle, lim
   });
   router.post('/sim/returns/:id/refund', (req, res) => {
     res.json({ order: lifecycle.completeRefund(id(req.params.id)) });
+  });
+
+  // ── Inventory simulation (F-011) ──────────────────────────────────────────────────────
+
+  const automation = (): SimAutomation => ({ ...simulation.getSettings(), nextTickAt: scheduler?.nextTickAt() ?? null, log: simulation.recentChanges() });
+
+  router.get('/sim/inventory', (req, res) => {
+    const q = typeof req.query.q === 'string' ? req.query.q.slice(0, 100) : undefined;
+    const filter = INVENTORY_FILTERS.includes(req.query.filter as InventoryFilter) ? (req.query.filter as InventoryFilter) : 'all';
+    const cursor = typeof req.query.cursor === 'string' ? req.query.cursor : undefined;
+    res.json(simulation.list(q, filter, cursor));
+  });
+
+  router.put('/sim/inventory/units', (req, res) => {
+    const parsed = unitBody.safeParse(req.body);
+    if (!parsed.success) throw new HttpError(400, 'BAD_REQUEST', `Enter a whole number from 0 to ${MAX_ON_HAND}`);
+    res.json(simulation.setOnHand(parsed.data.productId, parsed.data.variantId, parsed.data.onHand));
+  });
+
+  router.get('/sim/automation', (_req, res) => {
+    res.json(automation());
+  });
+
+  router.put('/sim/automation', (req, res) => {
+    const parsed = automationBody.safeParse(req.body);
+    if (!parsed.success) throw new HttpError(400, 'BAD_REQUEST', 'Check the automation settings');
+    simulation.saveSettings(parsed.data);
+    scheduler?.reschedule();
+    res.json(automation());
+  });
+
+  /** Run once now: one tick of whatever is switched on (spec FR-6). */
+  router.post('/sim/automation/run', (_req, res) => {
+    const { autoDecrease, autoRestock } = simulation.getSettings();
+    if (!autoDecrease && !autoRestock) throw new HttpError(409, 'AUTOMATION_OFF', 'Turn on decrease or restock first');
+    const changes = simulation.tick({ decrease: autoDecrease, restock: autoRestock });
+    res.json({ changes, automation: automation() });
   });
 
   return router;

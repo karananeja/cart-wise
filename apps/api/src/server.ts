@@ -42,6 +42,7 @@ if (!process.env.SIM_OPERATOR_PASSWORD) {
   console.log('Demo operator page uses the default password "demo-operator" (set SIM_OPERATOR_PASSWORD to change it).');
 }
 
-createApp(db).listen(port, () => {
+// Inventory automation (F-011) runs only here, with the switches saved in the database.
+createApp(db, { simScheduler: true }).listen(port, () => {
   console.log(`API listening on http://localhost:${port}`);
 });

@@ -5,7 +5,9 @@ import { createGeoService } from './geo/service.js';
 import { orderRouter } from './orders/routes.js';
 import { createOrderLifecycle } from './orders/lifecycle.js';
 import { createOrderService } from './orders/service.js';
+import { createInventorySimulation } from './sim/inventory.js';
 import { createOperatorAccess, DEFAULT_OPERATOR_PASSWORD } from './sim/operator.js';
+import { createSimScheduler } from './sim/scheduler.js';
 import { simRouter } from './sim/routes.js';
 import { paymentRouter } from './payments/routes.js';
 import { createPaymentService } from './payments/service.js';
@@ -35,6 +37,10 @@ export interface AppOptions {
   clock?: () => number;
   /** Demo operator password (F-010); defaults to SIM_OPERATOR_PASSWORD, then the demo default. */
   operatorPassword?: string;
+  /** Random source for inventory automation (seeded in tests). */
+  random?: () => number;
+  /** Run inventory automation on a timer (the server sets this; tests drive ticks directly). */
+  simScheduler?: boolean;
 }
 
 export function createApp(db: Db, options: AppOptions = {}) {
@@ -69,7 +75,18 @@ export function createApp(db: Db, options: AppOptions = {}) {
   const lifecycle = createOrderLifecycle({ db, orders, record, clock: options.clock });
   api.use(orderRouter(orders, lifecycle));
   const operatorPassword = options.operatorPassword ?? process.env.SIM_OPERATOR_PASSWORD ?? DEFAULT_OPERATOR_PASSWORD;
-  api.use(simRouter(createOperatorAccess(db, operatorPassword, options.clock), lifecycle, createLoginLimiter(undefined, options.clock)));
+  const simulation = createInventorySimulation(db, { clock: options.clock, random: options.random });
+  const scheduler = options.simScheduler ? createSimScheduler(simulation) : undefined;
+  scheduler?.start();
+  api.use(
+    simRouter({
+      access: createOperatorAccess(db, operatorPassword, options.clock),
+      lifecycle,
+      limiter: createLoginLimiter(undefined, options.clock),
+      simulation,
+      scheduler,
+    }),
+  );
   api.use(paymentRouter(createPaymentService({ db, orders, record, clock: options.clock })));
   api.use(geoRouter(createGeoService({ fetch: options.fetch ?? fetch })));
   api.use(analyticsRouter(db));
