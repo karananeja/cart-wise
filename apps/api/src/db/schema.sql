@@ -44,17 +44,22 @@ CREATE TABLE IF NOT EXISTS product_reviews (
 );
 CREATE INDEX IF NOT EXISTS product_reviews_product ON product_reviews(product_id);
 
--- Application-owned sizes (Q4); never imported.
+-- Application-owned sizes (Q4) and electronics options (F-013); never imported. Sizes share the
+-- product price (prices NULL); options carry their own, and the product price is the base tier.
 CREATE TABLE IF NOT EXISTS product_variants (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL DEFAULT 'size' CHECK (kind IN ('size', 'option')),
   label TEXT NOT NULL,
   sort_order INTEGER NOT NULL,
+  mrp_paise INTEGER,
+  price_paise INTEGER,
+  discount_percent INTEGER,
   UNIQUE (product_id, label)
 );
 
 -- Application-owned inventory, deliberately separate from catalog data (INV-1). One row per
--- sellable unit: variant_id is NULL for products without sizes.
+-- sellable unit: variant_id is NULL for products without sizes or options.
 CREATE TABLE IF NOT EXISTS inventory (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
@@ -191,6 +196,7 @@ CREATE TABLE IF NOT EXISTS order_lines (
   slug TEXT NOT NULL,
   title TEXT NOT NULL,
   size TEXT,
+  option_label TEXT,
   thumbnail_url TEXT NOT NULL,
   quantity INTEGER NOT NULL,
   unit_price_paise INTEGER NOT NULL,

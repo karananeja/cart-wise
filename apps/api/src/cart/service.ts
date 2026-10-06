@@ -14,7 +14,11 @@ interface LineRow {
   id: number;
   product_id: number;
   slug: string;
-  size: string | null;
+  label: string | null;
+  kind: 'size' | 'option' | null;
+  /** Option price; null for sizes and products without options, which use the product price. */
+  price_paise: number | null;
+  mrp_paise: number | null;
   quantity: number;
   available: number;
 }
@@ -42,7 +46,7 @@ export function createCartService(db: Db, catalog: CatalogRepository) {
   const deleteExpired = db.prepare('DELETE FROM carts WHERE user_id IS NULL AND updated_at < ?');
   // Stock for the exact sellable unit: the size row for sized lines, the product row otherwise.
   const lineRows = db.prepare(`
-    SELECT l.id, l.product_id, p.slug, v.label AS size, l.quantity,
+    SELECT l.id, l.product_id, p.slug, v.label, v.kind, v.price_paise, v.mrp_paise, l.quantity,
       COALESCE((SELECT MAX(i.on_hand - i.reserved, 0) FROM inventory i
         WHERE i.product_id = l.product_id AND IFNULL(i.variant_id, 0) = IFNULL(l.variant_id, 0)), 0) + ${OWN_HELD} AS available
     FROM cart_lines l
@@ -54,9 +58,10 @@ export function createCartService(db: Db, catalog: CatalogRepository) {
     SELECT p.id AS productId, v.id AS variantId,
       COALESCE((SELECT MAX(i.on_hand - i.reserved, 0) FROM inventory i
         WHERE i.product_id = p.id AND IFNULL(i.variant_id, 0) = IFNULL(v.id, 0)), 0) AS available
-    FROM products p LEFT JOIN product_variants v ON v.product_id = p.id AND v.label = ?
+    FROM products p LEFT JOIN product_variants v ON v.product_id = p.id AND v.label = ? AND v.kind = ?
     WHERE p.slug = ?`);
-  const sizeCount = db.prepare('SELECT COUNT(*) AS n FROM product_variants WHERE product_id = ?');
+  // Whether the product is sold in sizes, options (F-013) or neither (undefined).
+  const variantKind = db.prepare('SELECT kind FROM product_variants WHERE product_id = ? LIMIT 1');
   const existingLine = db.prepare(
     'SELECT id, quantity FROM cart_lines WHERE cart_id = ? AND product_id = ? AND IFNULL(variant_id, 0) = IFNULL(?, 0)',
   );
@@ -84,17 +89,22 @@ export function createCartService(db: Db, catalog: CatalogRepository) {
     const lines = rows.flatMap((row): CartLineView[] => {
       const product = summaries.get(row.product_id);
       if (!product) return [];
+      const unitPricePaise = row.price_paise ?? product.pricePaise;
+      const unitMrpPaise = row.mrp_paise ?? product.mrpPaise;
       return [
         {
           id: row.id,
           product,
-          size: row.size,
+          size: row.kind === 'size' ? row.label : null,
+          option: row.kind === 'option' ? row.label : null,
           quantity: row.quantity,
           availability: deriveAvailability(row.available),
           maxQuantity: maxQuantity(row.available),
           issue: lineIssue(row.quantity, row.available),
-          linePricePaise: product.pricePaise * row.quantity,
-          lineMrpPaise: product.mrpPaise * row.quantity,
+          unitPricePaise,
+          unitMrpPaise,
+          linePricePaise: unitPricePaise * row.quantity,
+          lineMrpPaise: unitMrpPaise * row.quantity,
         },
       ];
     });
@@ -113,15 +123,21 @@ export function createCartService(db: Db, catalog: CatalogRepository) {
   return {
     view,
 
-    add(owner: Owner, input: { productSlug: string; size?: string | null; quantity: number }) {
+    add(owner: Owner, input: { productSlug: string; size?: string | null; option?: string | null; quantity: number }) {
       const size = input.size ?? null;
-      const unit = unitFor.get(size, input.productSlug) as
+      const option = input.option ?? null;
+      const kind = size ? 'size' : 'option';
+      const unit = unitFor.get(size ?? option, kind, input.productSlug) as
         | { productId: number; variantId: number | null; available: number }
         | undefined;
       if (!unit) throw new HttpError(404, 'PRODUCT_NOT_FOUND', 'Product not found');
-      const sized = (sizeCount.get(unit.productId) as { n: number }).n > 0;
-      if (sized && !size) throw new HttpError(400, 'SIZE_REQUIRED', 'Please select a size');
-      if ((sized && unit.variantId === null) || (!sized && size)) throw new HttpError(400, 'INVALID_SIZE', 'That size is not available');
+      const sells = (variantKind.get(unit.productId) as { kind: 'size' | 'option' } | undefined)?.kind;
+      if (size && (sells !== 'size' || unit.variantId === null)) throw new HttpError(400, 'INVALID_SIZE', 'That size is not available');
+      if (option && (sells !== 'option' || unit.variantId === null)) {
+        throw new HttpError(400, 'INVALID_OPTION', 'That option is not available');
+      }
+      if (sells === 'size' && !size) throw new HttpError(400, 'SIZE_REQUIRED', 'Please select a size');
+      if (sells === 'option' && !option) throw new HttpError(400, 'OPTION_REQUIRED', 'Please choose an option');
       if (unit.available <= 0) throw new HttpError(409, 'OUT_OF_STOCK', 'This item is out of stock');
 
       return db.transaction(() => {

@@ -54,10 +54,10 @@ describe('inventory list', () => {
 
   it('filters by product-level availability, and shows sizes as units', async () => {
     const op = await operator();
-    setUnit('iphone-x', 3);
+    setUnit('apple-magsafe-battery-pack', 3);
     setUnit('apple-airpods', 0);
-    const low = (await op.get('/api/sim/inventory?filter=low&q=iphone x')).body as SimInventoryPage;
-    expect(low.products.map((p) => p.slug)).toContain('iphone-x');
+    const low = (await op.get('/api/sim/inventory?filter=low&q=magsafe battery')).body as SimInventoryPage;
+    expect(low.products.map((p) => p.slug)).toContain('apple-magsafe-battery-pack');
     expect(low.products.every((p) => p.available >= 1 && p.available <= 5 && p.status === 'low_stock')).toBe(true);
     const sold = (await op.get('/api/sim/inventory?filter=sold_out&q=airpods')).body as SimInventoryPage;
     expect(sold.products.map((p) => p.slug)).toContain('apple-airpods');
@@ -73,14 +73,14 @@ describe('inventory list', () => {
 describe('manual stock', () => {
   it('sets on hand, logs it, and the storefront reflects it', async () => {
     const op = await operator();
-    setUnit('iphone-x', 20);
-    const res = (await putUnit(op, { productId: productId('iphone-x'), variantId: null, onHand: 4 }).expect(200)).body as { unit: SimInventoryUnit; product: SimInventoryProduct };
+    setUnit('apple-magsafe-battery-pack', 20);
+    const res = (await putUnit(op, { productId: productId('apple-magsafe-battery-pack'), variantId: null, onHand: 4 }).expect(200)).body as { unit: SimInventoryUnit; product: SimInventoryProduct };
     expect(res.unit).toMatchObject({ onHand: 4, held: 0, available: 4, status: 'low_stock' });
-    expect(res.product.slug).toBe('iphone-x');
-    expect((await request(app).get('/api/products/iphone-x')).body.product.availability).toEqual({ status: 'low_stock', available: 4 });
+    expect(res.product.slug).toBe('apple-magsafe-battery-pack');
+    expect((await request(app).get('/api/products/apple-magsafe-battery-pack')).body.product.availability).toEqual({ status: 'low_stock', available: 4 });
 
-    await putUnit(op, { productId: productId('iphone-x'), variantId: null, onHand: 0 }).expect(200);
-    expect((await request(app).get('/api/products/iphone-x')).body.product.availability).toEqual({ status: 'out_of_stock' });
+    await putUnit(op, { productId: productId('apple-magsafe-battery-pack'), variantId: null, onHand: 0 }).expect(200);
+    expect((await request(app).get('/api/products/apple-magsafe-battery-pack')).body.product.availability).toEqual({ status: 'out_of_stock' });
 
     const log = ((await op.get('/api/sim/automation')).body as SimAutomation).log;
     expect(log.map((c) => [c.fromOnHand, c.toOnHand, c.source])).toEqual([
@@ -91,16 +91,16 @@ describe('manual stock', () => {
 
   it('never goes below units held in checkout', async () => {
     const op = await operator();
-    setUnit('iphone-x', 6, 2);
-    const res = await putUnit(op, { productId: productId('iphone-x'), variantId: null, onHand: 1 }).expect(409);
+    setUnit('apple-magsafe-battery-pack', 6, 2);
+    const res = await putUnit(op, { productId: productId('apple-magsafe-battery-pack'), variantId: null, onHand: 1 }).expect(409);
     expect(res.body.error).toMatchObject({ code: 'BELOW_HELD', details: { held: 2 } });
-    expect(unit('iphone-x')).toEqual({ onHand: 6, reserved: 2 });
-    await putUnit(op, { productId: productId('iphone-x'), variantId: null, onHand: 2 }).expect(200);
+    expect(unit('apple-magsafe-battery-pack')).toEqual({ onHand: 6, reserved: 2 });
+    await putUnit(op, { productId: productId('apple-magsafe-battery-pack'), variantId: null, onHand: 2 }).expect(200);
   });
 
   it('refuses bad values and unknown units', async () => {
     const op = await operator();
-    const id = productId('iphone-x');
+    const id = productId('apple-magsafe-battery-pack');
     for (const onHand of [-1, 1000, 2.5, '3']) await putUnit(op, { productId: id, variantId: null, onHand }).expect(400);
     await putUnit(op, { productId: 999_999, variantId: null, onHand: 3 }).expect(404);
     await putUnit(op, { productId: id, variantId: 999_999, onHand: 3 }).expect(404);
@@ -122,13 +122,13 @@ describe('automation', () => {
 
   it('decreases 1–3 available units by 1, never held units or below zero', async () => {
     const op = await operator();
-    onlyStock({ 'iphone-x': [5, 5], 'apple-airpods': [2], 'apple-homepod-mini-cosmic-grey': [1] });
+    onlyStock({ 'apple-magsafe-battery-pack': [5, 5], 'apple-airpods': [2], 'apple-homepod-mini-cosmic-grey': [1] });
     await settings(op, { autoDecrease: true, autoRestock: false, intervalSeconds: 60 });
 
     randomValues = [0.99, 0, 0, 0]; // 3 units; then pick the first available each time
     let changes = (await op.post('/api/sim/automation/run').send({}).expect(200)).body.changes as InventoryChange[];
     expect(changes.map((c) => c.source)).toEqual(['auto_decrease', 'auto_decrease']); // only 2 units have anything available
-    expect(unit('iphone-x')).toEqual({ onHand: 5, reserved: 5 });
+    expect(unit('apple-magsafe-battery-pack')).toEqual({ onHand: 5, reserved: 5 });
     expect(unit('apple-airpods').onHand).toBe(1);
     expect(unit('apple-homepod-mini-cosmic-grey').onHand).toBe(0);
 
@@ -139,7 +139,7 @@ describe('automation', () => {
 
     changes = (await op.post('/api/sim/automation/run').send({}).expect(200)).body.changes as InventoryChange[];
     expect(changes).toEqual([]);
-    expect(unit('iphone-x')).toEqual({ onHand: 5, reserved: 5 });
+    expect(unit('apple-magsafe-battery-pack')).toEqual({ onHand: 5, reserved: 5 });
   });
 
   it('restocks up to 3 low or sold-out units to their seeded level, at least 10 available', async () => {
@@ -147,7 +147,7 @@ describe('automation', () => {
     await settings(op, { autoDecrease: false, autoRestock: true, intervalSeconds: 60 });
     // Everything else comfortably stocked, so only these are low.
     db.prepare('UPDATE inventory SET on_hand = 50, reserved = 0').run();
-    setUnit('iphone-x', 2, 1);
+    setUnit('apple-magsafe-battery-pack', 2, 1);
     setUnit('apple-airpods', 0);
     const sized = db.prepare(`SELECT i.product_id AS productId, i.variant_id AS variantId, v.sort_order AS sortOrder FROM inventory i
       JOIN product_variants v ON v.id = i.variant_id LIMIT 1`).get() as { productId: number; variantId: number; sortOrder: number };
@@ -156,7 +156,7 @@ describe('automation', () => {
     const changes = (await op.post('/api/sim/automation/run').send({}).expect(200)).body.changes as InventoryChange[];
     expect(changes).toHaveLength(3);
     expect(changes.every((c) => c.source === 'auto_restock')).toBe(true);
-    expect(unit('iphone-x')).toEqual({ onHand: 1 + Math.max(seedOnHand(productId('iphone-x')), 10), reserved: 1 });
+    expect(unit('apple-magsafe-battery-pack')).toEqual({ onHand: 1 + Math.max(seedOnHand(productId('apple-magsafe-battery-pack')), 10), reserved: 1 });
     expect(unit('apple-airpods').onHand).toBe(Math.max(seedOnHand(productId('apple-airpods')), 10));
     const sizedNow = db.prepare('SELECT on_hand AS n FROM inventory WHERE variant_id = ?').get(sized.variantId) as { n: number };
     expect(sizedNow.n).toBe(Math.max(seedSizeOnHand(sized.productId, sized.sortOrder), 10));
@@ -164,7 +164,7 @@ describe('automation', () => {
 
   it('keeps only the latest changes in the log view (20, newest first)', async () => {
     const op = await operator();
-    const id = productId('iphone-x');
+    const id = productId('apple-magsafe-battery-pack');
     for (let i = 1; i <= 25; i += 1) await putUnit(op, { productId: id, variantId: null, onHand: i }).expect(200);
     const log = ((await op.get('/api/sim/automation')).body as SimAutomation).log;
     expect(log).toHaveLength(20);

@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import { readFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
+import { saveVariantLabels } from './seed.js';
 
 export type Db = Database.Database;
 
@@ -8,7 +9,7 @@ export type Db = Database.Database;
  * Bumped when seeded tables change shape. Older databases have their catalog and inventory
  * tables dropped and are re-seeded from the snapshot; analytics events are kept.
  */
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 const SEEDED_TABLES = ['inventory', 'product_variants', 'product_reviews', 'products', 'categories'];
 
 const schema = readFileSync(new URL('./schema.sql', import.meta.url), 'utf8');
@@ -26,6 +27,8 @@ export function openDatabase(path: string): Db {
   db.transaction = ((fn: Parameters<typeof transaction>[0]) => transaction(fn).immediate) as typeof db.transaction;
   db.pragma('foreign_keys = ON');
   if ((db.pragma('user_version', { simple: true }) as number) < SCHEMA_VERSION) {
+    // Carts and orders point at variant ids; the reseed remaps them by label (seed.ts).
+    saveVariantLabels(db);
     db.pragma('foreign_keys = OFF');
     for (const table of SEEDED_TABLES) db.exec(`DROP TABLE IF EXISTS ${table}`);
     db.pragma('foreign_keys = ON');
@@ -52,6 +55,8 @@ function upgradeInPlace(db: Db) {
   ensureColumn(db, 'orders', 'paid_at', 'TEXT');
   // Account id on server analytics events (MVP wrap-up decision, 2026-10-06).
   ensureColumn(db, 'analytics_events', 'user_id', 'INTEGER');
+  // Electronics options (F-013).
+  ensureColumn(db, 'order_lines', 'option_label', 'TEXT');
   // Lifecycle (F-010).
   ensureColumn(db, 'orders', 'delivered_at', 'TEXT');
   ensureColumn(db, 'orders', 'cancelled_at', 'TEXT');

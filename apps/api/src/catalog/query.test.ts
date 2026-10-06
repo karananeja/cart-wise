@@ -23,6 +23,7 @@ function item(o: { id: number; category?: string; brand?: string | null; price: 
     reviewCount: 3,
     thumbnailUrl: '',
     availability: { status: (o.available ?? 10) > 0 ? 'in_stock' : 'out_of_stock' },
+    hasOptions: false,
   };
   return { summary, brandSlug: brand ? brand.toLowerCase() : null, available: o.available ?? 10, catalogOrder: order++ };
 }

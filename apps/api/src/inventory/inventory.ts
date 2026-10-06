@@ -38,6 +38,24 @@ export function seedSizeOnHand(productId: number, sizeIndex: number): number {
   return 4 + Math.floor(random() * 12);
 }
 
+/**
+ * Initial stock for one electronics option (F-013). Higher tiers are stocked more thinly, like
+ * real stores; some tiers start low or out of stock so those states are demonstrable.
+ */
+export function seedOptionOnHand(productId: number, optionIndex: number): number {
+  const random = mulberry32((productId * 17 + optionIndex + 101) * 3266489917);
+  const roll = random();
+  if (roll < 0.12) return 0;
+  if (roll < 0.27) return 1 + Math.floor(random() * LOW_STOCK_THRESHOLD);
+  return 6 + Math.floor(random() * (20 - optionIndex * 5));
+}
+
+/** The seeded on-hand level of any sellable unit; restocking returns to it (F-011). */
+export function seedUnitOnHand(productId: number, unit: { kind: 'size' | 'option'; index: number } | null): number {
+  if (!unit) return seedOnHand(productId);
+  return unit.kind === 'option' ? seedOptionOnHand(productId, unit.index) : seedSizeOnHand(productId, unit.index);
+}
+
 /** Availability from the units available (on hand minus reserved, summed across sizes). */
 export function deriveAvailability(available: number): Availability {
   if (available <= 0) return { status: 'out_of_stock' };

@@ -28,6 +28,7 @@ interface Row {
   tags: string;
   available: number;
   needs_size: number;
+  has_options: number;
 }
 
 /**
@@ -40,7 +41,8 @@ export function createRecommendationService(db: Db) {
       p.thumbnail_url, p.tags,
       (SELECT COUNT(*) FROM product_reviews r WHERE r.product_id = p.id) AS review_count,
       (SELECT COALESCE(SUM(MAX(i.on_hand - i.reserved, 0)), 0) FROM inventory i WHERE i.product_id = p.id) AS available,
-      EXISTS (SELECT 1 FROM product_variants v WHERE v.product_id = p.id) AS needs_size
+      EXISTS (SELECT 1 FROM product_variants v WHERE v.product_id = p.id) AS needs_size,
+      EXISTS (SELECT 1 FROM product_variants v WHERE v.product_id = p.id AND v.kind = 'option') AS has_options
     FROM products p`);
   /** Other products in the same paid orders as this one, by number of distinct orders. */
   const coPurchased = db.prepare(`
@@ -73,6 +75,7 @@ export function createRecommendationService(db: Db) {
       reviewCount: r.review_count,
       thumbnailUrl: r.thumbnail_url,
       availability: deriveAvailability(r.available),
+      hasOptions: r.has_options === 1,
       needsSize: r.needs_size === 1,
     },
     tags: JSON.parse(r.tags) as string[],

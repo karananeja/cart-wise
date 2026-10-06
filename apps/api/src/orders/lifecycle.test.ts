@@ -48,19 +48,19 @@ const events = (name: string) =>
   (db.prepare('SELECT properties FROM analytics_events WHERE name = ? ORDER BY id').all(name) as { properties: string }[]).map((r) => JSON.parse(r.properties));
 
 /**
- * A paid order: 2 × iphone-x at ₹3,000 and 1 × apple-airpods at ₹2,000 (₹8,000, free delivery),
+ * A paid order: 2 × apple-magsafe-battery-pack at ₹3,000 and 1 × apple-airpods at ₹2,000 (₹8,000, free delivery),
  * paid with an Aurora credit card and its 10% offer (−₹800), so ₹7,200 was paid.
  */
 async function paidOrder(agent: Agent, options: { offer?: boolean; cheap?: boolean } = { offer: true }): Promise<Order> {
-  setStock('iphone-x', 10);
+  setStock('apple-magsafe-battery-pack', 10);
   setStock('apple-airpods', 10);
   if (options.cheap) {
     setPrice('apple-airpods', 500_00);
     await agent.post('/api/cart/lines').send({ productSlug: 'apple-airpods', quantity: 1 }).expect(200);
   } else {
-    setPrice('iphone-x', 3_000_00);
+    setPrice('apple-magsafe-battery-pack', 3_000_00);
     setPrice('apple-airpods', 2_000_00);
-    await agent.post('/api/cart/lines').send({ productSlug: 'iphone-x', quantity: 2 }).expect(200);
+    await agent.post('/api/cart/lines').send({ productSlug: 'apple-magsafe-battery-pack', quantity: 2 }).expect(200);
     await agent.post('/api/cart/lines').send({ productSlug: 'apple-airpods', quantity: 1 }).expect(200);
   }
   const order = (await agent.post('/api/orders').send({ delivery: 'standard' }).expect(201)).body.order as Order;
@@ -147,19 +147,19 @@ describe('cancellation', () => {
     const op = await operator();
     const order = await paidOrder(agent);
     await advance(op, order.id).expect(200); // Processing
-    expect(onHand('iphone-x')).toBe(8);
+    expect(onHand('apple-magsafe-battery-pack')).toBe(8);
 
     const res = await agent.post(`/api/orders/${order.id}/cancel`).send({ reason: 'changed_mind', visitorId: 'visitor-1234' }).expect(200);
     const cancelled = res.body.order as Order;
     expect(cancelled).toMatchObject({ status: 'cancelled', cancelReason: 'changed_mind', actions: { canCancel: false } });
     expect(cancelled.refunds).toEqual([expect.objectContaining({ returnId: null, amountPaise: 7_200_00, label: 'Aurora Bank Visa •••• 4242', status: 'refunded' })]);
     expect(cancelled.history.at(-1)!.status).toBe('cancelled');
-    expect(onHand('iphone-x')).toBe(10);
+    expect(onHand('apple-magsafe-battery-pack')).toBe(10);
     expect(onHand('apple-airpods')).toBe(10);
     expect(events('order_cancelled')).toEqual([{ orderId: order.id, itemCount: 3, totalPaise: 7_200_00, reason: 'changed_mind' }]);
 
     expect((await agent.post(`/api/orders/${order.id}/cancel`).send({}).expect(409)).body.error.code).toBe('NOT_CANCELLABLE');
-    expect(onHand('iphone-x')).toBe(10);
+    expect(onHand('apple-magsafe-battery-pack')).toBe(10);
     expect(events('order_cancelled')).toHaveLength(1);
     // Still listed in history (it was paid).
     expect(((await agent.get('/api/orders')).body as OrderList).orders[0]).toMatchObject({ status: 'cancelled' });
@@ -224,7 +224,7 @@ describe('returns and refunds', () => {
     const op = await operator();
     const order = await paidOrder(agent);
     await delivered(agent, op, order.id);
-    const iphones = order.lines.find((l) => l.slug === 'iphone-x');
+    const packs = order.lines.find((l) => l.slug === 'apple-magsafe-battery-pack');
     const airpods = order.lines.find((l) => l.slug === 'apple-airpods');
 
     const requested = (await agent.post(`/api/orders/${order.id}/returns`).send({ lines: [{ orderLineId: airpods!.id, reason: 'damaged' }] }).expect(201)).body.order as Order;
@@ -251,7 +251,7 @@ describe('returns and refunds', () => {
     expect(o.refunds[0]).toMatchObject({ status: 'refunded', label: 'Aurora Bank Visa •••• 4242' });
 
     // The rest: ₹6,000 minus ₹600 = ₹5,400. All refunds add up to what was paid for items.
-    o = (await agent.post(`/api/orders/${order.id}/returns`).send({ lines: [{ orderLineId: iphones!.id, reason: 'not_needed' }] }).expect(201)).body.order as Order;
+    o = (await agent.post(`/api/orders/${order.id}/returns`).send({ lines: [{ orderLineId: packs!.id, reason: 'not_needed' }] }).expect(201)).body.order as Order;
     expect(o.returns[1]!.refundPaise).toBe(5_400_00);
     expect(o.returns.reduce((n, r) => n + r.refundPaise, 0)).toBe(order.payment!.paidPaise);
     expect(o).toMatchObject({ returnState: 'all', actions: { canReturn: false } });

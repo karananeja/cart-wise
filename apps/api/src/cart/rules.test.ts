@@ -20,10 +20,13 @@ const line = (id: number, quantity: number, issue: CartLineView['issue'], price 
   id,
   product: {} as CartLineView['product'],
   size: null,
+  option: null,
   quantity,
   availability: { status: 'in_stock' },
   maxQuantity: 10,
   issue,
+  unitPricePaise: price,
+  unitMrpPaise: mrp,
   linePricePaise: price * quantity,
   lineMrpPaise: mrp * quantity,
 });

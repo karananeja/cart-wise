@@ -56,6 +56,7 @@ interface LineRow {
   slug: string;
   title: string;
   size: string | null;
+  option_label: string | null;
   thumbnail_url: string;
   quantity: number;
   unit_price_paise: number;
@@ -94,8 +95,8 @@ export function createOrderService({ db, carts, addresses, record, clock = Date.
     VALUES (@id, @userId, 'pending_payment', @address, @delivery, @itemCount, @mrpPaise, @discountPaise, @deliveryPaise, @totalPaise,
       @now, @holdExpiresAt, @now)`);
   const insertLine = db.prepare(`
-    INSERT INTO order_lines (order_id, product_id, variant_id, slug, title, size, thumbnail_url, quantity, unit_price_paise, unit_mrp_paise)
-    VALUES (@orderId, @productId, @variantId, @slug, @title, @size, @thumbnailUrl, @quantity, @unitPricePaise, @unitMrpPaise)`);
+    INSERT INTO order_lines (order_id, product_id, variant_id, slug, title, size, option_label, thumbnail_url, quantity, unit_price_paise, unit_mrp_paise)
+    VALUES (@orderId, @productId, @variantId, @slug, @title, @size, @option, @thumbnailUrl, @quantity, @unitPricePaise, @unitMrpPaise)`);
   const findOrder = db.prepare('SELECT * FROM orders WHERE id = ? AND user_id = ?');
   const orderLines = db.prepare('SELECT * FROM order_lines WHERE order_id = ? ORDER BY id');
   const pendingForUser = db.prepare("SELECT id FROM orders WHERE user_id = ? AND status = 'pending_payment'");
@@ -174,6 +175,7 @@ export function createOrderService({ db, carts, addresses, record, clock = Date.
       slug: l.slug,
       title: l.title,
       size: l.size,
+      option: l.option_label,
       thumbnailUrl: l.thumbnail_url,
       quantity: l.quantity,
       unitPricePaise: l.unit_price_paise,
@@ -292,10 +294,11 @@ export function createOrderService({ db, carts, addresses, record, clock = Date.
           slug: line.product.slug,
           title: line.product.title,
           size: line.size,
+          option: line.option,
           thumbnailUrl: line.product.thumbnailUrl,
           quantity: line.quantity,
-          unitPricePaise: line.product.pricePaise,
-          unitMrpPaise: line.product.mrpPaise,
+          unitPricePaise: line.unitPricePaise,
+          unitMrpPaise: line.unitMrpPaise,
         });
       });
       return toOrder(findOrder.get(id, userId) as OrderRow);

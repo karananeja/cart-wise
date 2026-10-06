@@ -42,11 +42,11 @@ const add = (agent: Agent, productSlug: string, quantity = 1) => agent.post('/ap
 const events = (name: string) =>
   (db.prepare('SELECT properties FROM analytics_events WHERE name = ? ORDER BY id').all(name) as { properties: string }[]).map((r) => JSON.parse(r.properties));
 
-/** A held order of 2 × iphone-x (₹3,000 each, ₹6,000 total with free delivery). */
+/** A held order of 2 × apple-magsafe-battery-pack (₹3,000 each, ₹6,000 total with free delivery). */
 async function heldOrder(agent: Agent, quantity = 2): Promise<Order> {
-  setStock('iphone-x', 5);
-  setPrice('iphone-x', 3_000_00);
-  await add(agent, 'iphone-x', quantity);
+  setStock('apple-magsafe-battery-pack', 5);
+  setPrice('apple-magsafe-battery-pack', 3_000_00);
+  await add(agent, 'apple-magsafe-battery-pack', quantity);
   return (await agent.post('/api/orders').send({ delivery: 'standard' }).expect(201)).body.order as Order;
 }
 
@@ -103,7 +103,7 @@ describe('card payment', () => {
     const agent = await customer();
     const order = await heldOrder(agent);
     await add(agent, 'apple-airpods'); // added after checkout: stays in the cart
-    expect(stock('iphone-x')).toEqual({ onHand: 5, reserved: 2 });
+    expect(stock('apple-magsafe-battery-pack')).toEqual({ onHand: 5, reserved: 2 });
 
     const attempt = await cardAttempt(agent, order.id, AURORA_CREDIT, 'aurora-credit-10');
     expect(attempt).toMatchObject({ status: 'pending', amountPaise: 5_400_00, discountPaise: 600_00, label: 'Aurora Bank Visa •••• 4242', otpAttemptsLeft: 3 });
@@ -119,13 +119,13 @@ describe('card payment', () => {
     expect(confirmed.history.map((h) => h.status)).toEqual(['payment_successful', 'confirmed']);
 
     // Sold: on hand down, nothing still reserved, availability unchanged for others.
-    expect(stock('iphone-x')).toEqual({ onHand: 3, reserved: 0 });
+    expect(stock('apple-magsafe-battery-pack')).toEqual({ onHand: 3, reserved: 0 });
     const cart = (await agent.get('/api/cart')).body as CartView;
     expect(cart.lines.map((l) => l.product.slug)).toEqual(['apple-airpods']);
 
     expect(events('payment_completed')).toEqual([{ orderId: order.id, method: 'card', amountPaise: 5_400_00, discountPaise: 600_00, offerId: 'aurora-credit-10' }]);
-    const iphoneId = (db.prepare("SELECT id FROM products WHERE slug = 'iphone-x'").get() as { id: number }).id;
-    expect(events('order_created')).toEqual([{ orderId: order.id, itemCount: 2, totalPaise: 5_400_00, productIds: String(iphoneId) }]);
+    const packId = (db.prepare("SELECT id FROM products WHERE slug = 'apple-magsafe-battery-pack'").get() as { id: number }).id;
+    expect(events('order_created')).toEqual([{ orderId: order.id, itemCount: 2, totalPaise: 5_400_00, productIds: String(packId) }]);
     // Server events carry the account id (user decision 2026-10-06); the visitor id is kept too.
     const stored = db.prepare("SELECT visitor_id AS visitorId, user_id AS userId FROM analytics_events WHERE name = 'order_created'").get() as { visitorId: string; userId: number };
     expect(stored).toEqual({ visitorId: 'visitor-12345', userId: (db.prepare('SELECT user_id FROM orders WHERE id = ?').get(order.id) as { user_id: number }).user_id });
@@ -134,7 +134,7 @@ describe('card payment', () => {
   it('keeps cart lines the customer topped up after checkout', async () => {
     const agent = await customer();
     const order = await heldOrder(agent);
-    await add(agent, 'iphone-x', 1); // now 3 in the cart, 2 ordered
+    await add(agent, 'apple-magsafe-battery-pack', 1); // now 3 in the cart, 2 ordered
     await verify(agent, await cardAttempt(agent, order.id)).expect(200);
     expect(((await agent.get('/api/cart')).body as CartView).lines).toEqual([expect.objectContaining({ quantity: 1 })]);
   });
@@ -162,7 +162,7 @@ describe('card payment', () => {
       expect(res.body.attempt).toMatchObject({ status: 'failed', failureReason: reason });
       expect(res.body.order.status).toBe('pending_payment');
     }
-    expect(stock('iphone-x')).toEqual({ onHand: 5, reserved: 2 });
+    expect(stock('apple-magsafe-battery-pack')).toEqual({ onHand: 5, reserved: 2 });
     expect(((await agent.get('/api/cart')).body as CartView).totalQuantity).toBe(2);
     expect(events('payment_failed').map((e) => e.reason)).toEqual(['declined', 'insufficient_funds']);
 
@@ -270,7 +270,7 @@ describe('boundaries', () => {
     expect((await verify(agent, card).expect(409)).body.error.code).toBe('ATTEMPT_NOT_PENDING');
     expect(((await agent.get(`/api/orders/${order.id}`)).body.order as Order).status).toBe('payment_expired');
     expect((await agent.get(`/api/payments/${card.id}`)).body.attempt.failureReason).toBe('hold_expired');
-    expect(stock('iphone-x')).toEqual({ onHand: 5, reserved: 0 });
+    expect(stock('apple-magsafe-battery-pack')).toEqual({ onHand: 5, reserved: 0 });
     expect((await upiStart(agent, order.id).expect(409)).body.error.code).toBe('HOLD_EXPIRED');
   });
 
@@ -284,7 +284,7 @@ describe('boundaries', () => {
     ]);
     expect([a.status, b.status]).toEqual([200, 200]);
     await agent.post(`/api/payments/${attempt.id}/upi-response`).send({ approve: true }).expect(200);
-    expect(stock('iphone-x')).toEqual({ onHand: 3, reserved: 0 });
+    expect(stock('apple-magsafe-battery-pack')).toEqual({ onHand: 3, reserved: 0 });
     expect(events('payment_completed')).toHaveLength(1);
     expect(events('order_created')).toHaveLength(1);
     // A paid order takes no further payments (cancelling it is F-010's paid cancellation).

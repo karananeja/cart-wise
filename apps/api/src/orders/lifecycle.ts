@@ -42,6 +42,7 @@ interface LineRow {
   variant_id: number | null;
   title: string;
   size: string | null;
+  option_label: string | null;
   thumbnail_url: string;
   quantity: number;
   unit_price_paise: number;
@@ -174,7 +175,7 @@ export function createOrderLifecycle({ db, orders, record, clock = Date.now }: D
       status: row.status,
       createdAt: row.created_at,
       city: (JSON.parse(row.address) as { city: string }).city,
-      items: rows.map((l) => ({ title: l.title, size: l.size, quantity: l.quantity })),
+      items: rows.map((l) => ({ title: l.title, size: l.size, option: l.option_label, quantity: l.quantity })),
       paidPaise: row.paid_paise ?? 0,
       nextStatus: next,
       deliveryAttemptsLeft: row.status === 'out_for_delivery' && code ? Math.max(0, DELIVERY_CODE_ATTEMPTS - code.attempts) : null,

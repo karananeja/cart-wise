@@ -184,28 +184,28 @@ describe('guest merge on sign-in', () => {
 
   it('keeps a guest cart and wishlist when there is nothing on the account yet', async () => {
     const agent = request.agent(app);
-    await addToCart(agent, 'iphone-x', 2);
+    await addToCart(agent, 'apple-magsafe-battery-pack', 2);
     await agent.put('/api/wishlist/items/essence-mascara-lash-princess').expect(200);
     const { result } = await signUp(agent);
     expect(result.merged).toEqual({ cart: true, wishlist: true });
-    expect(lineQty(await cart(agent), 'iphone-x')).toBe(2);
+    expect(lineQty(await cart(agent), 'apple-magsafe-battery-pack')).toBe(2);
     expect(((await agent.get('/api/wishlist')).body as WishlistView).count).toBe(1);
   });
 
   it('takes the larger quantity for items in both carts and keeps the rest', async () => {
-    db.prepare("UPDATE inventory SET on_hand = 20 WHERE product_id IN (SELECT id FROM products WHERE slug IN ('iphone-x', 'essence-mascara-lash-princess', 'apple-airpods'))").run();
+    db.prepare("UPDATE inventory SET on_hand = 20 WHERE product_id IN (SELECT id FROM products WHERE slug IN ('apple-magsafe-battery-pack', 'essence-mascara-lash-princess', 'apple-airpods'))").run();
     const { agent: account } = await signUp();
-    await addToCart(account, 'iphone-x', 1);
+    await addToCart(account, 'apple-magsafe-battery-pack', 1);
     await addToCart(account, 'apple-airpods', 1);
     await account.post('/api/auth/logout').send({});
 
     const guest = request.agent(app);
-    await addToCart(guest, 'iphone-x', 3);
+    await addToCart(guest, 'apple-magsafe-battery-pack', 3);
     await addToCart(guest, 'essence-mascara-lash-princess', 1);
     expect((await otpLogin(guest)).merged.cart).toBe(true);
 
     const merged = await cart(guest);
-    expect(lineQty(merged, 'iphone-x')).toBe(3);
+    expect(lineQty(merged, 'apple-magsafe-battery-pack')).toBe(3);
     expect(lineQty(merged, 'apple-airpods')).toBe(1);
     expect(lineQty(merged, 'essence-mascara-lash-princess')).toBe(1);
     expect((db.prepare('SELECT COUNT(*) AS n FROM carts').get() as { n: number }).n).toBe(1);
@@ -225,7 +225,7 @@ describe('guest merge on sign-in', () => {
 
   it('leaves the device as an empty guest after sign-out, and an old guest cookie cannot reach the account cart', async () => {
     const agent = request.agent(app);
-    await addToCart(agent, 'iphone-x');
+    await addToCart(agent, 'apple-magsafe-battery-pack');
     const guestCookie = (await agent.get('/api/cart')).request.cookies ?? '';
     await signUp(agent);
     await agent.post('/api/auth/logout').send({});
@@ -236,28 +236,28 @@ describe('guest merge on sign-in', () => {
     expect(guestCookie).toBeDefined();
 
     await otpLogin(agent);
-    expect(lineQty(await cart(agent), 'iphone-x')).toBe(1);
+    expect(lineQty(await cart(agent), 'apple-magsafe-battery-pack')).toBe(1);
   });
 
   it('merges recently viewed and searches into the account, newest first', async () => {
     const { agent } = await signUp();
     const first: HistoryLists = {
-      recentlyViewed: [{ slug: 'iphone-x', viewedAt: '2026-10-01T10:00:00.000Z' }],
+      recentlyViewed: [{ slug: 'apple-magsafe-battery-pack', viewedAt: '2026-10-01T10:00:00.000Z' }],
       recentSearches: [{ query: 'Laptop', searchedAt: '2026-10-01T10:00:00.000Z' }],
     };
     await agent.post('/api/auth/sync').send(first).expect(200);
     const merged = (await agent.post('/api/auth/sync').send({
-      recentlyViewed: [{ slug: 'apple-airpods', viewedAt: '2026-10-02T10:00:00.000Z' }, { slug: 'iphone-x', viewedAt: '2026-09-01T10:00:00.000Z' }],
+      recentlyViewed: [{ slug: 'apple-airpods', viewedAt: '2026-10-02T10:00:00.000Z' }, { slug: 'apple-magsafe-battery-pack', viewedAt: '2026-09-01T10:00:00.000Z' }],
       recentSearches: [{ query: 'laptop', searchedAt: '2026-10-03T10:00:00.000Z' }],
     }).expect(200)).body as HistoryLists;
-    expect(merged.recentlyViewed.map((v) => v.slug)).toEqual(['apple-airpods', 'iphone-x']);
+    expect(merged.recentlyViewed.map((v) => v.slug)).toEqual(['apple-airpods', 'apple-magsafe-battery-pack']);
     expect(merged.recentlyViewed[1]!.viewedAt).toBe('2026-10-01T10:00:00.000Z');
     expect(merged.recentSearches).toEqual([{ query: 'laptop', searchedAt: '2026-10-03T10:00:00.000Z' }]);
     await request(app).post('/api/auth/sync').send(first).expect(401);
 
     // Removing from the account means a later sync can't bring it back.
     await agent.post('/api/auth/history/remove').send({ list: 'recentSearches', key: 'LAPTOP' }).expect(200);
-    await agent.post('/api/auth/history/remove').send({ list: 'recentlyViewed', key: 'iphone-x' }).expect(200);
+    await agent.post('/api/auth/history/remove').send({ list: 'recentlyViewed', key: 'apple-magsafe-battery-pack' }).expect(200);
     let after = (await agent.post('/api/auth/sync').send({ recentlyViewed: [], recentSearches: [] })).body as HistoryLists;
     expect(after).toEqual({ recentlyViewed: [expect.objectContaining({ slug: 'apple-airpods' })], recentSearches: [] });
     await agent.post('/api/auth/history/remove').send({ list: 'recentlyViewed' }).expect(200);

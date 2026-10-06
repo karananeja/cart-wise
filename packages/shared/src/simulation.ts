@@ -22,11 +22,13 @@ export const RESTOCK_MIN_AVAILABLE = 10;
 export const INVENTORY_FILTERS = ['all', 'low', 'sold_out'] as const;
 export type InventoryFilter = (typeof INVENTORY_FILTERS)[number];
 
-/** One sellable unit: a product without sizes, or one size. */
+/** One sellable unit: a product without sizes or options, one size, or one option (F-013). */
 export interface SimInventoryUnit {
   productId: number;
   variantId: number | null;
+  /** The size or option label; null for products without either. */
   size: string | null;
+  kind: 'size' | 'option' | null;
   onHand: number;
   /** Reserved by checkouts in progress (F-008). */
   held: number;
@@ -45,7 +47,7 @@ export interface SimInventoryProduct {
   held: number;
   available: number;
   status: Availability['status'];
-  /** One entry for unsized products (size null), one per size otherwise. */
+  /** One entry for products without sizes or options (size null), one per size or option otherwise. */
   units: SimInventoryUnit[];
 }
 

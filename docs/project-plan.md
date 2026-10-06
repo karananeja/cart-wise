@@ -16,19 +16,21 @@
 
 Order follows the brief's journey and dependencies: each feature builds on the one before, and the guest experience is complete before authentication is introduced.
 
-| # | Feature | Requirements | Depends on | Status |
-|---|---|---|---|---|
-| F-001 | Catalog browsing (foundation, home, categories, listing, filter, sort) | DISC-1..5, INV-1, INV-3, STATE-1, ANL-1 (`filter_applied`) | — | **Complete** (accepted 2026-10-06) |
-| F-002 | Search + search history | SRCH-1..4, HIST-1 | F-001 | **Complete** (accepted 2026-10-06) |
-| F-003 | Product details, sizes, reviews + recently viewed | PDP-1, PDP-3, RV-1 | F-001 | **Complete** (accepted 2026-10-06) |
-| F-004 | Guest cart (incl. Add to cart on the product page, PDP-2) | CART-1..4, PDP-2 | F-003 | **Complete** (accepted 2026-10-06) |
-| F-005 | Wishlist | WISH-1..2 | F-003 | **Complete** (accepted 2026-10-06) |
-| F-006 | Authentication + guest state merge | AUTH-1..4 | F-004, F-005 | **Complete** (accepted 2026-10-06) |
-| F-007 | Address management (map-assisted) | ADDR-1..2 | F-006 | **Complete** (accepted 2026-10-06) |
-| F-008 | Checkout (address, delivery, summary, reservation) | CHK-1..3, INV-2 | F-007 | **Complete** (accepted 2026-10-06) |
-| F-009 | Simulated payment (card, UPI, card offers) | PAY-1..6 | F-008 | **Complete** (accepted 2026-10-06) |
-| F-010 | Orders (history, details, cancel/return/refund, delivery OTP) + order simulation | ORD-2..5, SIM-3..4 | F-009 | **Complete** (accepted 2026-10-06) |
-| F-011 | Store Simulation Console — inventory simulation (order simulation moved to F-010) | SIM-1..2 | F-010 | **Complete** (accepted 2026-10-06) |
+
+| #     | Feature                                                                           | Requirements                                               | Depends on   | Status                             |
+| ----- | --------------------------------------------------------------------------------- | ---------------------------------------------------------- | ------------ | ---------------------------------- |
+| F-001 | Catalog browsing (foundation, home, categories, listing, filter, sort)            | DISC-1..5, INV-1, INV-3, STATE-1, ANL-1 (`filter_applied`) | —            | **Complete** (accepted 2026-10-06) |
+| F-002 | Search + search history                                                           | SRCH-1..4, HIST-1                                          | F-001        | **Complete** (accepted 2026-10-06) |
+| F-003 | Product details, sizes, reviews + recently viewed                                 | PDP-1, PDP-3, RV-1                                         | F-001        | **Complete** (accepted 2026-10-06) |
+| F-004 | Guest cart (incl. Add to cart on the product page, PDP-2)                         | CART-1..4, PDP-2                                           | F-003        | **Complete** (accepted 2026-10-06) |
+| F-005 | Wishlist                                                                          | WISH-1..2                                                  | F-003        | **Complete** (accepted 2026-10-06) |
+| F-006 | Authentication + guest state merge                                                | AUTH-1..4                                                  | F-004, F-005 | **Complete** (accepted 2026-10-06) |
+| F-007 | Address management (map-assisted)                                                 | ADDR-1..2                                                  | F-006        | **Complete** (accepted 2026-10-06) |
+| F-008 | Checkout (address, delivery, summary, reservation)                                | CHK-1..3, INV-2                                            | F-007        | **Complete** (accepted 2026-10-06) |
+| F-009 | Simulated payment (card, UPI, card offers)                                        | PAY-1..6                                                   | F-008        | **Complete** (accepted 2026-10-06) |
+| F-010 | Orders (history, details, cancel/return/refund, delivery OTP) + order simulation  | ORD-2..5, SIM-3..4                                         | F-009        | **Complete** (accepted 2026-10-06) |
+| F-011 | Store Simulation Console — inventory simulation (order simulation moved to F-010) | SIM-1..2                                                   | F-010        | **Complete** (accepted 2026-10-06) |
+
 
 Loading / empty / error / offline states (STATE-1) and analytics events (ANL-1) are delivered inside each feature, not as separate features.
 
@@ -36,10 +38,11 @@ Loading / empty / error / offline states (STATE-1) and analytics events (ANL-1) 
 
 ## Phase 2 — Next (brief §24)
 
-| # | Feature | Brief §24 items | Depends on | Status |
-|---|---|---|---|---|
-| F-012 | Product discovery: related products, frequently bought together, continue shopping, discovery homepage | 14, 15, 16, 20 | F-003, F-004, F-010 | **Complete** (accepted 2026-10-06) |
-| F-013 | Electronics variants: storage (phones, tablets), RAM + storage (laptops), per-option price and stock | PDP-3, brief §6 | F-003–F-012 | Approved (Gate 1, 2026-10-06) — in implementation |
+
+| #     | Feature                                                                                                | Brief §24 items | Depends on          | Status                                            |
+| ----- | ------------------------------------------------------------------------------------------------------ | --------------- | ------------------- | ------------------------------------------------- |
+| F-012 | Product discovery: related products, frequently bought together, continue shopping, discovery homepage | 14, 15, 16, 20  | F-003, F-004, F-010 | **Complete** (accepted 2026-10-06)                |
+| F-013 | Electronics variants: storage (phones, tablets), RAM + storage (laptops), per-option price and stock   | PDP-3, brief §6 | F-003–F-012         | Approved (Gate 1, 2026-10-06) — in implementation |
 
 
 Reviews, related products, frequently bought together, continue shopping, order tracking timeline, notifications, price-drop / back-in-stock, improved discovery homepage. To be sequenced after MVP acceptance.

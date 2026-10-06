@@ -124,7 +124,7 @@ describe('cart', () => {
     setUnsizedStock(UNSIZED, 10);
     const a = browser();
     const lineId = ((await a.post('/api/cart/lines').send({ productSlug: UNSIZED, quantity: 5 })).body as CartView).lines[0]!.id;
-    await a.post('/api/cart/lines').send({ productSlug: 'iphone-x' }).expect(200);
+    await a.post('/api/cart/lines').send({ productSlug: 'apple-magsafe-battery-pack' }).expect(200);
 
     setUnsizedStock(UNSIZED, 2);
     let cart = (await a.get('/api/cart')).body as CartView;
@@ -145,7 +145,7 @@ describe('cart', () => {
     const a = browser();
     const lineId = ((await a.post('/api/cart/lines').send({ productSlug: UNSIZED })).body as CartView).lines[0]!.id;
     const b = browser();
-    await b.post('/api/cart/lines').send({ productSlug: 'iphone-x' });
+    await b.post('/api/cart/lines').send({ productSlug: 'apple-magsafe-battery-pack' });
 
     await b.delete(`/api/cart/lines/${lineId}`).expect(404);
     await b.patch(`/api/cart/lines/${lineId}`).send({ quantity: 2 }).expect(404);

@@ -14,7 +14,7 @@ import {
 } from '@store/shared';
 import type { Db } from '../db/database.js';
 import { HttpError } from '../http/errors.js';
-import { deriveAvailability, LOW_STOCK_THRESHOLD, seedOnHand, seedSizeOnHand } from '../inventory/inventory.js';
+import { deriveAvailability, LOW_STOCK_THRESHOLD, seedUnitOnHand } from '../inventory/inventory.js';
 
 const PAGE_SIZE = 20;
 const LOG_SHOWN = 20;
@@ -30,6 +30,7 @@ interface UnitRow {
   product_id: number;
   variant_id: number | null;
   size: string | null;
+  kind: 'size' | 'option' | null;
   sort_order: number | null;
   title: string;
   on_hand: number;
@@ -47,7 +48,7 @@ export function createInventorySimulation(db: Db, options: { clock?: () => numbe
   const random = options.random ?? Math.random;
   const iso = () => new Date(clock()).toISOString();
 
-  const unitColumns = `i.product_id, i.variant_id, v.label AS size, v.sort_order, p.title, i.on_hand, i.reserved
+  const unitColumns = `i.product_id, i.variant_id, v.label AS size, v.kind, v.sort_order, p.title, i.on_hand, i.reserved
     FROM inventory i JOIN products p ON p.id = i.product_id LEFT JOIN product_variants v ON v.id = i.variant_id`;
   const productPage = db.prepare(`
     SELECT p.id, p.slug, p.title, p.thumbnail_url, c.name AS category_name,
@@ -81,6 +82,7 @@ export function createInventorySimulation(db: Db, options: { clock?: () => numbe
       productId: row.product_id,
       variantId: row.variant_id,
       size: row.size,
+      kind: row.kind,
       onHand: row.on_hand,
       held: row.reserved,
       available,
@@ -125,7 +127,8 @@ export function createInventorySimulation(db: Db, options: { clock?: () => numbe
   };
 
   /** The item's original seeded level, as at seeding time. */
-  const seededLevel = (row: UnitRow) => (row.variant_id === null ? seedOnHand(row.product_id) : seedSizeOnHand(row.product_id, row.sort_order ?? 0));
+  const seededLevel = (row: UnitRow) =>
+    seedUnitOnHand(row.product_id, row.kind === null ? null : { kind: row.kind, index: row.sort_order ?? 0 });
 
   const toChange = (r: { id: number; at: string; product_id: number; variant_id: number | null; title: string; size: string | null; from_on_hand: number; to_on_hand: number; source: InventoryChangeSource }): InventoryChange => ({
     id: r.id,

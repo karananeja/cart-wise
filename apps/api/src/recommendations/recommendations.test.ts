@@ -29,7 +29,10 @@ async function customer(): Promise<Agent> {
   }).expect(200);
   return agent;
 }
-const add = (agent: Agent, productSlug: string) => agent.post('/api/cart/lines').send({ productSlug, quantity: 1 }).expect(200);
+/** Phones are sold in storage options (F-013): those are added as their base tier. */
+const baseOption = (slug: string) =>
+  (db.prepare("SELECT v.label FROM product_variants v JOIN products p ON p.id = v.product_id WHERE p.slug = ? AND v.kind = 'option' ORDER BY v.sort_order LIMIT 1").get(slug) as { label: string } | undefined)?.label;
+const add = (agent: Agent, productSlug: string) => agent.post('/api/cart/lines').send({ productSlug, option: baseOption(productSlug), quantity: 1 }).expect(200);
 async function buy(agent: Agent, slugs: string[], pay = true): Promise<Order> {
   for (const slug of slugs) await add(agent, slug);
   const order = (await agent.post('/api/orders').send({ delivery: 'standard' }).expect(201)).body.order as Order;
@@ -47,7 +50,8 @@ describe('product recommendations', () => {
     const recs = await productRecs('iphone-x');
     expect(recs.similar.length).toBeGreaterThan(0);
     expect(recs.similar.every((p) => p.categorySlug === 'smartphones' && p.slug !== 'iphone-x')).toBe(true);
-    expect(recs.similar[0]).toHaveProperty('needsSize', false);
+    // Phones need a storage option chosen, so they can't be bundle-added blindly (F-013).
+    expect(recs.similar[0]).toMatchObject({ needsSize: true, hasOptions: true });
   });
 
   it('pairs from the complementary map until 2 real paid orders contain both items', async () => {

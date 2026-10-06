@@ -1,6 +1,7 @@
-import type { Category, ProductDetail, ProductReview, ProductSize, ProductSpecification } from '@store/shared';
+import type { Category, ProductDetail, ProductOption, ProductReview, ProductSize, ProductSpecification } from '@store/shared';
 import type { Db } from '../db/database.js';
 import { deriveAvailability } from '../inventory/inventory.js';
+import { OPTION_NAMES } from '../inventory/options.js';
 import type { SearchDocument } from '../search/searchIndex.js';
 import type { CatalogItem } from './query.js';
 
@@ -22,14 +23,16 @@ interface ProductRow {
   specifications: string;
   catalog_order: number;
   review_count: number;
-  /** Units available across all sizes: sum of max(0, on_hand - reserved) per unit. */
+  /** Units available across all sizes or options: sum of max(0, on_hand - reserved) per unit. */
   available: number;
+  has_options: 0 | 1;
 }
 
 const PRODUCT_SELECT = `
   SELECT p.*, c.name AS category_name,
     (SELECT COALESCE(SUM(MAX(i.on_hand - i.reserved, 0)), 0) FROM inventory i WHERE i.product_id = p.id) AS available,
-    (SELECT COUNT(*) FROM product_reviews r WHERE r.product_id = p.id) AS review_count
+    (SELECT COUNT(*) FROM product_reviews r WHERE r.product_id = p.id) AS review_count,
+    EXISTS (SELECT 1 FROM product_variants v WHERE v.product_id = p.id AND v.kind = 'option') AS has_options
   FROM products p
   JOIN categories c ON c.slug = p.category_slug`;
 
@@ -48,6 +51,7 @@ function toItem(row: ProductRow): CatalogItem {
       reviewCount: row.review_count,
       thumbnailUrl: row.thumbnail_url,
       availability: deriveAvailability(row.available),
+      hasOptions: row.has_options === 1,
     },
     brandSlug: row.brand_slug,
     available: row.available,
@@ -61,7 +65,12 @@ export function createCatalogRepository(db: Db) {
   const sizesForProduct = db.prepare(`
     SELECT v.label, MAX(i.on_hand - i.reserved, 0) AS available
     FROM product_variants v JOIN inventory i ON i.variant_id = v.id
-    WHERE v.product_id = ? ORDER BY v.sort_order`);
+    WHERE v.product_id = ? AND v.kind = 'size' ORDER BY v.sort_order`);
+  const optionsForProduct = db.prepare(`
+    SELECT v.label, v.mrp_paise AS mrpPaise, v.price_paise AS pricePaise, v.discount_percent AS discountPercent,
+      MAX(i.on_hand - i.reserved, 0) AS available
+    FROM product_variants v JOIN inventory i ON i.variant_id = v.id
+    WHERE v.product_id = ? AND v.kind = 'option' ORDER BY v.sort_order`);
   const reviewsForProduct = db.prepare(
     'SELECT rating, comment, reviewer_name AS reviewerName FROM product_reviews WHERE product_id = ? ORDER BY sort_order',
   );
@@ -95,6 +104,10 @@ export function createCatalogRepository(db: Db) {
         sizes: (sizesForProduct.all(row.id) as { label: string; available: number }[]).map(
           (s): ProductSize => ({ label: s.label, availability: deriveAvailability(s.available) }),
         ),
+        options: (optionsForProduct.all(row.id) as (Omit<ProductOption, 'availability'> & { available: number })[]).map(
+          ({ available, ...option }): ProductOption => ({ ...option, availability: deriveAvailability(available) }),
+        ),
+        optionName: row.has_options ? (OPTION_NAMES[row.category_slug] ?? 'Option') : null,
         reviews: reviewsForProduct.all(row.id) as ProductReview[],
       };
     },

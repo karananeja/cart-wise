@@ -132,7 +132,7 @@ export interface SimOrder {
   status: OrderStatus;
   createdAt: string;
   city: string;
-  items: { title: string; size: string | null; quantity: number }[];
+  items: { title: string; size: string | null; option: string | null; quantity: number }[];
   paidPaise: number;
   nextStatus: PaidOrderStatus | null;
   deliveryAttemptsLeft: number | null;

@@ -21,6 +21,7 @@ function candidate(over: Partial<RecommendedProduct> & { tags?: string[]; availa
       thumbnailUrl: '',
       availability: { status: available > 0 ? 'in_stock' : 'out_of_stock' },
       needsSize: false,
+      hasOptions: false,
       ...product,
     },
     tags,

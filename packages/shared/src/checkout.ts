@@ -90,6 +90,8 @@ export interface OrderLine {
   slug: string;
   title: string;
   size: string | null;
+  /** Option label at the time of purchase (F-013); null for sizes and products without options. */
+  option: string | null;
   thumbnailUrl: string;
   quantity: number;
   unitPricePaise: number;

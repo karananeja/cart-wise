@@ -10,12 +10,17 @@ export interface CartLineView {
   product: ProductSummary;
   /** Size label, or null for products without sizes. */
   size: string | null;
+  /** Option label ("256 GB"), or null for products without options (F-013). */
+  option: string | null;
   quantity: number;
   /** Availability of this exact size (or product). */
   availability: Availability;
   /** Most this line can be increased to: min(10, available). */
   maxQuantity: number;
   issue: CartLineIssue;
+  /** Price of one unit: the option's price for products with options, else the product's. */
+  unitPricePaise: number;
+  unitMrpPaise: number;
   linePricePaise: number;
   lineMrpPaise: number;
 }
@@ -39,6 +44,7 @@ export const EMPTY_CART: CartView = {
 export const addToCartSchema = z.object({
   productSlug: z.string().min(1).max(200),
   size: z.string().min(1).max(20).nullish(),
+  option: z.string().min(1).max(40).nullish(),
   quantity: z.number().int().min(1).max(MAX_PER_LINE).default(1),
 });
 export type AddToCartRequest = z.input<typeof addToCartSchema>;
@@ -50,6 +56,8 @@ export const updateCartLineSchema = z.object({
 export type CartErrorCode =
   | 'SIZE_REQUIRED'
   | 'INVALID_SIZE'
+  | 'OPTION_REQUIRED'
+  | 'INVALID_OPTION'
   | 'PRODUCT_NOT_FOUND'
   | 'OUT_OF_STOCK'
   | 'QUANTITY_LIMIT'

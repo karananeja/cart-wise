@@ -27,8 +27,13 @@ export interface ProductSummary {
   rating: number;
   reviewCount: number;
   thumbnailUrl: string;
-  /** For sized products, the total across sizes. */
+  /** For sized products, the total across sizes; for products with options, across tiers. */
   availability: Availability;
+  /**
+   * Sold in options with their own prices (F-013): the price fields are then the cheapest tier's,
+   * shown as "From".
+   */
+  hasOptions: boolean;
 }
 
 export interface ProductSpecification {
@@ -38,6 +43,15 @@ export interface ProductSpecification {
 
 export interface ProductSize {
   label: string;
+  availability: Availability;
+}
+
+/** A storage or memory option with its own price and stock (F-013). */
+export interface ProductOption {
+  label: string;
+  mrpPaise: number;
+  pricePaise: number;
+  discountPercent: number;
   availability: Availability;
 }
 
@@ -54,6 +68,10 @@ export interface ProductDetail extends ProductSummary {
   specifications: ProductSpecification[];
   /** Empty for products sold without sizes. In size order. */
   sizes: ProductSize[];
+  /** Empty for products without options. In tier order, cheapest first. */
+  options: ProductOption[];
+  /** What the options are called ("Storage", "Configuration"); null without options. */
+  optionName: string | null;
   reviews: ProductReview[];
 }
 

@@ -3,7 +3,10 @@
  */
 import type { ProductSummary } from './types.js';
 
-/** A suggested product. Sized products can't be added in a bundle; they link to their page. */
+/**
+ * A suggested product. Products that need a size or option chosen can't be added in a bundle;
+ * they link to their page ("Choose size" / "Choose option", by `hasOptions`).
+ */
 export interface RecommendedProduct extends ProductSummary {
   needsSize: boolean;
 }
