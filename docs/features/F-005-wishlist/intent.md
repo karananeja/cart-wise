@@ -1,8 +1,8 @@
 # Feature Intent
 
 **Feature:** F-005 — Wishlist
-**Status:** Awaiting Approval
-**Approved by / date:** —
+**Status:** Approved
+**Approved by / date:** User, 2026-10-06
 
 ---
 
@@ -48,8 +48,8 @@ Acceptance criteria 1–13 in `specification.md` §17.
 
 ## 6. Decisions needed before implementation
 
-Confirm or adjust: product-level saving, 100-item cap, 90-day guest lifetime, hearts on every product card.
+Resolved 2026-10-06: product-level saving, 100-item cap, 90-day lifetime and hearts on every card approved as proposed.
 
 ## 7. Approval
 
-- [ ] Approved for implementation (Gate 1)
+- [x] Approved for implementation (Gate 1) — 2026-10-06

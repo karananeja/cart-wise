@@ -4,7 +4,7 @@
 
 **ID:** F-005
 **Name:** Wishlist
-**Status:** Proposed (awaiting Gate 1)
+**Status:** Approved — In Progress (Gate 1 approved 2026-10-06)
 **Requirements:** WISH-1, WISH-2, STATE-1, ANL-1 (`wishlist_added`, `wishlist_removed`)
 
 ---
@@ -189,8 +189,4 @@ F-003 (product data, sizes) and F-004 (cart API and page), both complete. F-006 
 
 ## 22. Decisions Required From User
 
-None blocking. Please confirm or adjust when approving:
-- product-level saving (size chosen when moving to the cart);
-- the 100-item cap;
-- the 90-day guest lifetime;
-- hearts on every product card.
+None outstanding. Product-level saving, 100 items, 90 days and hearts on every card approved 2026-10-06.

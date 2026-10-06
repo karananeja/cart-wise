@@ -33,3 +33,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | Dev environment | User runs `pnpm dev` on 5173/3001; agent must use other ports and never kill it | |
 | 2026-10-06 | F-004 Gate 2 | **Accepted** | |
 | 2026-10-06 | F-005 | Spec and intent presented for Gate 1 | |
+| 2026-10-06 | F-005 Gate 1 | **Approved** as proposed | |
