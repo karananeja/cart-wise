@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-004 Guest cart — implemented, revised per Gate 2 review (in-place quantity stepper), awaiting Gate 2.** F-001, F-002 and F-003 complete (accepted 2026-10-06).
+**F-005 Wishlist — specification and intent drafted, awaiting Gate 1.** F-001 to F-004 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -21,7 +21,7 @@ Phase 1 — MVP.
 
 ## In progress
 
-None. Waiting for Gate 2 acceptance of F-004.
+None. Waiting for Gate 1 approval of F-005.
 
 ## Remaining
 
@@ -83,8 +83,9 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 2 F-002: 2026-10-06.
 - Gate 1 F-003: 2026-10-06.
 - Gate 2 F-003: 2026-10-06.
-- Gate 1 F-004: 2026-10-06 (10 per line, 30-day carts, Go to cart).
+- Gate 1 F-004: 2026-10-06 (10 per line, 30-day carts; Go to cart later changed to an in-place stepper).
+- Gate 2 F-004: 2026-10-06.
 
 ## Exact next action
 
-Wait for Gate 2 acceptance of F-004. On acceptance: mark complete, then prepare F-005 (Wishlist) specification and intent for Gate 1.
+Wait for Gate 1 approval of F-005 (`features/F-005-wishlist/`), including confirmation of product-level saving, 100-item cap, 90-day lifetime and hearts on cards. On approval: technical design (wishlists and wishlist_items tables, `wishlist_id` cookie, shared saved-ids query, size picker dialog, cart Move to wishlist), test plan, implement, test on ports 5174/3101 (E2E) and 5274/3201 (preview), present for Gate 2.

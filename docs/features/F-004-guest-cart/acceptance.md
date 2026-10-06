@@ -1,7 +1,7 @@
 # Acceptance
 
 **Feature:** F-004 — Guest cart
-**Status:** Pending user sign-off (Gate 2)
+**Status:** Accepted (Gate 2, 2026-10-06)
 
 ## 1. Acceptance criteria verification
 
@@ -43,4 +43,4 @@ FR-5 changed at the user's request during Gate 2 review: after adding, an in-pla
 
 ## 6. User sign-off (Gate 2)
 
-- [ ] Accepted by user — date:
+- [x] Accepted by user — date: 2026-10-06 (with the in-place stepper change)
