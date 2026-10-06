@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-007 Address management — implemented and tested, awaiting Gate 2.** F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+**Next: F-008 Checkout — gathering decisions Q8 (delivery), Q10 (reservation), Q11 (tax display).** F-001 to F-007 complete. F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
