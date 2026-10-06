@@ -4,7 +4,7 @@
 
 **ID:** F-014
 **Name:** EMI (normal and no-cost) and Razorpay payments (test mode)
-**Status:** Proposed — awaiting Gate 1
+**Status:** Approved (Gate 1, 2026-10-06) — in implementation
 **Requirements:** User request (2026-10-06). It extends PAY-1..6 (F-009) and ORD-2..4 refunds (F-010).
 
 **User decisions applied (2026-10-06):**
@@ -41,7 +41,7 @@ Let customers spread the cost of an order over monthly instalments, with an hone
 
 ### 5.1 Simulated EMI (demo payment)
 
-- FR-1 **Plans (D1, proposed):** EMI is offered on **credit cards** from the fictional banks.
+- FR-1 **Plans (D1, approved):** EMI is offered on **credit cards** from the fictional banks.
 
   | Bank | Interest (p.a.) | Tenures | No-cost tenures |
   |---|---|---|---|
@@ -59,7 +59,7 @@ Let customers spread the cost of an order over monthly instalments, with an hone
   - The interest that the plan would charge is given as an upfront **No Cost EMI discount**, so the instalments add up exactly to the order price.
   - Example: ₹60,000 over 6 months at 14% gives a ₹2,474 discount. The store is paid ₹57,526, and the customer pays 6 × ₹9,588.
   - It is labelled "No Cost EMI" only when that is exactly true.
-- FR-4 **Offers (D2, proposed):**
+- FR-4 **Offers (D2, approved):**
   - Normal EMI can be combined with the card's bank offer.
   - No-cost EMI **is** the order's offer, so no bank offer can be added to it. This matches the existing "one offer per order" rule.
 - FR-5 **Payment page:**
@@ -102,7 +102,7 @@ Let customers spread the cost of an order over monthly instalments, with an hone
   - A payment that arrives after the hold expired is refunded automatically through Razorpay, and the attempt fails with "Your hold expired — you were not charged" (test mode).
   - If the browser closes mid-payment, the attempt is reconciled the next time the payment or order page loads: the API asks Razorpay for the order's payments.
   - A webhook endpoint (`payment.captured`, `payment.failed`) does the same when a public URL and webhook secret are configured.
-- FR-13 **Refunds (D3, proposed):**
+- FR-13 **Refunds (D3, approved):**
   - Cancelling a paid Razorpay order, and completing a return refund, create a **Razorpay test-mode refund** through the Refunds API for the same amount the store refunds today.
   - The refund shows "Refunded to Razorpay · Visa •••• 1111" (or UPI) with Razorpay's refund id.
   - If Razorpay refuses or is unreachable, the refund stays "initiated" with a Retry action for the operator. It is never marked refunded without Razorpay's confirmation.
@@ -263,6 +263,8 @@ F-009 payment, F-010 refunds and lifecycle, F-013 option prices, Razorpay test a
 - E2E cannot drive the real Razorpay Checkout reliably. A real test-mode payment is checked manually with your keys.
 
 ## 22. Decisions Required From User
+
+Resolved 2026-10-06 (Gate 1): **D1** EMI terms as proposed; **D2** normal EMI may take the bank offer, no-cost EMI excludes it; **D3** refunds through Razorpay (test mode).
 
 - **D1 — EMI terms:** banks, rates, tenures and minimums as in FR-1 (recommended), or different numbers.
 - **D2 — Offer stacking:** normal EMI may take the bank offer; no-cost EMI excludes it (recommended). The alternative is that no offer combines with any EMI.

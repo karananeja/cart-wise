@@ -1,6 +1,6 @@
 # ADR-005: Razorpay Payments in Test Mode Only
 
-**Status:** Proposed (with F-014 Gate 1)
+**Status:** Accepted (with F-014 Gate 1, 2026-10-06)
 **Date:** 2026-10-06
 
 ## Decision

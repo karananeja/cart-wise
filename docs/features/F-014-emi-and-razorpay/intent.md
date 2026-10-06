@@ -1,8 +1,8 @@
 # Feature Intent
 
 **Feature:** F-014 — EMI (normal and no-cost) and Razorpay payments (test mode)
-**Status:** Awaiting Approval
-**Approved by / date:** —
+**Status:** Approved (Gate 1, 2026-10-06)
+**Approved by / date:** User, 2026-10-06
 
 ---
 
@@ -47,12 +47,8 @@ Acceptance criteria 1–10 in `specification.md` §17, plus one manual test-mode
 
 ## 6. Decisions needed before implementation
 
-- D1 EMI terms
-- D2 offer stacking
-- D3 Razorpay refunds
-
-See specification §22.
+Resolved 2026-10-06: D1 terms as proposed; D2 normal EMI + bank offer allowed, no-cost EMI excludes offers; D3 refunds through Razorpay.
 
 ## 7. Approval
 
-- [ ] Approved for implementation (Gate 1)
+- [x] Approved for implementation (Gate 1) — 2026-10-06

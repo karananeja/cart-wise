@@ -8,7 +8,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## Current feature
 
-**F-014 EMI + Razorpay (test mode) — specified, awaiting Gate 1** (`docs/features/F-014-emi-and-razorpay/`, ADR-005 proposed). F-013 accepted 2026-10-06; previously (`docs/features/F-013-electronics-variants/`). F-012 accepted 2026-10-06.
+**F-014 EMI + Razorpay (test mode) — approved at Gate 1, in implementation** (`docs/features/F-014-emi-and-razorpay/`, ADR-005 accepted). F-013 accepted 2026-10-06; previously (`docs/features/F-013-electronics-variants/`). F-012 accepted 2026-10-06.
 
 ## Completed
 
@@ -19,7 +19,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## In progress
 
-F-014 Gate 1 (D1 EMI terms, D2 offer stacking, D3 Razorpay refunds).
+F-014 technical design and implementation.
 
 ## Remaining
 
@@ -31,7 +31,7 @@ All F-001–F-011 specifications and intents approved at Gate 1 and accepted at 
 
 ## Architecture decisions
 
-ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application inventory, accepted), ADR-003 (sessions, scrypt, simulated OTP, JSON-only POST guard, accepted), ADR-004 (Leaflet + OSM tiles + Nominatim via API proxy, accepted). F-003: inventory is per sellable unit (size or product); schema version 2 with automatic rebuild of seeded tables.
+ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application inventory, accepted), ADR-003 (sessions, scrypt, simulated OTP, JSON-only POST guard, accepted), ADR-004 (Leaflet + OSM tiles + Nominatim via API proxy, accepted), ADR-005 (Razorpay test mode only, accepted). F-003: inventory is per sellable unit (size or product); schema version 2 with automatic rebuild of seeded tables.
 
 ## Relevant files
 
@@ -101,8 +101,9 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 1 F-011: 2026-10-06; Gate 2 F-011: 2026-10-06.
 - Gate 1 F-012: 2026-10-06; Gate 2 F-012: 2026-10-06 (companion price cap not chosen; in backlog).
 - Gate 1 F-013: 2026-10-06 (D1 tiers as proposed; D2 cheapest in-stock preselected; D3 "From ₹X"); Gate 2 F-013: 2026-10-06.
+- Gate 1 F-014: 2026-10-06 (D1 EMI terms as proposed; D2 normal EMI + bank offer, no-cost excludes; D3 refunds via Razorpay). ADR-005 accepted.
 - F-014 direction (2026-10-06): Razorpay test keys only; customer chooses Razorpay or demo payment; EMI simulated in demo mode, Razorpay EMI in Razorpay mode.
 
 ## Exact next action
 
-Get Gate 1 approval for F-014 with D1–D3 answered and ADR-005 accepted; then technical design (payment_attempts rebuild for the method check, raw-body webhook route, env loading via --env-file-if-exists) and implementation. Payment code map: shared/payment.ts, api/payments/{routes,service}.ts, orders/lifecycle.ts refunds, web/features/payment/*.
+Write F-014 technical design (payment_attempts rebuild for the method check, raw-body webhook route, env loading via --env-file-if-exists) and implementation. Payment code map: shared/payment.ts, api/payments/{routes,service}.ts, orders/lifecycle.ts refunds, web/features/payment/*.
