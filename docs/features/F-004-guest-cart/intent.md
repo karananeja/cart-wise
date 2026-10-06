@@ -1,8 +1,8 @@
 # Feature Intent
 
 **Feature:** F-004 — Guest cart (with Add to cart on the product page)
-**Status:** Awaiting Approval
-**Approved by / date:** —
+**Status:** Approved
+**Approved by / date:** User, 2026-10-06
 
 ---
 
@@ -48,8 +48,8 @@ Acceptance criteria 1–13 in `specification.md` §17.
 
 ## 6. Decisions needed before implementation
 
-Confirm or adjust: max 10 per item; guest carts kept for 30 days; "Go to cart" after adding.
+Resolved 2026-10-06: max 10 per item, 30-day guest carts and "Go to cart" after adding — all approved as proposed.
 
 ## 7. Approval
 
-- [ ] Approved for implementation (Gate 1)
+- [x] Approved for implementation (Gate 1) — 2026-10-06

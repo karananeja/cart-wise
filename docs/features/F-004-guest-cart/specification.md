@@ -4,7 +4,7 @@
 
 **ID:** F-004
 **Name:** Guest cart (with Add to cart on the product page)
-**Status:** Proposed (awaiting Gate 1)
+**Status:** Approved — In Progress (Gate 1 approved 2026-10-06)
 **Requirements:** CART-1..4, PDP-2, INV-1, INV-3, STATE-1, ANL-1 (`cart_item_added`, `cart_item_removed`)
 
 ---
@@ -236,7 +236,4 @@ F-003 (complete): sizes, per-size inventory, product page. F-005 (wishlist) and 
 
 ## 22. Decisions Required From User
 
-None blocking. Please confirm or adjust when approving:
-- the 10-per-line maximum;
-- the 30-day guest cart lifetime;
-- the "Go to cart" behaviour after adding.
+None outstanding. 10 per line, 30-day guest carts and "Go to cart" approved 2026-10-06.
