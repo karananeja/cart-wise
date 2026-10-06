@@ -1,6 +1,6 @@
 # ADR-002: Catalog Source and Inventory Ownership
 
-**Status:** Proposed — depends on ADR-001 and open questions Q2, Q3
+**Status:** Accepted (2026-10-06; Q2 → ₹ at 1:1, Q3 → all categories)
 **Date:** 2026-10-06
 
 ## Decision
@@ -20,7 +20,7 @@ Import DummyJSON products into the application's database as a catalog snapshot,
 
 ## Decision
 
-- An import script fetches DummyJSON once, maps each product to the app `Product` model (with `externalCatalogId`), converts prices per Q2, filters categories per Q3, and stores the result.
+- An import script fetches DummyJSON and saves the raw response as a committed snapshot file (`apps/api/data/catalog/dummyjson-products.json`). A seed step maps the snapshot to the app `Product` model (with `externalCatalogId`), converts prices at the configured rate (currently 1:1) and loads all categories into the database. Because the snapshot is committed, a fresh clone runs without contacting DummyJSON and every seed is identical.
 - A separate `inventory` table (`productId`, `onHand`, `reserved`) is seeded deterministically by the application. DummyJSON stock fields are discarded.
 - Availability shown to users is derived from application inventory only: `available = onHand − reserved`; 0 → Out of stock; 1–5 → "Only N left"; otherwise In stock.
 

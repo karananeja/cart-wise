@@ -2,9 +2,12 @@
 
 Status: **Open** / **Resolved** (with date and decision). "Blocks" names the first feature that cannot proceed without an answer.
 
-## Blocking F-001
+## Resolved for F-001
 
-### Q1 — Application architecture (Open, blocks F-001)
+### Q1 — Application architecture (Resolved 2026-10-06)
+
+**Decision (user):** React + Tailwind CSS + shadcn/ui frontend, Node.js **Express** API, pnpm workspace. See ADR-001 (Accepted).
+
 
 The brief prefers React frontend + own backend/API with application-owned state, simplified where appropriate.
 
@@ -16,13 +19,19 @@ The brief prefers React frontend + own backend/API with application-owned state,
 
 Details: `decisions/ADR-001-application-architecture.md` (Proposed).
 
-### Q2 — Currency and pricing (Open, blocks F-001)
+### Q2 — Currency and pricing (Resolved 2026-10-06)
+
+**Decision (user):** Display ₹ with a 1:1 rate for now ($1 → ₹1). The rate is a single configuration constant so it can change later.
+
 
 The brief uses ₹ (e.g. "under ₹10,000", `amount=1299`). DummyJSON prices are in USD (e.g. 9.99).
 
 Recommendation: display INR. Convert at a fixed, documented rate during catalog import (default ₹85 = $1), store prices as integer paise, round to whole rupees, format with Indian digit grouping (₹1,29,999).
 
-### Q3 — Catalog category scope (Open, blocks F-001)
+### Q3 — Catalog category scope (Resolved 2026-10-06)
+
+**Decision (user):** Import all 24 categories, including `vehicle` and `motorcycle`.
+
 
 DummyJSON has 194 products in 24 categories, including `vehicle` and `motorcycle` (cars and motorbikes at $10k–$100k+), which do not fit a consumer store and break price filters and delivery assumptions.
 

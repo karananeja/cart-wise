@@ -1,6 +1,6 @@
 # Product Requirements Document — E-Commerce Application
 
-**Status:** Draft v0.1 (derived from `PROJECT_BRIEF.md`; awaiting user review)
+**Status:** v0.2 (derived from `PROJECT_BRIEF.md`; awaiting user review)
 **Last updated:** 2026-10-06
 
 `PROJECT_BRIEF.md` is the source of truth for vision and scope. This PRD turns it into traceable requirements, priorities and open questions. Where the two disagree, the brief wins and this document is corrected.
@@ -86,4 +86,4 @@ The analytics event set and funnels in brief §20 (Search → Product → Cart �
 
 ## 9. Open questions
 
-Tracked in `requirements/open-questions.md`. Questions blocking the first feature: Q1 (architecture), Q2 (currency), Q3 (catalog category scope).
+Tracked in `requirements/open-questions.md`. Q1–Q3 resolved 2026-10-06 (Express API, ₹ at 1:1, all categories).

@@ -4,7 +4,7 @@
 
 **ID:** F-001
 **Name:** Catalog Browsing — foundation, home, categories, product listing, filters, sorting
-**Status:** Proposed (awaiting Gate 1 approval and decisions Q1–Q3)
+**Status:** Approved — In Progress (Gate 1 approved 2026-10-06)
 **Requirements:** DISC-1..5, INV-1, INV-3, STATE-1, ANL-1 (`filter_applied`), NFR-1..4, NFR-6..8
 
 ---
@@ -35,7 +35,7 @@ A shopper who does not yet know exactly what they want needs to explore the rang
 ### 5.1 Foundation
 
 - FR-1 Workspace per ADR-001: `apps/web`, `apps/api`, `packages/shared`; `pnpm install` + `pnpm dev` runs the app locally.
-- FR-2 Catalog import script per ADR-002: imports DummyJSON into the local database, excluding categories per Q3, converting prices per Q2. Idempotent (re-running replaces the snapshot without duplicating).
+- FR-2 Catalog import script per ADR-002: imports DummyJSON into the local database, importing all categories (Q3), converting prices at the configured rate (Q2: currently 1 USD = ₹1). Idempotent (re-running replaces the snapshot without duplicating).
 - FR-3 Inventory seeding: each imported product gets an application inventory record with a deterministic seeded `onHand` (same result every run). The seed includes a small number of out-of-stock and low-stock products so those states are demonstrable. DummyJSON stock fields are discarded.
 - FR-4 App shell: header with store name/logo and category navigation; footer with a persistent "Demo store — products, reviews and payments are simulated" notice (NFR-8). Header elements for search, cart, wishlist and account are added by their own features, not shown as non-working placeholders.
 
@@ -90,7 +90,7 @@ A shopper who does not yet know exactly what they want needs to explore the rang
 - Mobile filter sheet applies changes live to the count ("Show 37 results") and applies on confirm, avoiding a reload per tap.
 - No authentication anywhere in this feature.
 - Feedback: filter changes reflect within one interaction; chips confirm what is active.
-- Prices formatted `₹1,29,999` (en-IN grouping, no decimals).
+- Prices formatted with en-IN grouping (`₹1,29,999`). Because Q2 sets a 1:1 rate, many prices have paise; whole-rupee amounts show no decimals, others show two (`₹9.99`).
 - No fake urgency: "Only N left" appears only from real inventory ≤ 5.
 
 ## 8. UI Requirements
@@ -119,7 +119,7 @@ All under `/api`, JSON, no authentication.
 | Endpoint | Purpose | Response |
 |---|---|---|
 | `GET /api/categories` | Category list | `{ categories: Category[] }` |
-| `GET /api/products` | Listing. Query: `category`, `brand` (comma list), `priceMin`, `priceMax` (rupees), `rating` (3/4), `inStock` (1), `sort` (`featured`, `price_asc`, `price_desc`, `rating`, `discount`), `page`, `pageSize` (max 48) | `{ items: ProductSummary[], page, pageSize, total, facets: { brands: {value, count}[], price: {min, max}, categories: {slug, count}[] } }` |
+| `GET /api/products` | Listing. Same query parameters as the web URL: `category`, `brand` (comma list of brand slugs), `price` (`min-max` in rupees, either side optional), `rating` (3/4), `inStock` (1), `sort` (`featured`, `price_asc`, `price_desc`, `rating`, `discount`), `page`, `pageSize` (max 48) | `{ items: ProductSummary[], page, pageSize, total, facets: { brands, categories, ratings, inStock, price }, relaxations }` — `relaxations` lists, when there are no results, how many results removing each active filter would give (drives the empty-state suggestion) |
 | `GET /api/products/:slug` | Product stub data | `{ product: ProductDetail }` or 404 |
 | `POST /api/events` | Analytics batch | `202 Accepted` |
 
@@ -166,8 +166,8 @@ Errors: `400` with `{ error: { code, message } }` for invalid params that cannot
 ## 17. Acceptance Criteria
 
 1. Given a fresh clone, when I run the documented install, import and dev commands, then the store opens locally and shows the homepage with all imported categories.
-2. `vehicle` and `motorcycle` products do not appear anywhere (assuming Q3 recommendation).
-3. All prices display in ₹ with Indian digit grouping; discounted products show original price struck through and the discount %.
+2. All 24 DummyJSON categories, including `vehicle` and `motorcycle`, are browsable (Q3).
+3. All prices display in ₹ at the configured 1:1 rate with Indian digit grouping; discounted products show original price struck through and the discount %.
 4. Given a category page, when I select brand "X" and "4★ & up", then only products of brand X with rating ≥ 4 are shown, the count matches, and the chips show both filters.
 5. Given filters applied, when I copy the URL into a new tab, then the same products, filters, sort and page are shown.
 6. Given I apply filters and go to page 2, when I press Back, then I return to page 1 with the same filters.
@@ -192,7 +192,7 @@ Errors: `400` with `{ error: { code, message } }` for invalid params that cannot
 
 ## 19. Dependencies
 
-- Decisions Q1 (ADR-001), Q2 (currency), Q3 (categories).
+- Decisions Q1 (ADR-001), Q2 (currency), Q3 (categories) — resolved.
 - Network access to DummyJSON for the one-time import; image CDN for images.
 - Node ≥ 22, pnpm 10 (available: Node 24.14, pnpm 10.33).
 
@@ -202,7 +202,7 @@ Search and search history (F-002); full product page, variants, reviews, recentl
 
 ## 21. Assumptions
 
-- Q1–Q3 resolve as recommended; if not, this spec is revised before implementation.
+- Q1–Q3 resolved 2026-10-06 (see §22).
 - DummyJSON `price` is treated as the original (MRP) price and `discountPercentage` is applied to derive the selling price.
 - DummyJSON catalog ratings are shown as catalog data; their demo nature is covered by the site-wide notice (reviews labelling handled in F-003).
 - "Featured" order is the catalog's import order, not a popularity signal.
@@ -210,6 +210,8 @@ Search and search history (F-002); full product page, variants, reviews, recentl
 
 ## 22. Decisions Required From User
 
-1. **Q1 — Architecture**: React SPA + Fastify API + SQLite (recommended), in-browser mock backend, or Next.js. See ADR-001.
-2. **Q2 — Currency**: display INR via fixed conversion at import (recommended, ₹85 = $1), or keep USD.
-3. **Q3 — Categories**: exclude `vehicle` and `motorcycle` (recommended), or import all 24.
+None outstanding. Resolved 2026-10-06:
+
+1. Q1 — React + Tailwind CSS + shadcn/ui; Node.js Express API; pnpm workspace.
+2. Q2 — ₹ at 1:1 with USD for now.
+3. Q3 — All 24 categories.

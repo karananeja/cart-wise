@@ -1,11 +1,11 @@
 # ADR-001: Application Architecture
 
-**Status:** Proposed — awaiting user decision (open question Q1)
+**Status:** Accepted (user decision, 2026-10-06)
 **Date:** 2026-10-06
 
 ## Decision
 
-Build a pnpm workspace with a React single-page app and a small Node API backed by SQLite.
+Build a pnpm workspace with a React single-page app (Tailwind CSS + shadcn/ui) and a small Node.js Express API backed by SQLite.
 
 ## Context
 
@@ -23,16 +23,16 @@ Build a pnpm workspace with a React single-page app and a small Node API backed 
 
 ## Decision
 
-Option 1.
+Option 1, with Express as the API framework (user choice, replacing the proposed Fastify).
 
 | Layer | Choice |
 |---|---|
 | Workspace | pnpm workspaces: `apps/web`, `apps/api`, `packages/shared` |
-| Web | Vite, React, TypeScript, React Router, TanStack Query (server state), small client store for guest state, Tailwind CSS with Radix-based accessible primitives |
-| API | Node, Fastify, TypeScript, Zod validation (schemas shared via `packages/shared`) |
-| Data | SQLite file database via Drizzle ORM; seed/import scripts |
+| Web | Vite, React, TypeScript, React Router, TanStack Query (server state), Tailwind CSS, shadcn/ui components |
+| API | Node.js, Express 5, TypeScript (run with `tsx`), Zod validation (schemas shared via `packages/shared`) |
+| Data | SQLite file database via `better-sqlite3` with plain SQL (no ORM: the schema is small, and `node:sqlite` is still experimental in Node 24) |
 | Catalog | DummyJSON imported once into the local database by a script and normalised to the application's own product model (see ADR-002) |
-| Tests | Vitest + Testing Library (web), Fastify inject (API), MSW for frontend network mocking, Playwright for E2E |
+| Tests | Vitest + Testing Library (web), Supertest (API), MSW for frontend network mocking, Playwright for E2E |
 
 ## Reason
 

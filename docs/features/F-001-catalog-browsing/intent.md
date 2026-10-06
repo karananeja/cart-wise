@@ -1,8 +1,8 @@
 # Feature Intent
 
 **Feature:** F-001 — Catalog Browsing
-**Status:** Awaiting Approval
-**Approved by / date:** —
+**Status:** Approved
+**Approved by / date:** User, 2026-10-06
 
 ---
 
@@ -45,10 +45,8 @@ Acceptance criteria 1–16 in `specification.md` §17, verified by unit, API, co
 
 ## 6. Decisions needed before implementation
 
-- Q1 Architecture (recommend React SPA + Fastify API + SQLite)
-- Q2 Currency (recommend INR at fixed ₹85/$)
-- Q3 Categories (recommend excluding vehicle and motorcycle)
+Resolved 2026-10-06: React + Tailwind + shadcn/ui with an Express API in a pnpm workspace; ₹ at 1:1 with USD; all categories.
 
 ## 7. Approval
 
-- [ ] Approved for implementation (Gate 1)
+- [x] Approved for implementation (Gate 1) — 2026-10-06
