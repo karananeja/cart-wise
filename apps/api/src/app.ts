@@ -2,6 +2,8 @@ import express from 'express';
 import { addressRouter, geoRouter } from './addresses/routes.js';
 import { createAddressService } from './addresses/service.js';
 import { createGeoService } from './geo/service.js';
+import { orderRouter } from './orders/routes.js';
+import { createOrderService } from './orders/service.js';
 import { createMergeService } from './auth/merge.js';
 import { createOtpService } from './auth/otp.js';
 import { createLoginLimiter } from './auth/rateLimit.js';
@@ -23,6 +25,8 @@ import { createWishlistService } from './wishlist/service.js';
 export interface AppOptions {
   /** Outbound HTTP for the geocoding proxy (injected in tests). */
   fetch?: typeof fetch;
+  /** Time source for order holds (injected in tests). */
+  clock?: () => number;
 }
 
 export function createApp(db: Db, options: AppOptions = {}) {
@@ -46,10 +50,13 @@ export function createApp(db: Db, options: AppOptions = {}) {
   const catalog = createCatalogRepository(db);
   // Built once from the seeded catalog; holds only ids, so prices and stock stay live.
   api.use(catalogRouter(catalog, createSearchIndex(catalog.listSearchDocuments())));
-  api.use(cartRouter(createCartService(db, catalog)));
+  const carts = createCartService(db, catalog);
+  const addresses = createAddressService(db);
+  api.use(cartRouter(carts));
   api.use(wishlistRouter(createWishlistService(db, catalog)));
   api.use(authRouter({ db, otp: createOtpService(db), sessions, merge: createMergeService(db), limiter: createLoginLimiter() }));
-  api.use(addressRouter(createAddressService(db)));
+  api.use(addressRouter(addresses));
+  api.use(orderRouter(createOrderService({ db, carts, addresses, clock: options.clock })));
   api.use(geoRouter(createGeoService({ fetch: options.fetch ?? fetch })));
   api.use(analyticsRouter(db));
   app.use('/api', api);

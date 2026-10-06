@@ -19,6 +19,16 @@ interface LineRow {
   available: number;
 }
 
+/**
+ * Units of this line held by the cart owner's own unpaid order (F-008). Added back to their
+ * availability so the items they're paying for don't look sold out to them.
+ */
+const OWN_HELD = `
+  COALESCE((SELECT SUM(ol.quantity) FROM order_lines ol JOIN orders o ON o.id = ol.order_id
+    WHERE o.user_id = (SELECT c.user_id FROM carts c WHERE c.id = l.cart_id)
+      AND o.status = 'pending_payment' AND o.hold_released_at IS NULL
+      AND ol.product_id = l.product_id AND IFNULL(ol.variant_id, 0) = IFNULL(l.variant_id, 0)), 0)`;
+
 export function createCartService(db: Db, catalog: CatalogRepository) {
   const now = () => new Date().toISOString();
   const cutoff = () => new Date(Date.now() - CART_LIFETIME_DAYS * DAY_MS).toISOString();
@@ -34,7 +44,7 @@ export function createCartService(db: Db, catalog: CatalogRepository) {
   const lineRows = db.prepare(`
     SELECT l.id, l.product_id, p.slug, v.label AS size, l.quantity,
       COALESCE((SELECT MAX(i.on_hand - i.reserved, 0) FROM inventory i
-        WHERE i.product_id = l.product_id AND IFNULL(i.variant_id, 0) = IFNULL(l.variant_id, 0)), 0) AS available
+        WHERE i.product_id = l.product_id AND IFNULL(i.variant_id, 0) = IFNULL(l.variant_id, 0)), 0) + ${OWN_HELD} AS available
     FROM cart_lines l
     JOIN products p ON p.id = l.product_id
     LEFT JOIN product_variants v ON v.id = l.variant_id
@@ -57,7 +67,7 @@ export function createCartService(db: Db, catalog: CatalogRepository) {
   const lineInCart = db.prepare(`
     SELECT l.id, l.quantity,
       COALESCE((SELECT MAX(i.on_hand - i.reserved, 0) FROM inventory i
-        WHERE i.product_id = l.product_id AND IFNULL(i.variant_id, 0) = IFNULL(l.variant_id, 0)), 0) AS available
+        WHERE i.product_id = l.product_id AND IFNULL(i.variant_id, 0) = IFNULL(l.variant_id, 0)), 0) + ${OWN_HELD} AS available
     FROM cart_lines l WHERE l.id = ? AND l.cart_id = ?`);
   const deleteLine = db.prepare('DELETE FROM cart_lines WHERE id = ? AND cart_id = ?');
 

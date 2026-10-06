@@ -153,6 +153,40 @@ CREATE TABLE IF NOT EXISTS addresses (
 );
 CREATE INDEX IF NOT EXISTS addresses_user ON addresses(user_id);
 
+-- Orders (F-008). Created at Pending Payment to hold stock; lines and prices are a snapshot.
+CREATE TABLE IF NOT EXISTS orders (
+  id TEXT PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status TEXT NOT NULL,
+  address TEXT NOT NULL,
+  delivery TEXT NOT NULL,
+  item_count INTEGER NOT NULL,
+  mrp_paise INTEGER NOT NULL,
+  discount_paise INTEGER NOT NULL,
+  delivery_paise INTEGER NOT NULL,
+  total_paise INTEGER NOT NULL,
+  created_at TEXT NOT NULL,
+  hold_expires_at TEXT NOT NULL,
+  hold_released_at TEXT,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS orders_user ON orders(user_id, status);
+
+CREATE TABLE IF NOT EXISTS order_lines (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  order_id TEXT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  product_id INTEGER NOT NULL,
+  variant_id INTEGER,
+  slug TEXT NOT NULL,
+  title TEXT NOT NULL,
+  size TEXT,
+  thumbnail_url TEXT NOT NULL,
+  quantity INTEGER NOT NULL,
+  unit_price_paise INTEGER NOT NULL,
+  unit_mrp_paise INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS order_lines_order ON order_lines(order_id);
+
 -- Guest carts (F-004), identified by an anonymous random id held in a cookie.
 CREATE TABLE IF NOT EXISTS carts (
   id TEXT PRIMARY KEY,
