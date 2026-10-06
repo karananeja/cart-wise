@@ -33,10 +33,6 @@ export function HomePage() {
         )}
       </section>
 
-      <RecentlyViewedRail showClear />
-
-      {/* Suggestions from viewing and buying history (F-012), below the browsing sections. */}
-      <PersonalisedRails />
 
       {/* Factual rails only: no "trending" until there is real behavioural data (spec FR-6). */}
       <ProductRail
@@ -51,6 +47,11 @@ export function HomePage() {
         params={{ sort: 'discount', inStock: true }}
         seeAllHref="/products?inStock=1&sort=discount"
       />
+
+      {/* History-based sections come last (user feedback, F-012 Gate 2): what you viewed, then
+          suggestions from viewing and buying history. */}
+      <RecentlyViewedRail showClear />
+      <PersonalisedRails />
     </div>
   );
 }

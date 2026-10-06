@@ -32,7 +32,7 @@ Every MVP requirement ID (DISC, SRCH, HIST, PDP, RV, CART, WISH, AUTH, ADDR, CHK
 ## 2. Engineering clean-up
 
 - **Route-level code-splitting** (`096345e`): non-browsing pages load on demand. The main bundle went from 829 kB to 407 kB (gzip 250 → 124 kB), and the Vite size warning is gone.
-- **One-off payment E2E failure:** seen once during F-011 testing. It has not recurred in 21 full E2E runs since, before and after code-splitting. The cause wasn't identified, so it is recorded rather than called fixed.
+- **One-off payment E2E failure:** seen once during F-011 testing. *Update (F-012 Gate 2 review): root cause found.* SQLite "database is locked" errors, caused by deferred transactions racing the E2E helpers' direct writes. Fixed with `BEGIN IMMEDIATE` (see F-012 acceptance §5).
 
 ## 3. Test status
 

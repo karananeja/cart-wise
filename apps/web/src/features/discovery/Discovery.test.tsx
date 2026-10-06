@@ -142,11 +142,17 @@ describe('homepage continue shopping', () => {
     expect(await within(rail).findByRole('link', { name: 'Zenbook' })).toBeInTheDocument();
     expect(homeRequests[0]).toBe('product-1');
 
-    // Order on the page: cart reminder on top, then categories, then the personalised rail.
-    const categories = await screen.findByRole('heading', { name: 'Shop by category' });
+    // Order on the page (user feedback): cart reminder, categories, Top rated, Biggest discounts,
+    // then the history-based sections.
     const follows = (a: Node, b: Node) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
-    expect(follows(reminder, categories)).toBe(true);
-    expect(follows(categories, rail)).toBe(true);
+    const order = [
+      reminder,
+      await screen.findByRole('heading', { name: 'Shop by category' }),
+      await screen.findByRole('heading', { name: 'Top rated' }),
+      await screen.findByRole('heading', { name: 'Biggest discounts' }),
+      rail,
+    ];
+    order.slice(1).forEach((el, i) => expect(follows(order[i]!, el)).toBe(true));
   });
 
   it('adds "Because you bought" for signed-in customers with orders', async () => {

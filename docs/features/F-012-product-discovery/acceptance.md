@@ -34,11 +34,11 @@
 
 ## 5. Other changes
 
-- **Gate 2 review change (user):** the Because you viewed and Because you bought rails moved below Shop by category and Recently viewed; Still in your cart stays at the top. A component test checks the order.
+- **Gate 2 review changes (user):** homepage order is now Still in your cart → Shop by category → Top rated → Biggest discounts → Recently viewed → Because you viewed → Because you bought. A component test checks the order.
 
 - **Homepage headings:** the homepage now starts with a visually hidden `h1` (the store name), and "Shop by category" is an `h2`. The new sections sit above it, so the headings are in order.
 - **Size selection:** product-page size selection moved into a small `useSelectedSize` hook, so the pairing group can read it.
-- **One-off checkout E2E failure:** the checkout mobile E2E test failed once, in the same run as the duplicate-button regression, and has passed in all 8 runs since. Its cause wasn't confirmed.
+- **Intermittent E2E failures: root cause found and fixed.** A run during the Gate 2 review logged `SqliteError: database is locked`. The E2E helpers write stock straight to the database, and an API transaction that had read before such a write failed immediately when it then wrote. That explains the one-off payment, checkout and orders E2E failures seen since F-011. Database transactions now start with the write lock (`BEGIN IMMEDIATE`) and wait their turn. A new database test reproduces the failure and fails without the fix. 10 consecutive full E2E runs since have had no failures and no lock errors.
 
 ## 6. Documentation updated
 
