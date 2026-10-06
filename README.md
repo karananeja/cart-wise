@@ -42,7 +42,18 @@ e2e              Playwright tests
 docs             Brief, PRD, plan, decisions and per-feature specs
 ```
 
+## Demo payments and orders
+
+- **Cards:** any card number that passes the Luhn check works. Numbers ending `0002` are declined
+  and `9995` fail for insufficient funds. The payment page lists demo cards for the fictional
+  banks (Aurora, Meridian, Kestrel) whose offers can be applied. Only the first 6 and last 4
+  digits leave the browser.
+- **One-time codes** (sign-in, bank verification) are shown on screen; no SMS is sent.
+- **Demo operator:** `/sim/orders` moves paid orders through their lifecycle, completes delivery
+  with the customer's delivery code and advances returns. It asks for the operator password:
+  `demo-operator` by default; set `SIM_OPERATOR_PASSWORD` to change it.
+
 ## Notes
 
-- Prices are converted from USD at a configurable rate (`apps/api/src/catalog/config.ts`, currently 1:1).
+- Prices are converted from USD at a configurable rate (`apps/api/src/catalog/config.ts`, currently ₹96 = $1).
 - Stock levels come from the application's own inventory table, seeded deterministically — not from DummyJSON.
