@@ -58,3 +58,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-009 | Spec and intent presented for Gate 1 | Decisions: offers, demo cards only, bank OTP, UPI flow |
 | 2026-10-06 | F-009 decisions | Customer chooses offer; any valid card number (only first 6/last 4 sent); bank OTP step; in-page demo UPI app | |
 | 2026-10-06 | F-009 Gate 1 | **Approved** | |
+| 2026-10-06 | F-009 implementation | Implemented, tested, presented for Gate 2 | |

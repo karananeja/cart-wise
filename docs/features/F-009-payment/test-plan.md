@@ -54,3 +54,6 @@
 
 | Run date | Command | Result | Notes |
 |---|---|---|---|
+| 2026-10-06 | `pnpm test` | 349 passed (shared 35, api 188, web 126) | |
+| 2026-10-06 | `pnpm e2e` ×3 | 39 passed each run | Cart stock-drop test race fixed (waits for the PATCH) |
+| 2026-10-06 | `pnpm typecheck`, `pnpm build` | Clean | |

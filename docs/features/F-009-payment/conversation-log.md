@@ -9,3 +9,4 @@
 | 2026-10-06 | Bank OTP | Included | As recommended |
 | 2026-10-06 | UPI | In-page demo app, 5-minute window, no PIN | As recommended |
 | 2026-10-06 | Gate 1 | **Approved** | |
+| 2026-10-06 | Implementation complete | Presented for Gate 2 | See acceptance.md |

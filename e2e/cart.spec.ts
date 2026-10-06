@@ -84,7 +84,11 @@ test('a stock drop flags the line instead of removing it', async ({ page }) => {
   await page.getByRole('link', { name: 'Go to cart' }).click();
   const row = page.getByRole('listitem').filter({ hasText: 'iPhone X' });
   await row.getByRole('button', { name: 'Increase quantity' }).click();
+  await expect(row.getByRole('status')).toHaveText('2');
+  // The stepper updates optimistically; wait for the server to store 3 before stock drops.
+  const saved = page.waitForResponse((r) => r.url().includes('/api/cart/lines/') && r.request().method() === 'PATCH' && r.ok() && r.request().postDataJSON()?.quantity === 3);
   await row.getByRole('button', { name: 'Increase quantity' }).click();
+  await saved;
   await expect(row.getByRole('status')).toHaveText('3');
 
   setStock(slug, null, 1);

@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-009 Simulated payment — Gate 1 approved 2026-10-06; in implementation.** F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+**F-009 Simulated payment — implemented and tested, awaiting Gate 2.** F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -52,11 +52,12 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 - `apps/api/src/auth/` (validation, passwords, otp, sessions, rateLimit, merge, routes), `apps/api/src/http/owner.ts` (user/guest owner), `apps/web/src/features/auth/`
 - `apps/api/src/addresses/`, `apps/api/src/geo/` (Nominatim proxy), `apps/web/src/features/addresses/` (LocationPicker, lazy MapView)
 - `apps/api/src/orders/` (quote, atomic holds, expiry sweep), `apps/web/src/features/checkout/` (CheckoutPage, PaymentPage, HoldCountdown)
+- `packages/shared/src/payment.ts` (offers, card ranges, outcome rule, UPI), `apps/api/src/payments/` (attempts, OTP, completion), `apps/api/src/analytics/record.ts` (server events), `apps/web/src/features/payment/`, `apps/web/src/features/orders/ConfirmationPage.tsx`
 - `apps/web/src/features/search/SearchBox.tsx` — header combobox; `apps/web/src/lib/recentSearches.ts` — history store
 
 ## Tests
 
-- `pnpm test`: 296 passing (shared 22, api 166, web 108). `pnpm e2e`: 34 passing (stable over 3 repeats). Typecheck clean. Build succeeds.
+- `pnpm test`: 349 passing (shared 35, api 188, web 126). `pnpm e2e`: 39 passing (stable over 3 repeats). Typecheck clean. Build succeeds.
 - No failing tests.
 
 ## Known bugs / limitations
@@ -100,4 +101,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Implement F-009 per `docs/features/F-009-payment/technical-design.md`: shared `payment.ts` → API `payments/` → web `features/payment/` + confirmation + product-page banner → tests → E2E → acceptance.md → Gate 2.
+Wait for Gate 2 acceptance of F-009 (`docs/features/F-009-payment/acceptance.md`). On acceptance: mark complete, then prepare F-010 (Orders: history, details, cancel/return/refund, delivery OTP). F-010 needs Q9 (cancel/return/refund rules) and Q16 (delivery OTP details).
