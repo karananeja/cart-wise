@@ -72,3 +72,6 @@ export const addressHandlers = [
     return HttpResponse.json({ place: { ...INDIRANAGAR, label: 'HAL 2nd Stage, Bengaluru', area: 'HAL 2nd Stage' } });
   }),
 ];
+
+/** Current mock addresses (default first), for the checkout mock. */
+export const addressList = () => sorted();

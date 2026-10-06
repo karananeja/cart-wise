@@ -4,6 +4,7 @@ import { parseListingParams, type AnalyticsEvent } from '@store/shared';
 import { addressHandlers } from './addressServer';
 import { authHandlers } from './authServer';
 import { cartHandlers } from './cartServer';
+import { checkoutHandlers } from './checkoutServer';
 import { wishlistHandlers } from './wishlistServer';
 import { categories, listing, productDetails, products } from './fixtures';
 
@@ -18,6 +19,7 @@ export const handlers = [
   ...authHandlers,
   ...addressHandlers,
   ...cartHandlers,
+  ...checkoutHandlers,
   ...wishlistHandlers,
   http.get('*/api/categories', () => HttpResponse.json({ categories })),
   http.get('*/api/products', ({ request }) => {

@@ -70,11 +70,20 @@ export function AddressEditorPage() {
       return;
     }
     const isFirst = (addresses.data?.length ?? 0) === 0;
+    const before = new Set(addresses.data?.map((a) => a.id));
     create.mutate(
       { values },
       {
-        onSuccess: () => {
+        onSuccess: ({ addresses: after }) => {
           track('address_added', { addressType: values.type, method: values.latitude !== null ? method : 'manual', isDefault: isFirst });
+          // Returning to checkout selects the address just added (F-008 FR-5).
+          const added = after.find((a) => !before.has(a.id));
+          if (added && returnTo.startsWith('/checkout')) {
+            const url = new URL(returnTo, window.location.origin);
+            url.searchParams.set('addressId', String(added.id));
+            navigate(url.pathname + url.search);
+            return;
+          }
           done();
         },
       },

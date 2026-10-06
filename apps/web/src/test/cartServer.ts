@@ -36,7 +36,7 @@ function available(product: ProductDetail, size: string | null): number {
   return availability.status === 'low_stock' ? (availability.available ?? 1) : 20;
 }
 
-function view(): CartView {
+export function view(): CartView {
   const views: CartLineView[] = lines.map((line) => {
     const product = productDetails.find((p) => p.slug === line.slug)!;
     const stock = available(product, line.size);

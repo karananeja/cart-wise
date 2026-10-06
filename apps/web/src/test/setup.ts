@@ -4,6 +4,7 @@ import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import { resetAddresses } from './addressServer';
 import { resetAuth } from './authServer';
 import { resetCart } from './cartServer';
+import { resetCheckout } from './checkoutServer';
 import { resetWishlist } from './wishlistServer';
 import { server } from './server';
 
@@ -22,6 +23,7 @@ afterEach(() => {
   cleanup();
   server.resetHandlers();
   resetCart();
+  resetCheckout();
   resetAuth();
   resetAddresses();
   resetWishlist();

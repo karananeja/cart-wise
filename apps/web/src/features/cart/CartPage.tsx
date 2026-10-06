@@ -255,21 +255,42 @@ function CartSummary({ cart }: { cart: CartView }) {
         <dt className="border-t pt-3 text-base font-semibold">Subtotal</dt>
         <dd className="border-t pt-3 text-right text-base font-semibold tabular-nums">{formatPrice(totals.subtotalPaise)}</dd>
       </dl>
-      <p className="text-xs text-muted-foreground">Prices include taxes.</p>
+      <p className="text-xs text-muted-foreground">Inclusive of all taxes</p>
       {cart.hasIssues && <p className="text-xs text-amber-800 dark:text-amber-300">Items that need attention are not included.</p>}
+      <CheckoutButton cart={cart} />
     </section>
+  );
+}
+
+/** The cart's primary action; disabled, with the reason, when the cart can't be bought yet. */
+function CheckoutButton({ cart, className }: { cart: CartView; className?: string }) {
+  const blocked = cart.hasIssues || cart.totals.itemCount === 0;
+  return (
+    <div className={cn('flex flex-col gap-1', className)}>
+      {blocked ? (
+        <Button size="lg" className="h-11 w-full" disabled>
+          Proceed to checkout
+        </Button>
+      ) : (
+        <Button asChild size="lg" className="h-11 w-full">
+          <Link to="/checkout">Proceed to checkout</Link>
+        </Button>
+      )}
+      {cart.hasIssues && <p className="text-xs text-muted-foreground">Fix the highlighted items to continue.</p>}
+    </div>
   );
 }
 
 function MobileSubtotalBar({ cart }: { cart: CartView }) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 px-4 py-3 backdrop-blur lg:hidden">
-      <p className="flex items-baseline justify-between text-sm">
+    <div className="fixed inset-x-0 bottom-0 z-30 flex items-center gap-4 border-t bg-background/95 px-4 py-3 backdrop-blur lg:hidden">
+      <p className="flex flex-col text-sm">
         <span className="text-muted-foreground">
           Subtotal ({cart.totals.itemCount} {cart.totals.itemCount === 1 ? 'item' : 'items'})
         </span>
         <span className="text-base font-semibold tabular-nums">{formatPrice(cart.totals.subtotalPaise)}</span>
       </p>
+      <CheckoutButton cart={cart} className="flex-1 [&_p]:hidden" />
     </div>
   );
 }
