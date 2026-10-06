@@ -24,7 +24,7 @@ Order follows the brief's journey and dependencies: each feature builds on the o
 | F-004 | Guest cart (incl. Add to cart on the product page, PDP-2) | CART-1..4, PDP-2 | F-003 | **Complete** (accepted 2026-10-06) |
 | F-005 | Wishlist | WISH-1..2 | F-003 | **Complete** (accepted 2026-10-06) |
 | F-006 | Authentication + guest state merge | AUTH-1..4 | F-004, F-005 | **Complete** (accepted 2026-10-06) |
-| F-007 | Address management | ADDR-1..2 | F-006 | Not started |
+| F-007 | Address management (map-assisted) | ADDR-1..2 | F-006 | Spec drafted — awaiting Gate 1 |
 | F-008 | Checkout (address, delivery, summary, reservation) | CHK-1..3, INV-2 | F-007 | Not started |
 | F-009 | Simulated payment (card, UPI, card offers) | PAY-1..6 | F-008 | Not started |
 | F-010 | Orders (history, details, cancel/return/refund, delivery OTP) | ORD-1..5 | F-009 | Not started |

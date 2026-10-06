@@ -45,3 +45,5 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | UPI | New requirement PAY-6: simulated UPI payment flow | F-009 |
 | 2026-10-06 | Card offers (Q17) | Fictional banks; built with payment (F-009) | |
 | 2026-10-06 | F-006 Gate 2 | **Accepted** | |
+| 2026-10-06 | Q7 Map provider | OpenStreetMap | |
+| 2026-10-06 | F-007 | Spec, intent and ADR-004 presented for Gate 1 | |

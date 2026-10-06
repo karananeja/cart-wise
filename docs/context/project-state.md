@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**Next: F-007 Address management — awaiting Q7 (map provider) before specification.** F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+**F-007 Address management — specification, intent and ADR-004 drafted, awaiting Gate 1.** F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -68,7 +68,6 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 ## Pending questions for the user
 
 - Q16 delivery OTP details (for F-010/F-011).
-- Q7 map provider (for F-007).
 - Currency corrected to ₹96 = $1 (2026-10-06); card offers (PAY-5, fictional banks) and simulated UPI (PAY-6) added to F-009.
 
 - Store name: "Cartwise" kept as placeholder (user did not address it).
@@ -96,4 +95,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Get the user's answer to Q7 (map provider for addresses), then write the F-007 (Address management) specification and intent for Gate 1.
+Wait for Gate 1 approval of F-007 (`features/F-007-addresses/`): confirm 10-address limit, default reassignment on delete, signed-in only. On approval: accept ADR-004, technical design, implement (API addresses + geo proxy with injected fetch; web list/form/lazy Leaflet picker), test with stubbed geo, one manual live check on preview ports.

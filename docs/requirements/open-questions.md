@@ -47,7 +47,7 @@ Recommendation: import all categories except `vehicle` and `motorcycle` (~184 pr
 | Q5 | **Resolved 2026-10-06 (user, corrected): show DummyJSON reviews without a per-review "demo" label.** The site-wide footer notice ("ratings, reviews … are simulated") satisfies brief §18. Reviewer emails are not shown. | F-003 | — |
 | Q15 | **Resolved 2026-10-06 (user):** star rating = average of the product's reviews (DummyJSON's own `rating` contradicted its reviews for 73 of 194 products). | F-003 | Changes star values, rating filter counts and Top rated order from F-001 |
 | Q6 | Store Simulation Console is in brief §16 but not in the MVP priority list. Include in MVP? | F-010 | Yes — without it the order lifecycle cannot be demonstrated |
-| Q7 | Map-assisted address entry: which provider? | F-007 | Manual form first; map via OpenStreetMap + Leaflet + Nominatim (free, no key) — Google Maps needs a billing account |
+| Q7 | **Resolved 2026-10-06 (user):** OpenStreetMap (Leaflet + Nominatim via our API), manual form always available | F-007 | ADR-004 |
 | Q8 | Delivery options and pricing (e.g. Standard free over ₹X, Express ₹Y) | F-008 | Propose concrete rules in F-008 spec |
 | Q9 | Cancellation / return / refund rules (which states allow which action, refund timing) | F-010 | Cancel before Shipped; return within N days of Delivered; simulated instant refund |
 | Q10 | Inventory reservation: when reserved, how long held | F-008 | Reserve at payment start, hold 10 minutes, release on failure/expiry |
