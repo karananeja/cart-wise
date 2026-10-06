@@ -104,6 +104,21 @@ describe('wishlist page', () => {
     );
   });
 
+  it('asks for an option for products with options, preselecting the cheapest in stock (F-013)', async () => {
+    await save('galaxy-phone');
+    const user = userEvent.setup();
+    renderRoute('/wishlist');
+    expect(await screen.findByText('From')).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'Move Galaxy Phone to cart' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Choose storage' });
+    expect(within(dialog).getByRole('radio', { name: /128 GB/ })).toBeChecked();
+    expect(within(dialog).getByRole('radio', { name: /512 GB/ })).toBeDisabled();
+    await user.click(within(dialog).getByRole('radio', { name: /256 GB/ }));
+    await user.click(within(dialog).getByRole('button', { name: 'Move to cart' }));
+    expect(await screen.findByText(/Moved Galaxy Phone to cart/)).toBeInTheDocument();
+    await waitFor(() => expect(cartLink()).toHaveAccessibleName('Cart, 1 item'));
+  });
+
   it('asks for a size for sized products, with sold-out sizes disabled', async () => {
     await save('check-shirt');
     const user = userEvent.setup();

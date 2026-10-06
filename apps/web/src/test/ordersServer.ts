@@ -28,8 +28,8 @@ const NOW = '2026-10-06T10:00:00.000Z';
 /** A paid order for tests, in any state. Two lines by default: ₹3,000 × 2 and ₹1,000 × 1, ₹600 Aurora offer. */
 export function seedOrder(overrides: Partial<Order> & { id: string }): Order {
   const lines = overrides.lines ?? [
-    { id: 11, productId: 1, slug: 'product-1', title: 'Galaxy Phone', size: null, thumbnailUrl: '/p1.jpg', quantity: 2, unitPricePaise: 3_000_00, unitMrpPaise: 3_500_00 },
-    { id: 12, productId: 3, slug: 'product-3', title: 'Running Shoe', size: 'UK 9', thumbnailUrl: '/p3.jpg', quantity: 1, unitPricePaise: 1_000_00, unitMrpPaise: 1_200_00 },
+    { id: 11, productId: 1, slug: 'product-1', title: 'Galaxy Phone', size: null, option: '256 GB', thumbnailUrl: '/p1.jpg', quantity: 2, unitPricePaise: 3_000_00, unitMrpPaise: 3_500_00 },
+    { id: 12, productId: 3, slug: 'product-3', title: 'Running Shoe', size: 'UK 9', option: null, thumbnailUrl: '/p3.jpg', quantity: 1, unitPricePaise: 1_000_00, unitMrpPaise: 1_200_00 },
   ];
   const subtotal = lines.reduce((sum, l) => sum + l.unitPricePaise * l.quantity, 0);
   const mrp = lines.reduce((sum, l) => sum + l.unitMrpPaise * l.quantity, 0);

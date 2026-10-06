@@ -13,6 +13,8 @@ interface PairingSectionProps {
   product: ProductDetail;
   /** The size chosen on the page, when the product has sizes. */
   selectedSize?: string;
+  /** The option chosen on the page, when the product has options (F-013). */
+  selectedOption?: string;
   pairing: { kind: PairingKind; items: RecommendedProduct[] };
 }
 
@@ -21,10 +23,11 @@ const reasonText = (error: unknown) => cartErrorMessage(error).replace(/\.$/, ''
 
 /**
  * "Frequently bought together" (real co-purchases) or "Pairs well with" (category map), with a
- * one-tap add for this product and the ticked companions (spec FR-7, FR-8). Sized companions
- * link to their page instead: sizes are never picked blindly.
+ * one-tap add for this product and the ticked companions (spec FR-7, FR-8). Companions with sizes
+ * or options link to their page instead: those are never picked blindly. This product is added in
+ * the size or option chosen on the page.
  */
-export function PairingSection({ product, selectedSize, pairing }: PairingSectionProps) {
+export function PairingSection({ product, selectedSize, selectedOption, pairing }: PairingSectionProps) {
   const headingId = useId();
   const [unticked, setUnticked] = useState<Set<number>>(new Set());
   const [message, setMessage] = useState<{ tone: 'ok' | 'warn'; text: string }>();
@@ -34,7 +37,9 @@ export function PairingSection({ product, selectedSize, pairing }: PairingSectio
 
   const companions = pairing.items;
   const ticked = companions.filter((c) => !c.needsSize && !unticked.has(c.id));
-  const total = product.pricePaise + ticked.reduce((sum, c) => sum + c.pricePaise, 0);
+  const option = product.options.find((o) => o.label === selectedOption);
+  const productPrice = option?.pricePaise ?? product.pricePaise;
+  const total = productPrice + ticked.reduce((sum, c) => sum + c.pricePaise, 0);
   const needsPageSize = product.sizes.length > 0 && !selectedSize;
   const soldOut = product.availability.status === 'out_of_stock';
   const position = (c: RecommendedProduct) => companions.indexOf(c) + 1;
@@ -51,15 +56,21 @@ export function PairingSection({ product, selectedSize, pairing }: PairingSectio
     setBusy(true);
     setMessage(undefined);
     const queue = [
-      { item: product, size: product.sizes.length > 0 ? (selectedSize ?? null) : null, companion: false },
-      ...ticked.map((c) => ({ item: c, size: null, companion: true })),
+      {
+        item: product,
+        size: product.sizes.length > 0 ? (selectedSize ?? null) : null,
+        option: option?.label ?? null,
+        pricePaise: productPrice,
+        companion: false,
+      },
+      ...ticked.map((c) => ({ item: c, size: null, option: null, pricePaise: c.pricePaise, companion: true })),
     ];
     const added: string[] = [];
     const failed: string[] = [];
     // One at a time: the cart applies its rules (stock, limits) to each item in turn.
-    for (const { item, size, companion } of queue) {
+    for (const { item, size, option: chosen, pricePaise, companion } of queue) {
       try {
-        await add.mutateAsync({ productSlug: item.slug, size, quantity: 1, source: 'recommendation', productId: item.id, pricePaise: item.pricePaise });
+        await add.mutateAsync({ productSlug: item.slug, size, option: chosen, quantity: 1, source: 'recommendation', productId: item.id, pricePaise });
         added.push(item.title);
         if (companion) trackRecommendation('product', pairing.kind, item.id, position(item as RecommendedProduct));
       } catch (error) {
@@ -81,7 +92,7 @@ export function PairingSection({ product, selectedSize, pairing }: PairingSectio
         {PAIRING_TITLES[pairing.kind]}
       </h2>
       <ul className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
-        <PairItem product={product} label="This item" />
+        <PairItem product={product} label="This item" pricePaise={productPrice} detail={option?.label} />
         {companions.map((c) => (
           <Fragment key={c.id}>
             <li aria-hidden className="flex items-center justify-center text-muted-foreground">
@@ -97,7 +108,7 @@ export function PairingSection({ product, selectedSize, pairing }: PairingSectio
                     className="text-sm font-medium underline-offset-4 hover:underline"
                     onClick={() => trackRecommendation('product', pairing.kind, c.id, position(c))}
                   >
-                    Choose size
+                    {c.hasOptions ? 'Choose option' : 'Choose size'}
                   </Link>
                 ) : (
                   <label className="flex items-center gap-2 text-sm">
@@ -144,11 +155,17 @@ export function PairingSection({ product, selectedSize, pairing }: PairingSectio
 function PairItem({
   product,
   label,
+  pricePaise,
+  detail,
   control,
   onOpen,
 }: {
   product: ProductDetail | RecommendedProduct;
   label?: string;
+  /** This item's price in the chosen option; companions show their (starting) price. */
+  pricePaise?: number;
+  /** The chosen option, e.g. "256 GB". */
+  detail?: string;
   control?: React.ReactNode;
   onOpen?: () => void;
 }) {
@@ -166,7 +183,11 @@ function PairItem({
         ) : (
           <p className="line-clamp-2 text-sm font-medium">{product.title}</p>
         )}
-        <p className="text-sm tabular-nums">{formatPrice(product.pricePaise)}</p>
+        <p className="text-sm tabular-nums">
+          {pricePaise === undefined && product.hasOptions && <span className="text-muted-foreground">From </span>}
+          {formatPrice(pricePaise ?? product.pricePaise)}
+          {detail && <span className="text-muted-foreground"> · {detail}</span>}
+        </p>
         {control}
       </div>
     </li>

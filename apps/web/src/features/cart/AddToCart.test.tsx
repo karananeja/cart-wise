@@ -48,7 +48,7 @@ describe('Add to cart', () => {
     flush();
     const cartEvents = () => receivedEvents.filter((e) => e.name.startsWith('cart_'));
     await waitFor(() => expect(cartEvents().map((e) => e.name)).toEqual(['cart_item_added', 'cart_item_removed']));
-    expect(cartEvents()[0]!.properties).toEqual({ productId: 1, size: null, quantity: 1, pricePaise: 90_000_00, source: 'product_page' });
+    expect(cartEvents()[0]!.properties).toEqual({ productId: 1, size: null, option: null, quantity: 1, pricePaise: 90_000_00, source: 'product_page' });
   });
 
   it('stops + at the stock limit with the reason', async () => {

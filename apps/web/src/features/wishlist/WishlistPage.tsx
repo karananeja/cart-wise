@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Heart, Loader2 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router';
-import type { ProductDetail, ProductSummary } from '@store/shared';
+import type { ProductDetail, ProductOption, ProductSummary } from '@store/shared';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ErrorState, OfflineState } from '@/components/ErrorState';
@@ -11,7 +11,9 @@ import { catalogKeys } from '@/features/catalog/api';
 import { ProductCard } from '@/features/catalog/components/ProductCard';
 import { ProductGridSkeleton } from '@/features/catalog/components/ProductGrid';
 import { RecentlyViewedRail } from '@/features/catalog/components/RecentlyViewedRail';
+import { OptionSelector } from '@/features/catalog/components/OptionSelector';
 import { SizeSelector } from '@/features/catalog/components/SizeSelector';
+import { defaultOption } from '@/features/catalog/selection';
 import { useAddToCart } from '@/features/cart/api';
 import { cartErrorMessage } from '@/features/cart/messages';
 import { apiGet } from '@/lib/api';
@@ -67,8 +69,8 @@ export function WishlistPage() {
 }
 
 /**
- * Adds to the cart (asking for a size when the product has sizes), then removes from the
- * wishlist. If the add fails the item stays saved and the reason is shown (spec FR-9).
+ * Adds to the cart (asking for a size or option when the product has them), then removes from
+ * the wishlist. If the add fails the item stays saved and the reason is shown (spec FR-9).
  */
 function MoveToCart({ product, onMoved }: { product: ProductSummary; onMoved: () => void }) {
   const queryClient = useQueryClient();
@@ -87,10 +89,18 @@ function MoveToCart({ product, onMoved }: { product: ProductSummary; onMoved: ()
     );
   }
 
-  const move = (size: string | null) => {
+  const move = (unit: { size?: string; option?: ProductOption } = {}) => {
     setError(undefined);
     add.mutate(
-      { productSlug: product.slug, size, quantity: 1, source: 'wishlist', productId: product.id, pricePaise: product.pricePaise },
+      {
+        productSlug: product.slug,
+        size: unit.size ?? null,
+        option: unit.option?.label ?? null,
+        quantity: 1,
+        source: 'wishlist',
+        productId: product.id,
+        pricePaise: unit.option?.pricePaise ?? product.pricePaise,
+      },
       {
         onSuccess: () => {
           setDetail(undefined);
@@ -106,13 +116,13 @@ function MoveToCart({ product, onMoved }: { product: ProductSummary; onMoved: ()
     setError(undefined);
     setLoading(true);
     try {
-      // Summaries don't carry sizes; the product query is usually already cached.
+      // Summaries don't carry sizes or options; the product query is usually already cached.
       const product_ = await queryClient.fetchQuery({
         queryKey: catalogKeys.product(product.slug),
         queryFn: ({ signal }) => apiGet<{ product: ProductDetail }>(`/products/${encodeURIComponent(product.slug)}`, signal).then((r) => r.product),
       });
-      if (product_.sizes.length > 0) setDetail(product_);
-      else move(null);
+      if (product_.sizes.length > 0 || product_.options.length > 0) setDetail(product_);
+      else move();
     } catch (e) {
       setError(cartErrorMessage(e));
     } finally {
@@ -132,7 +142,19 @@ function MoveToCart({ product, onMoved }: { product: ProductSummary; onMoved: ()
           {error}
         </p>
       )}
-      {detail && (
+      {detail && detail.options.length > 0 && (
+        <OptionPickerDialog
+          product={detail}
+          busy={add.isPending}
+          error={error}
+          onCancel={() => {
+            setDetail(undefined);
+            setError(undefined);
+          }}
+          onConfirm={(option) => move({ option })}
+        />
+      )}
+      {detail && detail.sizes.length > 0 && (
         <SizePickerDialog
           product={detail}
           busy={add.isPending}
@@ -141,7 +163,7 @@ function MoveToCart({ product, onMoved }: { product: ProductSummary; onMoved: ()
             setDetail(undefined);
             setError(undefined);
           }}
-          onConfirm={(size) => move(size)}
+          onConfirm={(size) => move({ size })}
         />
       )}
     </div>
@@ -185,6 +207,50 @@ function SizePickerDialog({
             Cancel
           </Button>
           <Button onClick={() => (size ? onConfirm(size) : setPrompt('Please select a size'))} disabled={busy}>
+            {busy && <Loader2 className="animate-spin" aria-hidden />}
+            Move to cart
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/** Options come preselected at the cheapest in-stock one, as on the product page (F-013 D2, FR-15). */
+function OptionPickerDialog({
+  product,
+  busy,
+  error,
+  onCancel,
+  onConfirm,
+}: {
+  product: ProductDetail;
+  busy: boolean;
+  error?: string;
+  onCancel: () => void;
+  onConfirm: (option: ProductOption) => void;
+}) {
+  const [label, setLabel] = useState(() => defaultOption(product.options)?.label);
+  const option = product.options.find((o) => o.label === label);
+  const name = product.optionName ?? 'option';
+  return (
+    <Dialog open onOpenChange={(open) => !open && onCancel()}>
+      <DialogContent className="max-sm:top-auto max-sm:bottom-0 max-sm:translate-y-0 max-sm:rounded-b-none">
+        <DialogHeader>
+          <DialogTitle>Choose {name.toLowerCase()}</DialogTitle>
+          <DialogDescription>{product.title}</DialogDescription>
+        </DialogHeader>
+        <OptionSelector name={name} options={product.options} value={label} onChange={setLabel} />
+        {error && (
+          <p role="alert" className="text-sm font-medium text-destructive">
+            {error}
+          </p>
+        )}
+        <DialogFooter>
+          <Button variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button onClick={() => option && onConfirm(option)} disabled={busy || !option}>
             {busy && <Loader2 className="animate-spin" aria-hidden />}
             Move to cart
           </Button>

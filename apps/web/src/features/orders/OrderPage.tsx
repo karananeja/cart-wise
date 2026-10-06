@@ -110,7 +110,7 @@ export function OrderPage() {
                       {line.title}
                     </Link>
                     <p className="text-muted-foreground">
-                      {line.size && <>Size {line.size} · </>}Qty {line.quantity}
+                      {line.size && <>Size {line.size} · </>}{line.option && <>{line.option} · </>}Qty {line.quantity}
                     </p>
                     {ret && (
                       <p className="mt-1 flex flex-wrap items-center gap-2 text-xs">

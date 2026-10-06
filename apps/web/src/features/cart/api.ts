@@ -21,13 +21,14 @@ export function useAddToCart() {
   const queryClient = useQueryClient();
   return useMutation({
     scope,
-    mutationFn: ({ productSlug, size, quantity }: AddInput) =>
-      apiSend<CartView>('POST', '/cart/lines', { productSlug, size, quantity }),
+    mutationFn: ({ productSlug, size, option, quantity }: AddInput) =>
+      apiSend<CartView>('POST', '/cart/lines', { productSlug, size, option, quantity }),
     onSuccess: (cart, input) => {
       queryClient.setQueryData(cartKey, cart);
       track('cart_item_added', {
         productId: input.productId,
         size: input.size ?? null,
+        option: input.option ?? null,
         quantity: input.quantity ?? 1,
         pricePaise: input.pricePaise,
         source: input.source,
@@ -75,13 +76,13 @@ export function useRemoveCartLine() {
   const optimistic = useOptimisticCart();
   return useMutation({
     scope,
-    mutationFn: ({ lineId }: { lineId: number; productId: number; size: string | null; quantity: number }) =>
+    mutationFn: ({ lineId }: { lineId: number; productId: number; size: string | null; option: string | null; quantity: number }) =>
       apiSend<CartView>('DELETE', `/cart/lines/${lineId}`),
     onMutate: ({ lineId }) => optimistic.apply((cart) => ({ ...cart, lines: cart.lines.filter((line) => line.id !== lineId) })),
     onError: (_error, _input, context) => optimistic.restore(context?.previous),
     onSuccess: (cart, input) => {
       optimistic.settle(cart);
-      track('cart_item_removed', { productId: input.productId, size: input.size, quantity: input.quantity, reason: 'removed' });
+      track('cart_item_removed', { productId: input.productId, size: input.size, option: input.option, quantity: input.quantity, reason: 'removed' });
     },
   });
 }

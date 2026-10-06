@@ -108,10 +108,10 @@ export function PaymentPage() {
       <OrderSummary totals={o.totals} payment={{ bankOffer }} className="min-w-0 lg:sticky lg:top-24">
         <ul className="flex flex-col gap-1 border-t pt-3 text-sm">
           {o.lines.map((line) => (
-            <li key={`${line.productId}-${line.size}`} className="flex justify-between gap-2">
+            <li key={line.id} className="flex justify-between gap-2">
               <span className="truncate">
                 {line.title}
-                {line.size && ` (${line.size})`} × {line.quantity}
+                {(line.size ?? line.option) && ` (${line.size ?? line.option})`} × {line.quantity}
               </span>
               <span className="tabular-nums">{formatPrice(line.unitPricePaise * line.quantity)}</span>
             </li>

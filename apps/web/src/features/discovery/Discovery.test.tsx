@@ -14,7 +14,7 @@ import {
   setHomeRecommendations,
   setProductRecommendations,
 } from '@/test/discoveryServer';
-import { productDetails, products, shirt } from '@/test/fixtures';
+import { phone, productDetails, products, shirt } from '@/test/fixtures';
 import { renderRoute } from '@/test/render';
 import { receivedEvents } from '@/test/server';
 
@@ -83,6 +83,27 @@ describe('product page pairing', () => {
     await user.click(within(section).getByRole('button', { name: 'Add both to cart' }));
     expect(await within(section).findByText("Added iPhone; couldn't add Phone Case (sorry, this just sold out)")).toBeInTheDocument();
     expect(view().lines.map((l) => l.product.slug)).toEqual(['product-4']);
+  });
+
+  it('links companions with options to their page, and adds this product in the option chosen (F-013)', async () => {
+    setProductRecommendations('phone-case', { pairing: { kind: 'pairs_well', items: [recommended(phone, true)] }, similar: [] });
+    const { unmount } = renderRoute('/p/phone-case');
+    const section = await screen.findByRole('region', { name: 'Pairs well with' });
+    expect(within(section).getByRole('link', { name: 'Choose option' })).toHaveAttribute('href', '/p/galaxy-phone');
+    expect(within(section).getByText(/From/).parentElement).toHaveTextContent('From ₹30,000');
+    unmount();
+
+    setProductRecommendations('galaxy-phone', { pairing: { kind: 'pairs_well', items: [pCase] }, similar: [] });
+    const user = userEvent.setup();
+    renderRoute('/p/galaxy-phone?option=256%20GB');
+    const group = await screen.findByRole('region', { name: 'Pairs well with' });
+    expect(within(group).getByText('Total for 2 items:')).toHaveTextContent('₹33,800');
+    await user.click(within(group).getByRole('button', { name: 'Add both to cart' }));
+    await within(group).findByText('Added 2 items to your cart');
+    expect(view().lines.map((l) => [l.product.slug, l.option, l.unitPricePaise])).toEqual([
+      ['phone-case', null, 800_00],
+      ['galaxy-phone', '256 GB', 33_000_00],
+    ]);
   });
 
   it('waits for a size when the page product has sizes', async () => {

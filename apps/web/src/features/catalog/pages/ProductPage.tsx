@@ -26,19 +26,15 @@ import { ProductGallery } from '../components/ProductGallery';
 import { Rating } from '../components/Rating';
 import { RecentlyViewedRail } from '../components/RecentlyViewedRail';
 import { ReviewList } from '../components/ReviewList';
+import { OptionSelector } from '../components/OptionSelector';
 import { SizeSelector } from '../components/SizeSelector';
-
-/** Only an existing, in-stock size from the URL counts as selected (spec FR-10). */
-function useSelectedSize(p: ProductDetail | undefined) {
-  const [searchParams] = useSearchParams();
-  const requested = searchParams.get('size');
-  return p?.sizes.find((s) => s.label === requested && s.availability.status !== 'out_of_stock');
-}
+import { useSelectedOption, useSelectedSize } from '../selection';
 
 export function ProductPage() {
   const { productSlug = '' } = useParams();
   const product = useProduct(productSlug);
   const selectedSize = useSelectedSize(product.data);
+  const selectedOption = useSelectedOption(product.data);
   useTrackProductView(product.data);
 
   if (product.error instanceof ApiError && product.error.isNotFound) return <NotFound title="We couldn't find that product" />;
@@ -97,7 +93,7 @@ export function ProductPage() {
         )}
       </section>
 
-      <ProductDiscovery product={p} selectedSize={selectedSize?.label} />
+      <ProductDiscovery product={p} selectedSize={selectedSize?.label} selectedOption={selectedOption?.label} />
       <ReviewList reviews={p.reviews} rating={p.rating} />
       <RecentlyViewedRail excludeSlug={p.slug} />
     </div>
@@ -107,6 +103,7 @@ export function ProductPage() {
 function PurchasePanel({ product: p }: { product: ProductDetail }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const selected = useSelectedSize(p);
+  const option = useSelectedOption(p);
   const shipping = p.specifications.find((s) => s.label === 'Shipping')?.value;
   const sizeGroup = useRef<HTMLFieldSetElement>(null);
   const [sizeError, setSizeError] = useState<string>();
@@ -123,6 +120,16 @@ function PurchasePanel({ product: p }: { product: ProductDetail }) {
     setSearchParams(next, { replace: true, preventScrollReset: true });
   };
 
+  const selectOption = (label: string) => {
+    const next = new URLSearchParams(searchParams);
+    next.set('option', label);
+    setSearchParams(next, { replace: true, preventScrollReset: true });
+  };
+
+  // Price, discount and card offer follow the chosen option (F-013 FR-6); with every option sold
+  // out, the starting price shows.
+  const shown = option ?? p;
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
@@ -132,14 +139,23 @@ function PurchasePanel({ product: p }: { product: ProductDetail }) {
           <Rating value={p.rating} count={p.reviewCount} />
         </a>
       </div>
-      <Price pricePaise={p.pricePaise} mrpPaise={p.mrpPaise} discountPercent={p.discountPercent} size="lg" />
-      <OfferBanner pricePaise={p.pricePaise} outOfStock={p.availability.status === 'out_of_stock'} />
+      <Price
+        pricePaise={shown.pricePaise}
+        mrpPaise={shown.mrpPaise}
+        discountPercent={shown.discountPercent}
+        size="lg"
+        from={p.hasOptions && !option}
+      />
+      <OfferBanner pricePaise={shown.pricePaise} outOfStock={p.availability.status === 'out_of_stock'} />
       {p.sizes.length > 0 && (
         <SizeSelector ref={sizeGroup} sizes={p.sizes} value={selected?.label} onChange={selectSize} error={sizeError} />
       )}
-      <AvailabilityLine product={p} selectedSize={selected?.label} />
+      {p.options.length > 0 && (
+        <OptionSelector name={p.optionName ?? 'Option'} options={p.options} value={option?.label} onChange={selectOption} />
+      )}
+      <AvailabilityLine product={p} selectedSize={selected?.label} selectedOption={option?.label} />
       <div className="flex flex-wrap items-start gap-3">
-        <AddToCartButton product={p} selectedSize={selected?.label} onSizeRequired={requireSize} />
+        <AddToCartButton product={p} selectedSize={selected?.label} selectedOption={option?.label} onSizeRequired={requireSize} />
         <WishlistToggle product={p} variant="inline" />
       </div>
       {shipping && (
@@ -151,9 +167,9 @@ function PurchasePanel({ product: p }: { product: ProductDetail }) {
   );
 }
 
-/** Real application inventory only (INV-3). Announced politely when the size changes. */
-function AvailabilityLine({ product: p, selectedSize }: { product: ProductDetail; selectedSize?: string }) {
-  const size = p.sizes.find((s) => s.label === selectedSize);
+/** Real application inventory only (INV-3). Announced politely when the size or option changes. */
+function AvailabilityLine({ product: p, selectedSize, selectedOption }: { product: ProductDetail; selectedSize?: string; selectedOption?: string }) {
+  const size = p.sizes.find((s) => s.label === selectedSize) ?? p.options.find((o) => o.label === selectedOption);
   const availability = size?.availability ?? p.availability;
   let text: string;
   let tone = 'text-emerald-700 dark:text-emerald-400';
@@ -178,7 +194,7 @@ function AvailabilityLine({ product: p, selectedSize }: { product: ProductDetail
   );
 }
 
-/** product_viewed once per product shown, plus recently viewed; size changes do not count. */
+/** product_viewed once per product shown, plus recently viewed; size and option changes do not count. */
 function useTrackProductView(product: ProductDetail | undefined) {
   const tracked = useRef<number | undefined>(undefined);
   useEffect(() => {

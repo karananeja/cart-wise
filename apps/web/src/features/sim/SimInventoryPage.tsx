@@ -292,6 +292,8 @@ function Counts({ unit, className }: { unit: Pick<SimInventoryUnit, 'onHand' | '
 function ProductRow({ product }: { product: SimInventoryProduct }) {
   const [open, setOpen] = useState(false);
   const sized = product.units.some((u) => u.size !== null);
+  // Sizes for clothing and shoes, options for phones, tablets and laptops (F-013 FR-14).
+  const options = product.units.some((u) => u.kind === 'option');
   const titleId = useId();
 
   return (
@@ -313,14 +315,14 @@ function ProductRow({ product }: { product: SimInventoryProduct }) {
         <>
           <Button variant="ghost" size="sm" className="w-fit" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
             <ChevronDown className={cn('transition-transform', open && 'rotate-180')} aria-hidden />
-            {open ? 'Hide sizes' : 'Show sizes'}
+            {open ? `Hide ${options ? 'options' : 'sizes'}` : `Show ${options ? 'options' : 'sizes'}`}
           </Button>
           {open && (
             <ul className="flex flex-col divide-y rounded-lg border">
               {product.units.map((unit) => (
                 <li key={unit.variantId} className="flex flex-col gap-2 p-3 md:flex-row md:items-center md:justify-between">
                   <div className="flex flex-col gap-1 md:flex-1">
-                    <span className="font-medium">Size {unit.size}</span>
+                    <span className="font-medium">{unit.kind === 'option' ? `Option ${unit.size}` : `Size ${unit.size}`}</span>
                     <Counts unit={unit} />
                   </div>
                   <StockStepper product={product} unit={unit} />
@@ -341,7 +343,7 @@ function StockStepper({ product, unit }: { product: SimInventoryProduct; unit: S
   const [error, setError] = useState<string>();
   const inputId = useId();
   const editing = useRef(false);
-  const name = `${product.title}${unit.size ? ` size ${unit.size}` : ''}`;
+  const name = `${product.title}${unit.size ? ` ${unit.kind === 'option' ? 'option' : 'size'} ${unit.size}` : ''}`;
 
   // Follow server values (other changes, automation) unless the operator is typing.
   useEffect(() => {

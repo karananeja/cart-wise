@@ -8,6 +8,10 @@ export function cartErrorMessage(error: unknown): string {
       return 'Please select a size';
     case 'INVALID_SIZE':
       return 'That size is no longer available';
+    case 'OPTION_REQUIRED':
+      return 'Please choose an option';
+    case 'INVALID_OPTION':
+      return 'That option is no longer available';
     case 'OUT_OF_STOCK':
       return 'Sorry, this just sold out';
     case 'QUANTITY_LIMIT': {

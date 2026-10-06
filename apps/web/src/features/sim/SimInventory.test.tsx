@@ -106,6 +106,17 @@ describe('inventory tab', () => {
     await waitFor(() => expect(getStock(4, 41)!.onHand).toBe(1));
     expect(getStock(4, 42)!.onHand).toBe(7);
   });
+
+  it('labels electronics options as options, not sizes (F-013)', async () => {
+    signInOperator();
+    const user = userEvent.setup();
+    renderRoute('/sim/inventory');
+    const phone = await row('Galaxy Phone');
+    await user.click(within(phone).getByRole('button', { name: 'Show options' }));
+    expect(within(phone).getByText('Option 256 GB')).toBeInTheDocument();
+    await user.click(within(phone).getByRole('button', { name: 'Increase stock for Galaxy Phone option 256 GB' }));
+    await waitFor(() => expect(getStock(5, 52)!.onHand).toBe(5));
+  });
 });
 
 describe('simulation panel', () => {

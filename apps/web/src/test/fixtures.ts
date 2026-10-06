@@ -13,6 +13,7 @@ export function product(overrides: Partial<ProductSummary> & Pick<ProductSummary
     reviewCount: 3,
     thumbnailUrl: `https://img.test/${overrides.id}.webp`,
     availability: { status: 'in_stock' },
+    hasOptions: false,
     ...overrides,
   };
 }
@@ -65,6 +66,8 @@ export function productDetail(overrides: Partial<ProductDetail> & Pick<ProductDe
     imageUrls: ['https://img.test/a.webp', 'https://img.test/b.webp', 'https://img.test/c.webp'],
     specifications: [{ label: 'Warranty', value: '1 year warranty' }],
     sizes: [],
+    options: [],
+    optionName: null,
     reviews: [
       { rating: 5, comment: 'Love it', reviewerName: 'Asha Rao' },
       { rating: 4, comment: 'Good value', reviewerName: 'Vikram Shah' },
@@ -89,6 +92,26 @@ export const shirt = productDetail({
   ],
 });
 
+/** A phone sold in storage options (F-013): 128 GB in stock, 256 GB low, 512 GB sold out. */
+export const phone = productDetail({
+  id: 70,
+  slug: 'galaxy-phone',
+  title: 'Galaxy Phone',
+  brand: 'Samsung',
+  categorySlug: 'smartphones',
+  categoryName: 'Smartphones',
+  pricePaise: 30_000_00,
+  mrpPaise: 33_000_00,
+  discountPercent: 9,
+  hasOptions: true,
+  optionName: 'Storage',
+  options: [
+    { label: '128 GB', pricePaise: 30_000_00, mrpPaise: 33_000_00, discountPercent: 9, availability: { status: 'in_stock' } },
+    { label: '256 GB', pricePaise: 33_000_00, mrpPaise: 36_300_00, discountPercent: 9, availability: { status: 'low_stock', available: 2 } },
+    { label: '512 GB', pricePaise: 37_500_00, mrpPaise: 41_250_00, discountPercent: 9, availability: { status: 'out_of_stock' } },
+  ],
+});
+
 /** Cheaper products for bank-offer thresholds (F-009); product pages only, not listings. */
 const priced = (id: number, slug: string, title: string, pricePaise: number, overrides: Partial<ProductDetail> = {}) =>
   productDetail({ id, slug, title, pricePaise, mrpPaise: pricePaise, discountPercent: 0, categorySlug: 'accessories', categoryName: 'Accessories', sizes: [], ...overrides });
@@ -96,6 +119,7 @@ const priced = (id: number, slug: string, title: string, pricePaise: number, ove
 export const productDetails: ProductDetail[] = [
   ...products.map((p) => productDetail({ ...p, categoryName: p.categorySlug === 'phones' ? 'Phones' : 'Laptops' })),
   shirt,
+  phone,
   priced(60, 'usb-cable', 'USB Cable', 1_200_00),
   priced(61, 'phone-case', 'Phone Case', 800_00),
   priced(62, 'headphones', 'Headphones', 6_000_00),

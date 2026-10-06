@@ -6,13 +6,19 @@ interface PriceProps {
   mrpPaise: number;
   discountPercent: number;
   size?: 'default' | 'lg';
+  /** A starting price: higher options cost more (F-013 D3). */
+  from?: boolean;
 }
 
-export function Price({ pricePaise, mrpPaise, discountPercent, size = 'default' }: PriceProps) {
+export function Price({ pricePaise, mrpPaise, discountPercent, size = 'default', from = false }: PriceProps) {
   return (
     <p className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
       <span className={cn('font-semibold tabular-nums', size === 'lg' ? 'text-2xl' : 'text-base')}>
-        <span className="sr-only">Price </span>
+        {from ? (
+          <span className="text-sm font-normal text-muted-foreground">From </span>
+        ) : (
+          <span className="sr-only">Price </span>
+        )}
         {formatPrice(pricePaise)}
       </span>
       {discountPercent > 0 && (

@@ -254,7 +254,10 @@ export function SearchBox({ className }: { className?: string }) {
                             <div key={option.product.id} {...optionProps(categoryCount + i)}>
                               <img src={option.product.thumbnailUrl} alt="" width={40} height={40} className="size-10 shrink-0 rounded-md bg-muted object-contain p-0.5 mix-blend-multiply" />
                               <span className="min-w-0 flex-1 truncate">{option.product.title}</span>
-                              <span className="shrink-0 text-muted-foreground tabular-nums">{formatPrice(option.product.pricePaise)}</span>
+                              <span className="shrink-0 text-muted-foreground tabular-nums">
+                                {option.product.hasOptions && 'From '}
+                                {formatPrice(option.product.pricePaise)}
+                              </span>
                             </div>
                           ) : null,
                         )}

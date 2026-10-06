@@ -92,7 +92,7 @@ function SimOrderRow({ order }: { order: SimOrder }) {
         {order.items.map((item, i) => (
           <li key={i}>
             {item.title}
-            {item.size && ` (${item.size})`} × {item.quantity}
+            {(item.size ?? item.option) && ` (${item.size ?? item.option})`} × {item.quantity}
           </li>
         ))}
       </ul>

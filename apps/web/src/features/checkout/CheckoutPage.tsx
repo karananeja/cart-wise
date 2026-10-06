@@ -127,7 +127,7 @@ export function CheckoutPage() {
                   <div className="min-w-0 flex-1 text-sm">
                     <p className="truncate font-medium">{line.product.title}</p>
                     <p className="text-muted-foreground">
-                      {line.size && <>Size {line.size} · </>}Qty {line.quantity}
+                      {line.size && <>Size {line.size} · </>}{line.option && <>{line.option} · </>}Qty {line.quantity}
                     </p>
                   </div>
                   <p className="text-sm font-medium tabular-nums">{formatPrice(line.linePricePaise)}</p>

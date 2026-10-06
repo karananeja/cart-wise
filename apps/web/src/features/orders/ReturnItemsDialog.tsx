@@ -91,7 +91,7 @@ export function ReturnItemsDialog({ order, disabled }: { order: Order; disabled?
                       <span className="min-w-0 flex-1">
                         <span className="line-clamp-2 font-medium break-words">{line.title}</span>
                         <span className="text-muted-foreground">
-                          {line.size && <>Size {line.size} · </>}Qty {line.quantity} · refund {formatPrice(refunds.get(line.id) ?? 0)}
+                          {line.size && <>Size {line.size} · </>}{line.option && <>{line.option} · </>}Qty {line.quantity} · refund {formatPrice(refunds.get(line.id) ?? 0)}
                         </span>
                       </span>
                     </label>

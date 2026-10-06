@@ -39,6 +39,7 @@ interface MockUnit {
   productId: number;
   variantId: number | null;
   size: string | null;
+  kind: 'size' | 'option' | null;
   onHand: number;
   held: number;
 }
@@ -52,14 +53,14 @@ interface MockProduct {
 
 const PAGE_SIZE = 20;
 
-/** A mug (in stock, 2 held), a lamp (low), a sold-out kettle, a sized tee, and filler for paging. */
+/** A mug (in stock, 2 held), a lamp (low), a sold-out kettle, a sized tee, a phone with options, and filler for paging. */
 function seedStock(): MockProduct[] {
   const unsized = (productId: number, title: string, onHand: number, held = 0): MockProduct => ({
     productId,
     slug: title.toLowerCase().replace(/\s+/g, '-'),
     title,
     categoryName: 'Kitchen',
-    units: [{ productId, variantId: null, size: null, onHand, held }],
+    units: [{ productId, variantId: null, size: null, kind: null, onHand, held }],
   });
   return [
     unsized(1, 'Coffee Mug', 12, 2),
@@ -71,8 +72,18 @@ function seedStock(): MockProduct[] {
       title: 'Cotton Tee',
       categoryName: 'Tops',
       units: [
-        { productId: 4, variantId: 41, size: 'S', onHand: 0, held: 0 },
-        { productId: 4, variantId: 42, size: 'M', onHand: 7, held: 0 },
+        { productId: 4, variantId: 41, size: 'S', kind: 'size', onHand: 0, held: 0 },
+        { productId: 4, variantId: 42, size: 'M', kind: 'size', onHand: 7, held: 0 },
+      ],
+    },
+    {
+      productId: 5,
+      slug: 'galaxy-phone',
+      title: 'Galaxy Phone',
+      categoryName: 'Smartphones',
+      units: [
+        { productId: 5, variantId: 51, size: '128 GB', kind: 'option', onHand: 9, held: 0 },
+        { productId: 5, variantId: 52, size: '256 GB', kind: 'option', onHand: 4, held: 0 },
       ],
     },
     ...Array.from({ length: 21 }, (_, i) => unsized(100 + i, `Filler Product ${String(i + 1).padStart(2, '0')}`, 20)),
@@ -129,7 +140,7 @@ function sim(order: Order): SimOrder {
     status: order.status,
     createdAt: order.createdAt,
     city: order.address.city,
-    items: order.lines.map((l) => ({ title: l.title, size: l.size, quantity: l.quantity })),
+    items: order.lines.map((l) => ({ title: l.title, size: l.size, option: l.option, quantity: l.quantity })),
     paidPaise: order.payment?.paidPaise ?? 0,
     nextStatus: nextStatus(order.status),
     deliveryAttemptsLeft: order.status === 'out_for_delivery' ? DELIVERY_CODE_ATTEMPTS - (attempts.get(order.id) ?? 0) : null,

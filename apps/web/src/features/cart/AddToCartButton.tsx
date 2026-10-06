@@ -11,16 +11,18 @@ import { limitReasonFor, QuantityStepper } from './QuantityStepper';
 interface AddToCartButtonProps {
   product: ProductDetail;
   selectedSize: string | undefined;
+  /** The option chosen on the page (F-013); preselected, so there is always one unless all sold out. */
+  selectedOption?: string;
   /** Called instead of adding when the product needs a size and none is chosen. */
   onSizeRequired: () => void;
 }
 
 /**
- * The product page's primary action (PDP-2). Once this product and size is in the cart, the
+ * The product page's primary action (PDP-2). Once this product and size (or option) is in the cart, the
  * button becomes a quantity stepper in place, with a separate Go to cart link (spec FR-5, as
  * changed at Gate 2 review). − at 1 takes the item out and brings the button back.
  */
-export function AddToCartButton({ product, selectedSize, onSizeRequired }: AddToCartButtonProps) {
+export function AddToCartButton({ product, selectedSize, selectedOption, onSizeRequired }: AddToCartButtonProps) {
   const cart = useCart();
   const add = useAddToCart();
   const update = useUpdateCartLine();
@@ -28,15 +30,18 @@ export function AddToCartButton({ product, selectedSize, onSizeRequired }: AddTo
   const online = useOnlineStatus();
   const [status, setStatus] = useState<string>();
 
-  // A different size is a different line: clear messages when the size changes.
-  useEffect(() => setStatus(undefined), [selectedSize]);
+  // A different size or option is a different line: clear messages when it changes.
+  useEffect(() => setStatus(undefined), [selectedSize, selectedOption]);
 
   const sized = product.sizes.length > 0;
   const size = selectedSize ?? null;
-  const line = cart.data?.lines.find((l) => l.product.id === product.id && l.size === size);
+  const chosen = product.options.find((o) => o.label === selectedOption);
+  const option = chosen?.label ?? null;
+  const line = cart.data?.lines.find((l) => l.product.id === product.id && l.size === size && l.option === option);
   const soldOut =
     product.availability.status === 'out_of_stock' ||
-    product.sizes.find((s) => s.label === selectedSize)?.availability.status === 'out_of_stock';
+    product.sizes.find((s) => s.label === selectedSize)?.availability.status === 'out_of_stock' ||
+    (product.options.length > 0 && (!chosen || chosen.availability.status === 'out_of_stock'));
   const onError = (error: unknown) => setStatus(cartErrorMessage(error));
 
   const onAdd = () => {
@@ -46,7 +51,7 @@ export function AddToCartButton({ product, selectedSize, onSizeRequired }: AddTo
     }
     setStatus(undefined);
     add.mutate(
-      { productSlug: product.slug, size, quantity: 1, source: 'product_page', productId: product.id, pricePaise: product.pricePaise },
+      { productSlug: product.slug, size, option, quantity: 1, source: 'product_page', productId: product.id, pricePaise: chosen?.pricePaise ?? product.pricePaise },
       { onSuccess: () => setStatus('Added to cart'), onError },
     );
   };
@@ -59,7 +64,7 @@ export function AddToCartButton({ product, selectedSize, onSizeRequired }: AddTo
           size="lg"
           quantity={line.quantity}
           max={line.maxQuantity}
-          label={`Quantity in cart${line.size ? `, size ${line.size}` : ''}`}
+          label={`Quantity in cart${line.size ? `, size ${line.size}` : line.option ? `, ${line.option}` : ''}`}
           disabled={!online}
           onChange={(quantity) => {
             setStatus(undefined);
@@ -68,7 +73,7 @@ export function AddToCartButton({ product, selectedSize, onSizeRequired }: AddTo
           onRemove={() => {
             setStatus(undefined);
             remove.mutate(
-              { lineId: line.id, productId: product.id, size: line.size, quantity: line.quantity },
+              { lineId: line.id, productId: product.id, size: line.size, option: line.option, quantity: line.quantity },
               { onSuccess: () => setStatus('Removed from cart'), onError },
             );
           }}

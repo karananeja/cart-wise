@@ -9,6 +9,7 @@ import { ErrorState, OfflineState } from '@/components/ErrorState';
 import { StatusMessage } from '@/components/StatusMessage';
 import { UndoToast, useTimedNotice } from '@/components/UndoToast';
 import { Price } from '@/features/catalog/components/Price';
+import { productLink, unitLabel } from '@/features/catalog/selection';
 import { ProductImage } from '@/features/catalog/components/ProductImage';
 import { RecentlyViewedRail } from '@/features/catalog/components/RecentlyViewedRail';
 import { CartDiscovery } from '@/features/discovery/CartDiscovery';
@@ -28,6 +29,7 @@ interface RemovedLine {
   productId: number;
   pricePaise: number;
   size: string | null;
+  option: string | null;
   quantity: number;
 }
 
@@ -64,12 +66,13 @@ export function CartPage() {
       title: line.product.title,
       productSlug: line.product.slug,
       productId: line.product.id,
-      pricePaise: line.product.pricePaise,
+      pricePaise: line.unitPricePaise,
       size: line.size,
+      option: line.option,
       quantity: line.quantity,
     });
     remove.mutate(
-      { lineId: line.id, productId: line.product.id, size: line.size, quantity: line.quantity },
+      { lineId: line.id, productId: line.product.id, size: line.size, option: line.option, quantity: line.quantity },
       {
         onError: (e) => {
           setRemoved(undefined);
@@ -90,9 +93,9 @@ export function CartPage() {
 
   const undo = () => {
     if (!removed) return;
-    const { productSlug, size, quantity, productId, pricePaise } = removed;
+    const { productSlug, size, option, quantity, productId, pricePaise } = removed;
     setRemoved(undefined);
-    add.mutate({ productSlug, size, quantity, source: 'undo', productId, pricePaise }, { onError });
+    add.mutate({ productSlug, size, option, quantity, source: 'undo', productId, pricePaise }, { onError });
   };
 
   return (
@@ -175,7 +178,10 @@ function CartLine({
   onMoveToWishlist: () => void;
 }) {
   const { product } = line;
-  const href = `/p/${product.slug}${line.size ? `?size=${encodeURIComponent(line.size)}` : ''}`;
+  const href = productLink(product.slug, line);
+  const unit = unitLabel(line);
+  // For screen-reader labels: ", size M" or ", 256 GB".
+  const unitSuffix = line.size ? `, size ${line.size}` : line.option ? `, ${line.option}` : '';
   const unavailable = line.issue === 'out_of_stock';
 
   return (
@@ -192,23 +198,23 @@ function CartLine({
                 {product.title}
               </Link>
             </h2>
-            {line.size && <p className="text-sm text-muted-foreground">Size: {line.size}</p>}
+            {unit && <p className="text-sm text-muted-foreground">{unit}</p>}
           </div>
         </div>
-        <Price pricePaise={product.pricePaise} mrpPaise={product.mrpPaise} discountPercent={product.discountPercent} />
+        <Price pricePaise={line.unitPricePaise} mrpPaise={line.unitMrpPaise} discountPercent={product.discountPercent} />
         <LineIssue line={line} />
         <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-2">
           {!unavailable && (
             <QuantityStepper
               quantity={line.quantity}
               max={line.maxQuantity}
-              label={`Quantity for ${product.title}${line.size ? `, size ${line.size}` : ''}`}
+              label={`Quantity for ${product.title}${unitSuffix}`}
               disabled={disabled}
               onChange={onQuantity}
               limitReason={line.issue === 'none' ? limitReasonFor(line.maxQuantity) : undefined}
             />
           )}
-          <Button variant="ghost" size="sm" onClick={onRemove} disabled={disabled} aria-label={`Remove ${product.title}${line.size ? `, size ${line.size}` : ''}`}>
+          <Button variant="ghost" size="sm" onClick={onRemove} disabled={disabled} aria-label={`Remove ${product.title}${unitSuffix}`}>
             <Trash2 aria-hidden /> Remove
           </Button>
           <Button variant="ghost" size="sm" onClick={onMoveToWishlist} disabled={disabled} aria-label={`Move ${product.title} to wishlist`}>
@@ -228,7 +234,7 @@ function CartLine({
 
 function LineIssue({ line }: { line: CartLineView }) {
   if (line.issue === 'out_of_stock') {
-    return <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Out of stock{line.size ? ` in ${line.size}` : ''}</p>;
+    return <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Out of stock{line.size || line.option ? ` in ${line.size ?? line.option}` : ''}</p>;
   }
   if (line.issue === 'exceeds_stock') {
     return <p className="text-sm font-medium text-amber-800 dark:text-amber-300">Only {line.maxQuantity} available — reduce quantity</p>;
