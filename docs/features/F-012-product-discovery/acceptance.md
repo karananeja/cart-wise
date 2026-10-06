@@ -18,8 +18,8 @@
 
 ## 2. Test results summary
 
-- 465 unit, API and component tests (shared 38, API 226, web 165).
-- 49 E2E tests, 3 of them new, passing on 8 consecutive full runs.
+- 466 unit, API and component tests (shared 38, API 227, web 165), including the new database-lock test.
+- 49 E2E tests, 3 of them new, passing on 10 consecutive full runs after the lock fix.
 - Typecheck and build clean; main bundle 413 kB.
 
 ## 3. Known issues and limitations
