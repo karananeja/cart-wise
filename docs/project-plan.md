@@ -27,7 +27,7 @@ Order follows the brief's journey and dependencies: each feature builds on the o
 | F-007 | Address management (map-assisted) | ADDR-1..2 | F-006 | **Complete** (accepted 2026-10-06) |
 | F-008 | Checkout (address, delivery, summary, reservation) | CHK-1..3, INV-2 | F-007 | **Complete** (accepted 2026-10-06) |
 | F-009 | Simulated payment (card, UPI, card offers) | PAY-1..6 | F-008 | **Complete** (accepted 2026-10-06) |
-| F-010 | Orders (history, details, cancel/return/refund, delivery OTP) + order simulation | ORD-2..5, SIM-3..4 | F-009 | Implemented and tested — awaiting Gate 2 sign-off |
+| F-010 | Orders (history, details, cancel/return/refund, delivery OTP) + order simulation | ORD-2..5, SIM-3..4 | F-009 | **Complete** (accepted 2026-10-06) |
 | F-011 | Store Simulation Console — inventory simulation (order simulation moved to F-010) | SIM-1..2 | F-010 | Not started |
 
 Loading / empty / error / offline states (STATE-1) and analytics events (ANL-1) are delivered inside each feature, not as separate features.

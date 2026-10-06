@@ -1,7 +1,7 @@
 # Acceptance
 
 **Feature:** F-010 — Orders (history, details, lifecycle, cancellation, returns, refunds, delivery OTP)
-**Status:** Pending user sign-off (Gate 2)
+**Status:** Accepted (Gate 2, 2026-10-06)
 
 ## 1. Acceptance criteria verification
 
@@ -54,4 +54,4 @@ None.
 
 ## 7. User sign-off (Gate 2)
 
-- [ ] Accepted by user — date:
+- [x] Accepted by user — date: 2026-10-06

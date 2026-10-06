@@ -4,7 +4,7 @@
 
 **ID:** F-010
 **Name:** Orders — history, details, lifecycle, cancellation, returns, refunds and delivery OTP
-**Status:** Acceptance — awaiting Gate 2 (Gate 1 approved 2026-10-06)
+**Status:** Complete (Gate 1 and Gate 2 approved 2026-10-06)
 **Requirements:** ORD-2, ORD-3, ORD-4, ORD-5, SIM-3 and SIM-4 (order part, see §22), STATE-1, ANL-1 (`order_cancelled`)
 
 **User decisions applied (2026-10-06):**

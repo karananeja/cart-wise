@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-010 Orders — implemented and tested, awaiting Gate 2.** F-001 to F-009 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+**Next: F-011 Store Simulation Console (inventory simulation) — to specify.** F-001 to F-010 complete (accepted 2026-10-06). F-001 to F-009 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -98,8 +98,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 1 F-007: 2026-10-06; Gate 2 F-007: 2026-10-06. ADR-004 accepted.
 - Gate 1 F-008: 2026-10-06; Gate 2 F-008: 2026-10-06.
 - Gate 1 F-009: 2026-10-06 (customer-chosen offer, any Luhn-valid card with first 6/last 4 only, bank OTP, in-page demo UPI app); Gate 2 F-009: 2026-10-06.
-- Gate 1 F-010: 2026-10-06 (order simulation in F-010; demo operator password; delivery charge not refunded on returns).
+- Gate 1 F-010: 2026-10-06 (order simulation in F-010; demo operator password; delivery charge not refunded on returns); Gate 2 F-010: 2026-10-06 (after return-dialog width fix).
 
 ## Exact next action
 
-Wait for Gate 2 acceptance of F-010 (`docs/features/F-010-orders/acceptance.md`). On acceptance: mark complete, then prepare F-011 (Store Simulation Console — inventory simulation: stock +/−, auto decrease/restock with interval; SIM-1, SIM-2), reusing the operator session from F-010.
+Prepare F-011 (Store Simulation Console — inventory simulation: stock +/−, auto decrease/restock with interval; SIM-1, SIM-2), reusing the operator session from F-010.
