@@ -24,7 +24,7 @@
 
 ## 2. Test results summary
 
-241 unit/API/component tests; 29 E2E tests passing on 3 repeated runs, plus a 75-run stress of the auth suite; typecheck and build clean.
+244 unit/API/component tests; 29 E2E tests passing on 3 repeated runs, plus a 75-run stress of the auth suite; typecheck and build clean.
 
 ## 3. Known issues and limitations
 

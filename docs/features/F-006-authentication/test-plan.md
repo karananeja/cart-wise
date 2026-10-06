@@ -29,7 +29,7 @@ Screenshots on preview ports (5274/3201): sign-up errors, code step, signed-in p
 
 | Run date | Command | Result | Notes |
 |---|---|---|---|
-| 2026-10-06 | `pnpm test` | 241 passed (shared 16, api 136, web 89+) | Auth component tests stable over 3 runs |
+| 2026-10-06 | `pnpm test` | 244 passed (shared 16, api 136, web 92) | Auth component tests stable over 3 runs |
 | 2026-10-06 | `e2e/auth.spec.ts --repeat-each=15 --workers=3` | 75 passed | Stress run after fixing two test races |
 | 2026-10-06 | `pnpm e2e --repeat-each=3 --workers=2` | 87 passed (29 × 3) | |
 | 2026-10-06 | `pnpm typecheck`, `pnpm build` | Clean / succeeds | |
