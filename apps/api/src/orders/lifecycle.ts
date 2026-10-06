@@ -31,6 +31,7 @@ interface OrderRow {
   offer_discount_paise: number;
   paid_paise: number | null;
   payment_label: string | null;
+  payment_provider: 'demo' | 'razorpay' | null;
   created_at: string;
   delivered_at: string | null;
   cancelled_at: string | null;
@@ -98,6 +99,9 @@ export function createOrderLifecycle({ db, orders, record, clock = Date.now }: D
     INSERT INTO refunds (id, order_id, return_id, amount_paise, label, status, initiated_at, refunded_at)
     VALUES (@id, @orderId, @returnId, @amountPaise, @label, @status, @now, @refundedAt)`);
   const completeRefundRow = db.prepare("UPDATE refunds SET status = 'refunded', refunded_at = ? WHERE return_id = ? AND status = 'initiated'");
+  const gatewayRefundsOf = db.prepare(`
+    SELECT r.id, r.return_id, r.amount_paise, r.status, r.failure FROM refunds r JOIN orders o ON o.id = r.order_id
+    WHERE r.order_id = ? AND o.payment_provider = 'razorpay' ORDER BY r.initiated_at, r.id`);
 
   const codeOf = db.prepare('SELECT code, attempts FROM delivery_codes WHERE order_id = ?');
   const putCode = db.prepare(`
@@ -183,6 +187,10 @@ export function createOrderLifecycle({ db, orders, record, clock = Date.now }: D
         const own = returnLines.all(r.id) as { refund_paise: number; quantity: number }[];
         return { id: r.id, status: r.status, itemCount: own.reduce((n, l) => n + l.quantity, 0), refundPaise: own.reduce((n, l) => n + l.refund_paise, 0) };
       }),
+      provider: row.payment_provider ?? 'demo',
+      gatewayRefunds: (gatewayRefundsOf.all(row.id) as { id: string; return_id: string | null; amount_paise: number; status: 'initiated' | 'refunded'; failure: string | null }[]).map(
+        (r) => ({ id: r.id, returnId: r.return_id, amountPaise: r.amount_paise, status: r.status, failure: r.failure }),
+      ),
     };
   };
   const simView = (orderId: string) => simOrder(order.get(orderId) as OrderRow);
@@ -206,7 +214,18 @@ export function createOrderLifecycle({ db, orders, record, clock = Date.now }: D
         throw new HttpError(409, 'NOT_CANCELLABLE', 'This order can no longer be cancelled');
       }
       restockLines(lines.all(row.id) as LineRow[], now);
-      insertRefund.run({ id: newId('RF'), orderId: row.id, returnId: null, amountPaise: row.paid_paise, label: row.payment_label ?? '', status: 'refunded', now, refundedAt: now });
+      // Razorpay orders are refunded through Razorpay after this transaction (F-014 D3).
+      const viaGateway = row.payment_provider === 'razorpay';
+      insertRefund.run({
+        id: newId('RF'),
+        orderId: row.id,
+        returnId: null,
+        amountPaise: row.paid_paise,
+        label: row.payment_label ?? '',
+        status: viaGateway ? 'initiated' : 'refunded',
+        now,
+        refundedAt: viaGateway ? null : now,
+      });
       addHistory.run(row.id, 'cancelled', now);
       record('order_cancelled', { orderId: row.id, itemCount: row.item_count, totalPaise: row.paid_paise, reason }, { visitorId, userId });
       return view(userId, row.id);
@@ -234,6 +253,8 @@ export function createOrderLifecycle({ db, orders, record, clock = Date.now }: D
     }),
 
     // ── Demo operator ─────────────────────────────────────────────────────────────────────
+
+    simView,
 
     simList(): SimOrder[] {
       return (recentPaid.all() as OrderRow[]).map(simOrder);

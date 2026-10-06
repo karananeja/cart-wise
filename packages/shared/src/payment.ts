@@ -1,9 +1,11 @@
 /**
  * Simulated payment rules (F-009). Every bank, card range and offer here is fictional. The API
- * is the authority; the web uses the same rules to preview amounts.
+ * is the authority; the web uses the same rules to preview amounts. Razorpay (F-014, ADR-005)
+ * runs in test mode only.
  */
+import type { EmiPlan, EmiQuote } from './emi.js';
 
-export const PAYMENT_METHODS = ['card', 'upi_id', 'upi_qr'] as const;
+export const PAYMENT_METHODS = ['card', 'upi_id', 'upi_qr', 'razorpay'] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
 /** A UPI collect request or QR stays open this long (never past the stock hold). */
@@ -237,7 +239,11 @@ export type PaymentFailureReason =
   | 'upi_declined'
   | 'upi_expired'
   | 'cancelled'
-  | 'hold_expired';
+  | 'hold_expired'
+  /** Razorpay could not complete the payment (F-014). */
+  | 'gateway_failed'
+  /** The Razorpay response could not be verified. */
+  | 'gateway_unverified';
 
 export interface PaymentAttemptView {
   id: string;
@@ -256,6 +262,22 @@ export interface PaymentAttemptView {
   otpAttemptsLeft?: number;
   /** UPI QR attempts. */
   qrUri?: string;
+  /** Card attempts paid in EMI (F-014). */
+  emi?: EmiPlan;
+  /** Razorpay attempts while pending: what Razorpay Checkout needs (no secrets). */
+  gateway?: RazorpayCheckout;
+}
+
+/** Options for Razorpay Checkout in the browser. */
+export interface RazorpayCheckout {
+  keyId: string;
+  orderId: string;
+  amountPaise: number;
+  prefill: { name: string; email: string; contact: string };
+}
+
+export interface PaymentConfig {
+  razorpay: { enabled: boolean; keyId: string | null; testMode: true };
 }
 
 export interface PaymentQuote {
@@ -267,6 +289,8 @@ export interface PaymentQuote {
   /** An offer this card qualifies for that isn't the chosen one (the Apply hint). */
   suggestedOfferId: string | null;
   amountToPayPaise: number;
+  /** EMI plans for the recognised card (F-014). */
+  emi: EmiQuote;
 }
 
 /** Card payments send only these digits; the full number, expiry and CVV stay in the browser. */
@@ -275,10 +299,18 @@ export interface CardPaymentInput {
   bin: string;
   last4: string;
   offerId?: string;
+  /** Pay in EMI (F-014). No-cost EMI cannot be combined with an offer. */
+  emi?: { tenure: number; noCost: boolean };
   visitorId?: string;
 }
 
-export type PaymentInput = CardPaymentInput | { method: 'upi_id'; upiId: string; visitorId?: string } | { method: 'upi_qr'; visitorId?: string };
+export type PaymentInput =
+  | CardPaymentInput
+  | { method: 'upi_id'; upiId: string; visitorId?: string }
+  | { method: 'upi_qr'; visitorId?: string }
+  | { method: 'razorpay'; visitorId?: string };
+
+export type PaymentProvider = 'demo' | 'razorpay';
 
 export interface OrderPayment {
   method: PaymentMethod;
@@ -287,6 +319,9 @@ export interface OrderPayment {
   offerDiscountPaise: number;
   paidPaise: number;
   paidAt: string;
+  provider: PaymentProvider;
+  /** The EMI plan, when paid in EMI with the demo payment. */
+  emi: { tenure: number; monthlyPaise: number; interestPaise: number; noCost: boolean } | null;
 }
 
 export const PAYMENT_FAILURE_MESSAGES: Record<PaymentFailureReason, string> = {
@@ -297,4 +332,6 @@ export const PAYMENT_FAILURE_MESSAGES: Record<PaymentFailureReason, string> = {
   upi_expired: 'The request expired.',
   cancelled: 'The payment was cancelled.',
   hold_expired: 'Your hold expired before the payment completed.',
+  gateway_failed: "Razorpay couldn't complete the payment.",
+  gateway_unverified: "We couldn't confirm this payment with Razorpay.",
 };

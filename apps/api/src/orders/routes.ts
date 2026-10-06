@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { isCancelReason, isDeliveryOption, RETURN_REASONS, type ReturnReason } from '@store/shared';
 import { HttpError } from '../http/errors.js';
 import { currentUser } from '../http/owner.js';
+import type { GatewayRefunds } from '../payments/gatewayRefunds.js';
 import type { OrderLifecycle } from './lifecycle.js';
 import type { OrderService } from './service.js';
 
@@ -26,7 +27,7 @@ const returnBody = z.object({
     .max(100),
 });
 
-export function orderRouter(orders: OrderService, lifecycle: OrderLifecycle): Router {
+export function orderRouter(orders: OrderService, lifecycle: OrderLifecycle, gatewayRefunds: GatewayRefunds): Router {
   const router = Router();
 
   router.get('/checkout', (req, res) => {
@@ -51,7 +52,7 @@ export function orderRouter(orders: OrderService, lifecycle: OrderLifecycle): Ro
   });
 
   /** Unpaid holds (F-008) and paid orders before shipping (F-010) share the cancel route. */
-  router.post('/orders/:id/cancel', (req, res) => {
+  router.post('/orders/:id/cancel', async (req, res) => {
     const userId = requireUserId(res);
     const current = orders.get(userId, orderId(req));
     if (current.status === 'pending_payment') {
@@ -61,7 +62,14 @@ export function orderRouter(orders: OrderService, lifecycle: OrderLifecycle): Ro
     const body = (req.body ?? {}) as { reason?: unknown; visitorId?: unknown };
     const reason = isCancelReason(body.reason) ? body.reason : null;
     const visitorId = typeof body.visitorId === 'string' && body.visitorId.length <= 64 ? body.visitorId : `user-${userId}`;
-    res.json({ order: lifecycle.cancelPaid(userId, current.id, reason, visitorId) });
+    const order = lifecycle.cancelPaid(userId, current.id, reason, visitorId);
+    // Razorpay orders: the refund goes through Razorpay now; if it can't, it stays initiated (F-014 D3).
+    if (order.payment?.provider === 'razorpay') {
+      await gatewayRefunds.afterCancel(order.id);
+      res.json({ order: orders.get(userId, order.id) });
+      return;
+    }
+    res.json({ order });
   });
 
   router.post('/orders/:id/returns', (req, res) => {

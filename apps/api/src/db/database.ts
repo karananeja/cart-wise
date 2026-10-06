@@ -55,6 +55,18 @@ function upgradeInPlace(db: Db) {
   ensureColumn(db, 'orders', 'paid_at', 'TEXT');
   // Account id on server analytics events (MVP wrap-up decision, 2026-10-06).
   ensureColumn(db, 'analytics_events', 'user_id', 'INTEGER');
+  // EMI and Razorpay (F-014).
+  rebuildPaymentAttempts(db);
+  for (const [column, definition] of [
+    ['payment_provider', 'TEXT'],
+    ['emi_tenure', 'INTEGER'],
+    ['emi_monthly_paise', 'INTEGER'],
+    ['emi_interest_paise', 'INTEGER'],
+    ['emi_no_cost', 'INTEGER NOT NULL DEFAULT 0'],
+    ['gateway_payment_id', 'TEXT'],
+  ]) ensureColumn(db, 'orders', column!, definition!);
+  ensureColumn(db, 'refunds', 'gateway_refund_id', 'TEXT');
+  ensureColumn(db, 'refunds', 'failure', 'TEXT');
   // Electronics options (F-013).
   ensureColumn(db, 'order_lines', 'option_label', 'TEXT');
   // Lifecycle (F-010).
@@ -64,6 +76,23 @@ function upgradeInPlace(db: Db) {
   // One cart and one wishlist per account.
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS carts_user ON carts(user_id) WHERE user_id IS NOT NULL');
   db.exec('CREATE UNIQUE INDEX IF NOT EXISTS wishlists_user ON wishlists(user_id) WHERE user_id IS NOT NULL');
+}
+
+/**
+ * SQLite can't change a CHECK constraint, so a payment_attempts table from before Razorpay
+ * (F-014) is rebuilt: its rows are copied into the current definition from schema.sql.
+ */
+function rebuildPaymentAttempts(db: Db) {
+  const table = db.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'payment_attempts'").get() as { sql: string } | undefined;
+  if (!table || table.sql.includes("'razorpay'")) return;
+  const columns = (db.prepare('PRAGMA table_info(payment_attempts)').all() as { name: string }[]).map((c) => c.name).join(', ');
+  db.transaction(() => {
+    db.exec('DROP INDEX IF EXISTS payment_attempts_order; DROP INDEX IF EXISTS payment_attempts_pending;');
+    db.exec('ALTER TABLE payment_attempts RENAME TO payment_attempts_before_f014');
+    db.exec(schema);
+    db.exec(`INSERT INTO payment_attempts (${columns}) SELECT ${columns} FROM payment_attempts_before_f014`);
+    db.exec('DROP TABLE payment_attempts_before_f014');
+  })();
 }
 
 function ensureColumn(db: Db, table: string, column: string, definition: string) {

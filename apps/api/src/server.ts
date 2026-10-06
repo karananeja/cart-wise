@@ -8,7 +8,15 @@ import { createOrderService } from './orders/service.js';
 import { openDatabase } from './db/database.js';
 import { createEventRecorder } from './analytics/record.js';
 import { isSeeded, repriceIfRateChanged, seedDatabase } from './db/seed.js';
+import { loadRazorpayConfig } from './payments/razorpay.js';
 import { DEFAULT_DB_PATH } from './paths.js';
+
+// apps/api/.env (git-ignored), when present: Razorpay test keys and other settings (F-014).
+try {
+  process.loadEnvFile(new URL('../.env', import.meta.url));
+} catch {
+  // No .env: defaults apply.
+}
 
 const port = Number(process.env.PORT ?? 3001);
 const db = openDatabase(process.env.DB_PATH ?? DEFAULT_DB_PATH);
@@ -38,11 +46,16 @@ const orders = createOrderService({ db, carts, addresses: createAddressService(d
 orders.sweepExpired();
 setInterval(() => orders.sweepExpired(), 30 * 1000).unref();
 
+// Razorpay test mode (F-014, ADR-005): keys come from apps/api/.env. The secret is never logged.
+const razorpay = loadRazorpayConfig(process.env);
+if (razorpay.enabled) console.log(`Razorpay test mode is on (key ${razorpay.config.keyId}).`);
+else if (razorpay.error) console.error(razorpay.error);
+
 if (!process.env.SIM_OPERATOR_PASSWORD) {
   console.log('Demo operator page uses the default password "demo-operator" (set SIM_OPERATOR_PASSWORD to change it).');
 }
 
 // Inventory automation (F-011) runs only here, with the switches saved in the database.
-createApp(db, { simScheduler: true }).listen(port, () => {
+createApp(db, { simScheduler: true, razorpay }).listen(port, () => {
   console.log(`API listening on http://localhost:${port}`);
 });

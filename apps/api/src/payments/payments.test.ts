@@ -123,7 +123,9 @@ describe('card payment', () => {
     const cart = (await agent.get('/api/cart')).body as CartView;
     expect(cart.lines.map((l) => l.product.slug)).toEqual(['apple-airpods']);
 
-    expect(events('payment_completed')).toEqual([{ orderId: order.id, method: 'card', amountPaise: 5_400_00, discountPaise: 600_00, offerId: 'aurora-credit-10' }]);
+    expect(events('payment_completed')).toEqual([
+      { orderId: order.id, method: 'card', provider: 'demo', amountPaise: 5_400_00, discountPaise: 600_00, offerId: 'aurora-credit-10', emiTenure: null, emiNoCost: null },
+    ]);
     const packId = (db.prepare("SELECT id FROM products WHERE slug = 'apple-magsafe-battery-pack'").get() as { id: number }).id;
     expect(events('order_created')).toEqual([{ orderId: order.id, itemCount: 2, totalPaise: 5_400_00, productIds: String(packId) }]);
     // Server events carry the account id (user decision 2026-10-06); the visitor id is kept too.
@@ -320,8 +322,8 @@ describe('boundaries', () => {
     const attempt = (await upiStart(agent, order.id).expect(201)).body.attempt as PaymentAttemptView;
     await agent.post(`/api/payments/${attempt.id}/cancel`).send({}).expect(200);
     await agent.post(`/api/payments/${attempt.id}/cancel`).send({}).expect(200);
-    expect(events('payment_started')).toEqual([{ orderId: order.id, method: 'upi_id', amountPaise: 6_000_00, offerId: null }]);
-    expect(events('payment_failed')).toEqual([{ orderId: order.id, method: 'upi_id', reason: 'cancelled' }]);
+    expect(events('payment_started')).toEqual([{ orderId: order.id, method: 'upi_id', provider: 'demo', amountPaise: 6_000_00, offerId: null, emiTenure: null, emiNoCost: null }]);
+    expect(events('payment_failed')).toEqual([{ orderId: order.id, method: 'upi_id', provider: 'demo', reason: 'cancelled' }]);
   });
 });
 

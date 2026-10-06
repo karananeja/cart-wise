@@ -137,4 +137,8 @@ export interface SimOrder {
   nextStatus: PaidOrderStatus | null;
   deliveryAttemptsLeft: number | null;
   returns: { id: string; status: ReturnStatus; itemCount: number; refundPaise: number }[];
+  /** Who took the payment (F-014). */
+  provider: 'demo' | 'razorpay';
+  /** Razorpay orders: each refund and whether Razorpay has accepted it, with the last failure. */
+  gatewayRefunds: { id: string; returnId: string | null; amountPaise: number; status: 'initiated' | 'refunded'; failure: string | null }[];
 }

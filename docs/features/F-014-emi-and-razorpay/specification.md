@@ -54,18 +54,20 @@ Let customers spread the cost of an order over monthly instalments, with an hone
 - FR-2 **Normal EMI:**
   - The monthly instalment uses the standard reducing-balance formula: EMI = P·r·(1+r)ⁿ / ((1+r)ⁿ − 1), with r the monthly rate, rounded to the rupee.
   - The store is paid the order amount. The customer repays the bank the instalments, which include the interest.
-  - Example for ₹60,000 at 14%: 3 months is ₹20,468/month (₹1,405 interest), 6 months ₹10,412/month (₹2,474), 12 months ₹5,387/month (₹4,647).
+  - Example for ₹60,000 at 14%: 3 months is ₹20,468/month (₹1,404 interest), 6 months ₹10,412/month (₹2,472), 12 months ₹5,387/month (₹4,647).
 - FR-3 **No-cost EMI:**
-  - The interest that the plan would charge is given as an upfront **No Cost EMI discount**, so the instalments add up exactly to the order price.
-  - Example: ₹60,000 over 6 months at 14% gives a ₹2,474 discount. The store is paid ₹57,526, and the customer pays 6 × ₹9,588.
+  - The store gives an upfront **No Cost EMI discount** d. The bank finances the charged amount (price − d) at its normal rate, and d is set so the customer's instalments add up exactly to the order price: d = P − P / (n·k), where k = r(1+r)ⁿ / ((1+r)ⁿ − 1).
+  - Example: ₹60,000 over 6 months at 14% gives a ₹2,376 discount. The store is paid ₹57,624, and the customer pays 6 × ₹10,000 = ₹60,000.
+  - Charged amounts are rounded to the rupee, and the monthly amount is the price ÷ n, rounded to the rupee.
   - It is labelled "No Cost EMI" only when that is exactly true.
+  - *Correction (2026-10-06, during design):* the Gate 1 example "6 × ₹9,588 = ₹57,526" took the discount as the interest on the full price, so its instalments added up to less than the price. That contradicted this requirement's own rule; the formula above follows the approved rule.
 - FR-4 **Offers (D2, approved):**
   - Normal EMI can be combined with the card's bank offer.
   - No-cost EMI **is** the order's offer, so no bank offer can be added to it. This matches the existing "one offer per order" rule.
 - FR-5 **Payment page:**
   - In the demo Card tab, once an eligible credit card is recognised (from its first 6 digits, as today), a "Pay in full / Pay in EMI" choice appears.
   - EMI shows a plan list: tenure, monthly amount, interest, total, and a "No Cost" tag where it applies. The cheapest-interest option is not preselected; the customer chooses.
-  - The summary and the Pay button show the amount charged today. The plan line reads "6 × ₹9,588/month".
+  - The summary and the Pay button show the amount charged today. The plan line reads "6 × ₹10,000/month".
   - The bank OTP and the demo outcome rules (decline, insufficient funds) are unchanged.
 - FR-6 **Product page:**
   - Below the bank-offer banner: "EMI from ₹X/month" (the lowest monthly amount at the longest tenure). When no-cost EMI applies at this price, it adds "· No Cost EMI available".

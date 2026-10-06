@@ -13,6 +13,8 @@ import { createSimScheduler } from './sim/scheduler.js';
 import { simRouter } from './sim/routes.js';
 import { paymentRouter } from './payments/routes.js';
 import { createPaymentService } from './payments/service.js';
+import { createGatewayRefunds } from './payments/gatewayRefunds.js';
+import { createRazorpayClient, loadRazorpayConfig, type RazorpaySetup } from './payments/razorpay.js';
 import { createMergeService } from './auth/merge.js';
 import { createOtpService } from './auth/otp.js';
 import { createLoginLimiter } from './auth/rateLimit.js';
@@ -43,13 +45,18 @@ export interface AppOptions {
   random?: () => number;
   /** Run inventory automation on a timer (the server sets this; tests drive ticks directly). */
   simScheduler?: boolean;
+  /** Razorpay test-mode setup (F-014); defaults to the environment. Its HTTP uses `fetch`. */
+  razorpay?: RazorpaySetup;
+  /** Gateway problems for the operator (defaults to console.error). */
+  log?: (message: string) => void;
 }
 
 export function createApp(db: Db, options: AppOptions = {}) {
   const app = express();
   app.disable('x-powered-by');
   app.set('query parser', 'simple');
-  app.use(express.json({ limit: '64kb' }));
+  // The raw bytes are kept for Razorpay webhook signatures (F-014).
+  app.use(express.json({ limit: '64kb', verify: (req, _res, buf) => ((req as express.Request & { rawBody?: Buffer }).rawBody = buf) }));
   app.use(express.text({ limit: '64kb' }));
 
   const api = express.Router();
@@ -75,8 +82,12 @@ export function createApp(db: Db, options: AppOptions = {}) {
   api.use(addressRouter(addresses));
   const record = createEventRecorder(db, options.clock);
   const orders = createOrderService({ db, carts, addresses, record, clock: options.clock });
+  const setup = options.razorpay ?? loadRazorpayConfig(process.env);
+  const razorpay = setup.enabled ? createRazorpayClient(setup.config, options.fetch ?? fetch) : undefined;
+  const payments = createPaymentService({ db, orders, record, clock: options.clock, razorpay, log: options.log });
   const lifecycle = createOrderLifecycle({ db, orders, record, clock: options.clock });
-  api.use(orderRouter(orders, lifecycle));
+  const gatewayRefunds = createGatewayRefunds({ db, razorpay, clock: options.clock, log: options.log });
+  api.use(orderRouter(orders, lifecycle, gatewayRefunds));
   const operatorPassword = options.operatorPassword ?? process.env.SIM_OPERATOR_PASSWORD ?? DEFAULT_OPERATOR_PASSWORD;
   const simulation = createInventorySimulation(db, { clock: options.clock, random: options.random });
   const scheduler = options.simScheduler ? createSimScheduler(simulation) : undefined;
@@ -88,9 +99,10 @@ export function createApp(db: Db, options: AppOptions = {}) {
       limiter: createLoginLimiter(undefined, options.clock),
       simulation,
       scheduler,
+      gatewayRefunds,
     }),
   );
-  api.use(paymentRouter(createPaymentService({ db, orders, record, clock: options.clock })));
+  api.use(paymentRouter(payments, razorpay?.keyId ?? null));
   api.use(geoRouter(createGeoService({ fetch: options.fetch ?? fetch })));
   api.use(analyticsRouter(db));
   app.use('/api', api);

@@ -184,7 +184,14 @@ CREATE TABLE IF NOT EXISTS orders (
   -- Lifecycle (F-010).
   delivered_at TEXT,
   cancelled_at TEXT,
-  cancel_reason TEXT
+  cancel_reason TEXT,
+  -- F-014: who took the payment, the EMI plan, and Razorpay's payment id.
+  payment_provider TEXT,
+  emi_tenure INTEGER,
+  emi_monthly_paise INTEGER,
+  emi_interest_paise INTEGER,
+  emi_no_cost INTEGER NOT NULL DEFAULT 0,
+  gateway_payment_id TEXT
 );
 CREATE INDEX IF NOT EXISTS orders_user ON orders(user_id, status);
 
@@ -204,12 +211,13 @@ CREATE TABLE IF NOT EXISTS order_lines (
 );
 CREATE INDEX IF NOT EXISTS order_lines_order ON order_lines(order_id);
 
--- Simulated payment attempts (F-009). Only masked card details exist here: network, the
--- fictional bank and card type, and the last 4 digits. No full number, expiry or CVV.
+-- Payment attempts (F-009, F-014). Only masked card details exist here: network, the fictional
+-- bank and card type, and the last 4 digits. No full number, expiry or CVV. Rebuilt in place when
+-- the method check changes (database.ts).
 CREATE TABLE IF NOT EXISTS payment_attempts (
   id TEXT PRIMARY KEY,
   order_id TEXT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-  method TEXT NOT NULL CHECK (method IN ('card', 'upi_id', 'upi_qr')),
+  method TEXT NOT NULL CHECK (method IN ('card', 'upi_id', 'upi_qr', 'razorpay')),
   status TEXT NOT NULL CHECK (status IN ('pending', 'succeeded', 'failed')),
   failure_reason TEXT,
   amount_paise INTEGER NOT NULL,
@@ -225,7 +233,16 @@ CREATE TABLE IF NOT EXISTS payment_attempts (
   visitor_id TEXT NOT NULL,
   expires_at TEXT NOT NULL,
   created_at TEXT NOT NULL,
-  completed_at TEXT
+  completed_at TEXT,
+  -- Demo EMI plan (F-014); the no-cost discount is the attempt's offer.
+  emi_tenure INTEGER,
+  emi_rate_percent INTEGER,
+  emi_monthly_paise INTEGER,
+  emi_interest_paise INTEGER,
+  emi_no_cost INTEGER NOT NULL DEFAULT 0,
+  -- Razorpay test mode (F-014, ADR-005): ids only, never card data.
+  gateway_order_id TEXT UNIQUE,
+  gateway_payment_id TEXT
 );
 CREATE INDEX IF NOT EXISTS payment_attempts_order ON payment_attempts(order_id);
 -- At most one attempt in progress per order.
@@ -275,7 +292,10 @@ CREATE TABLE IF NOT EXISTS refunds (
   label TEXT NOT NULL,
   status TEXT NOT NULL CHECK (status IN ('initiated', 'refunded')),
   initiated_at TEXT NOT NULL,
-  refunded_at TEXT
+  refunded_at TEXT,
+  -- Razorpay refunds (F-014): the gateway's id once it accepts; the last failure, for retry.
+  gateway_refund_id TEXT,
+  failure TEXT
 );
 CREATE INDEX IF NOT EXISTS refunds_order ON refunds(order_id);
 

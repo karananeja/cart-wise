@@ -5,6 +5,7 @@ import type { LoginLimiter } from '../auth/rateLimit.js';
 import { readCookie } from '../http/cookies.js';
 import { HttpError } from '../http/errors.js';
 import type { OrderLifecycle } from '../orders/lifecycle.js';
+import type { GatewayRefunds } from '../payments/gatewayRefunds.js';
 import type { InventorySimulation } from './inventory.js';
 import { OPERATOR_COOKIE, OPERATOR_SESSION_MS, type OperatorAccess } from './operator.js';
 import type { SimScheduler } from './scheduler.js';
@@ -27,13 +28,15 @@ interface SimDeps {
   simulation: InventorySimulation;
   /** Present when the API runs automation (server); absent in tests. */
   scheduler?: SimScheduler;
+  /** Razorpay refunds (F-014). */
+  gatewayRefunds: GatewayRefunds;
 }
 
 /**
  * Demo operator API (F-010 orders, F-011 inventory). Separate from customer sessions: a signed-in
  * customer gets nothing here without the operator cookie.
  */
-export function simRouter({ access, lifecycle, limiter, simulation, scheduler }: SimDeps): Router {
+export function simRouter({ access, lifecycle, limiter, simulation, scheduler, gatewayRefunds }: SimDeps): Router {
   const router = Router();
 
   router.get('/sim/session', (req, res) => {
@@ -85,8 +88,15 @@ export function simRouter({ access, lifecycle, limiter, simulation, scheduler }:
   router.post('/sim/returns/:id/pickup', (req, res) => {
     res.json({ order: lifecycle.pickUp(id(req.params.id)) });
   });
-  router.post('/sim/returns/:id/refund', (req, res) => {
+  router.post('/sim/returns/:id/refund', async (req, res) => {
+    // Razorpay orders: Razorpay must accept the refund before the return counts as refunded.
+    await gatewayRefunds.forReturn(id(req.params.id));
     res.json({ order: lifecycle.completeRefund(id(req.params.id)) });
+  });
+  router.post('/sim/refunds/:id/retry', async (req, res) => {
+    const refund = id(req.params.id);
+    await gatewayRefunds.process(refund);
+    res.json({ order: lifecycle.simView(gatewayRefunds.orderOf(refund)) });
   });
 
   // ── Inventory simulation (F-011) ──────────────────────────────────────────────────────

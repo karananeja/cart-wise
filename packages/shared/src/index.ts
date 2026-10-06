@@ -11,3 +11,4 @@ export * from './payment.js';
 export * from './orders.js';
 export * from './simulation.js';
 export * from './recommendations.js';
+export * from './emi.js';

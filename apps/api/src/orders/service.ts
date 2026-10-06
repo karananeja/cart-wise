@@ -17,6 +17,7 @@ import {
   type OrderStatus,
   type PaymentFailureReason,
   type PaymentMethod,
+  type PaymentProvider,
 } from '@store/shared';
 import type { RecordEvent } from '../analytics/record.js';
 import type { AddressService } from '../addresses/service.js';
@@ -47,6 +48,11 @@ interface OrderRow {
   delivered_at: string | null;
   cancelled_at: string | null;
   cancel_reason: string | null;
+  payment_provider: PaymentProvider | null;
+  emi_tenure: number | null;
+  emi_monthly_paise: number | null;
+  emi_interest_paise: number | null;
+  emi_no_cost: number;
 }
 
 interface LineRow {
@@ -201,6 +207,11 @@ export function createOrderService({ db, carts, addresses, record, clock = Date.
             offerDiscountPaise: row.offer_discount_paise,
             paidPaise: row.paid_paise ?? 0,
             paidAt: row.paid_at,
+            provider: row.payment_provider ?? 'demo',
+            emi:
+              row.emi_tenure !== null
+                ? { tenure: row.emi_tenure, monthlyPaise: row.emi_monthly_paise ?? 0, interestPaise: row.emi_interest_paise ?? 0, noCost: row.emi_no_cost === 1 }
+                : null,
           }
         : null,
     history: history.all(row.id) as { status: OrderHistoryStatus; at: string }[],

@@ -15,7 +15,7 @@ Shoppers see the monthly EMI before deciding and can pay in instalments, with an
 - **Product page:** "EMI from ₹5,387/month · No Cost EMI available", with "View plans" for banks and tenures.
 - **Demo payment:**
   - Enter a fictional credit card and choose Pay in full or Pay in EMI.
-  - The plans show monthly amount, interest and total. No-cost plans give the interest back as a discount, so 6 × ₹9,588 is exactly the price.
+  - The plans show monthly amount, interest and total. No-cost plans give an upfront discount sized so the instalments add up exactly to the price (₹60,000 over 6 months is 6 × ₹10,000).
   - Bank OTP as today. The order and confirmation show the plan.
 - **Razorpay tab** (only when your test keys are set):
   - "Pay ₹X with Razorpay" opens Razorpay Checkout (card, UPI, netbanking, EMI).
