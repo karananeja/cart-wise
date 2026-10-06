@@ -86,13 +86,19 @@ function rebuildPaymentAttempts(db: Db) {
   const table = db.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'payment_attempts'").get() as { sql: string } | undefined;
   if (!table || table.sql.includes("'razorpay'")) return;
   const columns = (db.prepare('PRAGMA table_info(payment_attempts)').all() as { name: string }[]).map((c) => c.name).join(', ');
-  db.transaction(() => {
-    db.exec('DROP INDEX IF EXISTS payment_attempts_order; DROP INDEX IF EXISTS payment_attempts_pending;');
-    db.exec('ALTER TABLE payment_attempts RENAME TO payment_attempts_before_f014');
-    db.exec(schema);
-    db.exec(`INSERT INTO payment_attempts (${columns}) SELECT ${columns} FROM payment_attempts_before_f014`);
-    db.exec('DROP TABLE payment_attempts_before_f014');
-  })();
+  // Rows are copied as they are: a stray row must not stop the upgrade.
+  db.pragma('foreign_keys = OFF');
+  try {
+    db.transaction(() => {
+      db.exec('DROP INDEX IF EXISTS payment_attempts_order; DROP INDEX IF EXISTS payment_attempts_pending;');
+      db.exec('ALTER TABLE payment_attempts RENAME TO payment_attempts_before_f014');
+      db.exec(schema);
+      db.exec(`INSERT INTO payment_attempts (${columns}) SELECT ${columns} FROM payment_attempts_before_f014`);
+      db.exec('DROP TABLE payment_attempts_before_f014');
+    })();
+  } finally {
+    db.pragma('foreign_keys = ON');
+  }
 }
 
 function ensureColumn(db: Db, table: string, column: string, definition: string) {

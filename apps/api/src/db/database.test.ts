@@ -156,3 +156,32 @@ describe('reseeding keeps carts, orders and holds on the right units (F-013)', (
     expect(unitLabel(db, 'cart_lines', 1)).toEqual({ label: 'M', kind: 'size' });
   });
 });
+
+it('rebuilds a pre-Razorpay payment_attempts table so the new method is allowed, keeping its rows (F-014)', () => {
+  dir = mkdtempSync(join(tmpdir(), 'store-db-'));
+  const path = join(dir, 'store.db');
+  const first = openDatabase(path);
+  first.close();
+
+  const old = new Database(path);
+  old.exec(`
+    DROP TABLE payment_attempts;
+    CREATE TABLE payment_attempts (
+      id TEXT PRIMARY KEY, order_id TEXT NOT NULL, method TEXT NOT NULL CHECK (method IN ('card', 'upi_id', 'upi_qr')),
+      status TEXT NOT NULL CHECK (status IN ('pending', 'succeeded', 'failed')), failure_reason TEXT, amount_paise INTEGER NOT NULL,
+      discount_paise INTEGER NOT NULL DEFAULT 0, offer_id TEXT, card_network TEXT, card_bank TEXT, card_type TEXT, card_last4 TEXT,
+      upi_id TEXT, otp_hash TEXT, otp_attempts INTEGER NOT NULL DEFAULT 0, visitor_id TEXT NOT NULL, expires_at TEXT NOT NULL,
+      created_at TEXT NOT NULL, completed_at TEXT);
+    INSERT INTO payment_attempts (id, order_id, method, status, amount_paise, visitor_id, expires_at, created_at)
+      VALUES ('PAY-OLD', 'ORD-OLD', 'card', 'succeeded', 100, 'v', 't', 't');
+  `);
+  old.close();
+
+  const db = openDatabase(path);
+  expect(db.prepare("SELECT id, method, emi_no_cost FROM payment_attempts").all()).toEqual([{ id: 'PAY-OLD', method: 'card', emi_no_cost: 0 }]);
+  db.pragma('foreign_keys = OFF');
+  db.prepare("INSERT INTO payment_attempts (id, order_id, method, status, amount_paise, visitor_id, expires_at, created_at) VALUES ('PAY-RZP', 'ORD-X', 'razorpay', 'failed', 1, 'v', 't', 't')").run();
+  const indexes = (db.prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'payment_attempts'").all() as { name: string }[]).map((r) => r.name);
+  expect(indexes).toEqual(expect.arrayContaining(['payment_attempts_order', 'payment_attempts_pending']));
+  db.close();
+});

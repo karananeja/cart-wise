@@ -1,6 +1,6 @@
 # Technical Design — F-014 EMI and Razorpay (test mode)
 
-**Status:** Implementation
+**Status:** Implemented
 **Inputs:** specification.md (approved 2026-10-06, FR-3 example corrected), ADR-005, F-009 payments, F-010 lifecycle
 
 ## 1. Shared

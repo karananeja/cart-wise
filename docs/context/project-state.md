@@ -8,7 +8,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## Current feature
 
-**F-014 EMI + Razorpay (test mode) — approved at Gate 1, in implementation** (`docs/features/F-014-emi-and-razorpay/`, ADR-005 accepted). F-013 accepted 2026-10-06; previously (`docs/features/F-013-electronics-variants/`). F-012 accepted 2026-10-06.
+**F-014 EMI + Razorpay (test mode) — implemented and tested, awaiting Gate 2** (`docs/features/F-014-emi-and-razorpay/`, ADR-005 accepted). F-013 accepted 2026-10-06; previously (`docs/features/F-013-electronics-variants/`). F-012 accepted 2026-10-06.
 
 ## Completed
 
@@ -19,7 +19,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## In progress
 
-F-014 technical design and implementation.
+F-014 Gate 2 (and the user's manual Razorpay test-mode check with their keys).
 
 ## Remaining
 
@@ -53,12 +53,13 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 - `packages/shared/src/simulation.ts`, `apps/api/src/sim/inventory.ts` (list, manual stock, ticks, settings), `apps/api/src/sim/scheduler.ts`, `apps/web/src/features/sim/SimConsole.tsx` + `SimInventoryPage.tsx`; `playwright.config.ts` runs `e2e/simulation.spec.ts` as a separate project after the others
 - `packages/shared/src/recommendations.ts`, `apps/api/src/recommendations/` (rules, service, routes), `apps/web/src/features/discovery/`
 - `apps/web/src/features/search/SearchBox.tsx` — header combobox; `apps/web/src/lib/recentSearches.ts` — history store
+- F-014: `packages/shared/src/emi.ts`; `apps/api/src/payments/{razorpay,gatewayRefunds,fakeRazorpay}.ts`, payments service (EMI, Razorpay start/verify/finalize/reconcile/webhook); `apps/api/.env(.example)` loaded in `server.ts`; web `features/payment/{EmiBanner,EmiPlans,RazorpayPayment,razorpayCheckout,emiText,summary}`; tests `emi.test.ts`, `emi.api.test.ts`, `razorpay.api.test.ts`, `Emi.test.tsx`, `e2e/emi-razorpay.spec.ts`
 - F-013: `apps/api/src/inventory/options.ts` (tiers, `tierPrices`), `apps/api/src/db/seed.ts` (`saveVariantLabels`, `remapUnits`), schema v3 (`product_variants.kind/price_paise/mrp_paise`, `order_lines.option_label`), `apps/web/src/features/catalog/selection.ts` (option/size hooks, `unitLabel`, `productLink`), `OptionSelector.tsx`; tests `options.test.ts`, `options.api.test.ts`, `ProductOptions.test.tsx`, `e2e/options.spec.ts`
 
 ## Tests
 
-- `pnpm test`: 453 passing (shared 38, api 241, web 174). `pnpm e2e`: 53 passing (3 consecutive runs). Typecheck clean. Build succeeds (main bundle 416 kB).
-- No failing tests.
+- `pnpm test`: 484 passing (shared 43, api 259, web 182). `pnpm e2e`: 56 passing (8 of 9 runs clean; one unexplained wishlist failure, in backlog). Typecheck clean. Build succeeds (main bundle 421 kB).
+- E2E starts a fake Razorpay on port 3199 (`e2e/fake-razorpay-server.ts`); the API under E2E uses test keys pointed at it.
 
 ## Known bugs / limitations
 
@@ -66,7 +67,7 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Working rules
 
-- The user runs `pnpm dev` (5173/3001, `store.db`) in their own terminal. Never stop it. Manual checks run on 5274/3201 with `preview.db`; E2E on 5174/3101 with `e2e.db`. Stop only those ports.
+- The user runs `pnpm dev` (5173/3001, `store.db`) in their own terminal; the API reads `apps/api/.env` at start (restart needed after changes). Never stop it. Manual checks run on 5274/3201 with `preview.db`; E2E on 5174/3101 with `e2e.db`. Stop only those ports.
 
 ## Pending questions for the user
 
@@ -106,4 +107,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Write F-014 technical design (payment_attempts rebuild for the method check, raw-body webhook route, env loading via --env-file-if-exists) and implementation. Payment code map: shared/payment.ts, api/payments/{routes,service}.ts, orders/lifecycle.ts refunds, web/features/payment/*.
+Wait for Gate 2 on F-014 (`docs/features/F-014-emi-and-razorpay/acceptance.md`). The user may add Razorpay test keys to `apps/api/.env`, restart `pnpm dev` and try one payment + refund; record the result in acceptance §1. Then ask which item comes next.

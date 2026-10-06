@@ -2,6 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 const API_PORT = 3101;
 const WEB_PORT = 5174;
+/** Fake Razorpay (F-014): see e2e/fake-razorpay-server.ts. */
+const RAZORPAY_PORT = 3199;
 
 /** E2E runs its own API (fresh database) and web server, separate from `pnpm dev`. */
 export default defineConfig({
@@ -20,9 +22,24 @@ export default defineConfig({
   ],
   webServer: [
     {
+      command: 'pnpm exec tsx ../../e2e/fake-razorpay-server.ts',
+      cwd: 'apps/api',
+      url: `http://localhost:${RAZORPAY_PORT}/__health`,
+      reuseExistingServer: false,
+    },
+    {
       command: `rm -f data/e2e.db data/e2e.db-wal data/e2e.db-shm && pnpm exec tsx src/server.ts`,
       cwd: 'apps/api',
-      env: { PORT: String(API_PORT), DB_PATH: 'data/e2e.db' },
+      // Test keys against the local fake; these win over anything in apps/api/.env.
+      env: {
+        PORT: String(API_PORT),
+        DB_PATH: 'data/e2e.db',
+        RAZORPAY_KEY_ID: 'rzp_test_e2e',
+        RAZORPAY_KEY_SECRET: 'e2e_test_secret',
+        RAZORPAY_API_BASE_URL: `http://localhost:${RAZORPAY_PORT}`,
+        RAZORPAY_WEBHOOK_SECRET: '',
+        RAZORPAY_NO_COST_EMI_OFFER_ID: '',
+      },
       url: `http://localhost:${API_PORT}/api/health`,
       reuseExistingServer: false,
     },

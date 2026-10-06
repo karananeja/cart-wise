@@ -4,7 +4,7 @@
 
 **ID:** F-014
 **Name:** EMI (normal and no-cost) and Razorpay payments (test mode)
-**Status:** Approved (Gate 1, 2026-10-06) — in implementation
+**Status:** Acceptance — awaiting Gate 2 (Gate 1 approved 2026-10-06)
 **Requirements:** User request (2026-10-06). It extends PAY-1..6 (F-009) and ORD-2..4 refunds (F-010).
 
 **User decisions applied (2026-10-06):**
@@ -159,7 +159,7 @@ Let customers spread the cost of an order over monthly instalments, with an hone
   - card input adds an optional `emi: { tenure, noCost }`;
   - a new `{ method: 'razorpay' }` returns the attempt with `gateway: { keyId, orderId, amountPaise, prefill }`.
 - `POST /payments/:id/razorpay/verify { razorpayPaymentId, razorpayOrderId, razorpaySignature }` returns the attempt and order.
-- `POST /payments/:id/razorpay/failed { code, description }` and the existing `/cancel` (Checkout closed).
+- The existing `/cancel` when Checkout is closed (it asks Razorpay first). *Implementation: no `/razorpay/failed` endpoint — Checkout handles retries itself (acceptance §4).*
 - `POST /api/payments/razorpay/webhook` uses the raw body and signature header, needs no session, and is exempt from the JSON-POST guard only by its own signature check.
 - `POST /api/sim/refunds/:id/retry` (operator).
 - **Errors:**

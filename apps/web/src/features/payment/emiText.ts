@@ -1,9 +1,13 @@
 import { formatPrice, NO_COST_EMI_OFFER_ID, type EmiPlan, type OrderPayment } from '@store/shared';
 
-/** "6 × ₹10,000/month", or "6 × ₹13,333/month (last ₹13,335)" when rounding moves into the last one. */
+/**
+ * "6 × ₹10,000/month", or "6 × ₹13,333/month (last ₹13,335)" when rounding moves a rupee or more
+ * into the last instalment. Paise differences (from paise prices) aren't worth a mention.
+ */
 export function instalments(plan: { tenure: number; monthlyPaise: number; lastMonthlyPaise?: number }): string {
   const base = `${plan.tenure} × ${formatPrice(plan.monthlyPaise)}/month`;
-  return plan.lastMonthlyPaise && plan.lastMonthlyPaise !== plan.monthlyPaise ? `${base} (last ${formatPrice(plan.lastMonthlyPaise)})` : base;
+  const last = plan.lastMonthlyPaise ?? plan.monthlyPaise;
+  return Math.abs(last - plan.monthlyPaise) >= 100 ? `${base} (last ${formatPrice(Math.round(last / 100) * 100)})` : base;
 }
 
 /** What the plan costs beyond the price, in plain words. */
