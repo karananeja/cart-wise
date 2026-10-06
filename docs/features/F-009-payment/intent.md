@@ -1,14 +1,14 @@
 # Feature Intent
 
 **Feature:** F-009 — Simulated payment (card, UPI, card offers)
-**Status:** Draft — awaiting Gate 1
+**Status:** Draft — decisions recorded, awaiting Gate 1 approval
 **Approved by / date:**
 
 ---
 
 ## 1. In one sentence
 
-The customer pays for their held order by demo card or demo UPI, gets any bank offer applied automatically, and lands on a clear "Order confirmed" page. A failed payment loses nothing and can be retried while the hold lasts.
+The customer pays for their held order by card (any valid number, simulated) or demo UPI, can choose a bank offer for their card, and lands on a clear "Order confirmed" page. A failed payment loses nothing and can be retried while the hold lasts.
 
 ## 2. Intended behavior
 
@@ -18,10 +18,13 @@ The customer pays for their held order by demo card or demo UPI, gets any bank o
   - Two tabs: **Card** and **UPI**.
   - Everything is labelled "Demo payment — no money is charged".
 - **Card:**
-  - Pick one of five demo cards, or type its number; any real card is refused before it leaves the browser.
-  - The bank is recognised as you type, and a qualifying offer applies automatically. The button shows the final amount: **Pay ₹5,400**.
+  - Choose a bank offer (or none), then type any valid card number, or pick one from the demo list.
+  - The network and fictional bank are recognised as you type.
+  - If the chosen offer matches your card, the button shows the reduced amount: **Pay ₹5,400**. If it doesn't, you're told why.
+  - If your card qualifies for an offer you didn't choose, a hint offers to apply it.
+  - Only the first 6 and last 4 digits are sent; the full number, CVV and expiry stay in the browser.
   - A demo bank OTP step follows; the code is shown on screen.
-  - Three cards succeed; two fail on purpose (declined, insufficient funds), so failure can be demonstrated.
+  - Cards ending 0002 are declined and 9995 fail for insufficient funds; all others succeed.
 - **UPI:**
   - Enter a UPI ID and send a request, or show a QR code (`demo-payment://…`).
   - **Open demo UPI app** or **Simulate scan** opens a phone-style screen with **Approve** and **Decline**.
@@ -39,9 +42,9 @@ The customer pays for their held order by demo card or demo UPI, gets any bank o
 
 | Choice | Reason |
 |---|---|
-| One offer per order, applied automatically | No codes, no choosing; the best saving just happens |
+| One offer per order, chosen by the customer (with an Apply hint) | Your decision; the hint stops a customer missing a saving they qualify for |
 | Banner only when a real saving exists | Honest; no fake urgency (CLAUDE.md §13) |
-| Demo cards only | Guarantees no real card data enters the system (PAY-4) |
+| Any valid card number; only the first 6 and last 4 digits sent | Your decision; keeping the full number in the browser means no real card data reaches the server (PAY-4) |
 | Demo bank OTP and demo UPI app | Familiar Indian payment rhythm, and the failure paths can be shown |
 | Pay button shows the exact amount | No surprises at the last click |
 | Hold not extended by retries | Keeps the F-008 promise simple: 10 minutes, shown on screen |
@@ -66,11 +69,11 @@ Acceptance criteria 1–13 in `specification.md` §17.
 
 ## 6. Decisions needed before implementation
 
-See `specification.md` §22:
-- the offer catalogue and the one-offer rule;
-- demo cards only;
-- the bank OTP step;
-- the UPI dialog and 5-minute window.
+Resolved 2026-10-06 (`specification.md` §22):
+- the customer chooses the offer;
+- any valid card number is accepted;
+- the bank OTP step is included;
+- UPI uses an in-page demo app, with no PIN.
 
 ## 7. Approval
 

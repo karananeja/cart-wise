@@ -99,4 +99,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Wait for Gate 1 on F-009 (`docs/features/F-009-payment/`). Open decisions (spec §22): offer catalogue + one offer per order; demo cards only; bank OTP step; UPI in-page demo app with 5-minute window. On approval: record decisions, write technical-design.md and test-plan.md, implement.
+Wait for Gate 1 approval on F-009 (`docs/features/F-009-payment/`). Decisions recorded 2026-10-06: customer chooses offer; any Luhn-valid card (only first 6 + last 4 sent; outcome by last 4); bank OTP step; in-page demo UPI app, 5 min, no PIN. On approval: write technical-design.md and test-plan.md, implement.

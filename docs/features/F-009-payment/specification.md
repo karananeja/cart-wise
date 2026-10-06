@@ -4,14 +4,18 @@
 
 **ID:** F-009
 **Name:** Simulated payment — card, UPI and card offers
-**Status:** Draft — awaiting Gate 1
+**Status:** Draft — decisions recorded, awaiting Gate 1 approval
 **Requirements:** PAY-1, PAY-2, PAY-3, PAY-4, PAY-5, PAY-6, ORD-1, CHK-1 (Payment → Confirmation), NFR-5, NFR-8, STATE-1, ANL-1 (`payment_started`, `payment_failed`, `payment_completed`, `order_created`)
 
 **User decisions already applied:**
 - **Q17 (2026-10-06):** card offers use fictional banks. The offer rules, the product-page banner and the discount at payment are built together here.
 - **Q10 (2026-10-06):** stock is held for 10 minutes from Continue to payment (F-008). Payment happens inside that hold.
 
-**Proposed in this spec, for confirmation at Gate 1** (see §22): the offer catalogue and one-offer-per-order rule; demo cards only; a simulated bank OTP step for cards; the UPI flow and its 5-minute request window.
+**User decisions (2026-10-06, Gate 1 questions):**
+- **Offers:** the customer chooses the offer at payment (one per order). It is not applied automatically.
+- **Cards:** any card number that passes the Luhn check is accepted, and the outcome follows a rule. Real numbers can therefore be typed, so the full number never leaves the browser (FR-12).
+- **Bank OTP:** card payments include a simulated bank OTP step.
+- **UPI:** an in-page demo UPI app dialog with Approve/Decline, a 5-minute request window, and no UPI PIN.
 
 ---
 
@@ -30,12 +34,12 @@ Shoppers also decide where to buy based on bank offers, so they want to see them
 
 ## 3. User Intent
 
-"Pay the way I usually do, get my card's discount automatically, and know for certain whether it worked."
+"Pay the way I usually do, get my card's discount, and know for certain whether it worked."
 
 ## 4. User Stories
 
 - As a shopper on a product page, I want to see the best card offer for this product, so I know what I'll actually pay.
-- As a customer paying, I want my card's offer applied automatically, with the final amount on the Pay button.
+- As a customer paying, I want to choose my card's bank offer, see whether it applies, and see the final amount on the Pay button.
 - As a customer, I want to pay by UPI, by entering my UPI ID or by scanning a QR code.
 - As a customer whose payment failed, I want to know why and try again, without losing my cart or my held items.
 - As a customer whose payment succeeded, I want a confirmation with my order number, what I paid and when it arrives.
@@ -52,11 +56,12 @@ Shoppers also decide where to buy based on bank offers, so they want to see them
   | Meridian Bank | Credit and debit cards | Flat ₹250 off | ₹2,500 | ₹250 |
   | Kestrel Bank | Credit cards | 5% instant discount | ₹1,000 | ₹750 |
 
-- FR-2 **One offer per order.** At most one offer applies. When a card qualifies, its bank's offer is applied automatically. A card qualifies when:
-  - its bank and card type match an offer;
-  - the order total (after delivery) meets the minimum.
-
-  The customer never has to pick or enter a code.
+- FR-2 **One offer per order, chosen by the customer.**
+  - At most one offer applies.
+  - The customer selects it on the payment page from the offers list (radio options plus **No offer**); none is preselected.
+  - A selected offer applies only when the card entered matches its bank and card type, and the order total (after delivery) meets the minimum.
+  - If the selected offer doesn't match the card, the page says why ("This offer needs an Aurora Bank credit card") and the Pay button shows the full amount.
+  - If the card entered qualifies for an offer that isn't selected, a hint offers it: "Your card qualifies for the Aurora Bank offer (−₹600) — Apply". The customer still makes the choice; nothing is applied silently.
 - FR-3 **Discount rules.**
   - The discount is computed by the server: percentage of the order total, rounded down to the rupee, capped at the maximum.
   - The amount to pay is the order total minus the discount.
@@ -68,8 +73,9 @@ Shoppers also decide where to buy based on bank offers, so they want to see them
   - If no offer applies at that price, the banner is not shown; there is no invented saving.
   - Out-of-stock products don't show it.
 - FR-5 **Payment page offers.**
-  - The payment page lists the offers, marking which apply to this order's amount, for example "Aurora Bank: add ₹1,200 more to qualify". These hints are informational only; they don't link back to the cart.
-  - When a qualifying card is entered, it shows "Aurora Bank offer applied: −₹600" and the Pay button shows the reduced amount.
+  - Offers are shown on the Card tab as the selectable list from FR-2, each with its saving on this order, for example "Save ₹600".
+  - Offers the order doesn't reach are shown disabled, with "Add ₹1,200 more to qualify". These hints are informational only; they don't link back to the cart.
+  - With a selected offer and a matching card, the summary shows "Aurora Bank offer: −₹600" and the Pay button shows the reduced amount.
 
 ### 5.2 Payment page (replaces the F-008 interim page)
 
@@ -91,28 +97,33 @@ Shoppers also decide where to buy based on bank offers, so they want to see them
   - expiry not in the past;
   - CVV of 3 digits.
 
-  As the number is typed, the bank and network are recognised and shown, for example "Aurora Bank · Visa credit".
-- FR-10 **Demo cards only.** Only the published demo cards are accepted. Any other valid-looking number is refused before anything leaves the browser: "Use one of the demo cards — this store never accepts real cards". A **Use a demo card** list fills in the number. The demo cards are:
+  - Validation also covers the expiry (not in the past) and the CVV (3 digits, or 4 for American Express).
+  - As the number is typed, the network is recognised from its prefix (Visa, Mastercard, RuPay, American Express).
+  - If the number falls in one of the fictional banks' card ranges, the bank and card type are also shown, for example "Aurora Bank · Visa credit".
+- FR-10 **Any valid card number is accepted; the outcome follows a rule.**
+  - Any number that passes the Luhn check can be used.
+  - The outcome depends on the last 4 digits:
 
-  | Card | Number ends | Outcome |
-  |---|---|---|
-  | Aurora Bank Visa credit | 4242 | Succeeds (Aurora offer) |
-  | Meridian Bank Mastercard debit | 5100 | Succeeds (Meridian offer) |
-  | Kestrel Bank RuPay credit | 6521 | Succeeds (Kestrel offer) |
-  | Demo Bank Visa | 0002 | Declined by the bank |
-  | Demo Bank Mastercard | 9995 | Fails: insufficient funds |
+    | Last 4 digits | Outcome |
+    |---|---|
+    | `0002` | Declined by the bank |
+    | `9995` | Fails: insufficient funds |
+    | anything else | Succeeds (after the bank OTP) |
 
-  Any future expiry and any 3-digit CVV are accepted.
+  - Cards from the fictional banks are recognised by fictional card-number prefixes, and only these can receive an offer. Other cards pay the full amount.
+  - A **Use a demo card** list fills in one card for each bank plus the two failure cards. The rule is explained next to it.
 - FR-11 **Bank verification step.**
   - After **Pay ₹X**, a "Demo bank verification" step asks for a 6-digit OTP. The code is shown on screen, as in F-006's simulated OTP.
   - A correct code completes the payment.
   - Three wrong codes fail the attempt ("Verification failed").
   - **Cancel** on this step returns to the payment choice, and that attempt counts as failed.
   - Cards with a failure outcome fail at this step, after the OTP is entered, with their reason.
-- FR-12 **No card storage.**
-  - The CVV and expiry never leave the browser.
-  - The server receives only the demo card number, validates it against the demo list, and keeps only bank, network, card type and last 4 digits.
-  - Nothing card-related is logged.
+- FR-12 **The full card number never leaves the browser.** Because any valid number is accepted, someone could type a real card number, so:
+  - the browser sends only the first 6 digits (enough to recognise the network and fictional bank) and the last 4;
+  - the CVV and expiry are checked in the browser and never sent;
+  - the server stores only the network, the fictional bank and card type (if any), and the last 4 digits;
+  - the form uses `autocomplete="cc-number"` etc. for usability, but nothing is saved by the app;
+  - nothing card-related is logged.
   - Saved cards are out of scope.
 
 ### 5.4 UPI payment (PAY-1, PAY-6)
@@ -180,7 +191,7 @@ These events are recorded by the server, at the state change, so they're counted
 
 ## 6. Non-Functional Requirements
 
-- **Safety (NFR-5):** no real card data can enter the system (FR-10, FR-12). Amounts, offers and outcomes are decided by the server; the client's displayed amount is never trusted.
+- **Safety (NFR-5):** the full card number, CVV and expiry never reach the server (FR-12). Amounts, offer eligibility and outcomes are decided by the server; the client's displayed amount is never trusted.
 - **Integrity:**
   - success, stock conversion and cart update happen atomically;
   - completion happens exactly once;
@@ -217,7 +228,8 @@ These events are recorded by the server, at the state change, so they're counted
 | Entity | Fields | Notes |
 |---|---|---|
 | Offer (static, in `@store/shared`) | id, bank, cardTypes, kind (percent/flat), value, minOrderPaise, maxDiscountPaise | Fictional |
-| Demo card (static, server and shared) | number, bank, network, cardType, outcome | Fictional numbers that pass the Luhn check |
+| Card range (static, shared) | prefix, bank, network, cardType | Fictional bank card-number prefixes; the outcome rule is keyed on the last 4 digits |
+| Demo card list (static, web) | number, label | For convenience only; any valid number works |
 | PaymentAttempt | id, orderId, method, status (`pending` / `succeeded` / `failed`), failureReason, cardBank, cardNetwork, cardType, cardLast4, upiId, offerId, discountPaise, amountPaise, otpHash, otpAttempts, expiresAt, createdAt, completedAt | One `pending` per order at a time |
 | Order | + paymentLabel, offerDiscountPaise, paidPaise, paidAt; status gains `confirmed` | |
 | OrderStatusHistory | orderId, status, at | Records Payment Successful and Order Confirmed now; F-010 extends |
@@ -229,8 +241,8 @@ All routes require sign-in and order ownership.
 | Endpoint | Purpose |
 |---|---|
 | `GET /api/offers` | Offer catalogue (also used by the product page) |
-| `GET /api/orders/:id/payment-quote?card=<demo number>` | Amount to pay, applicable offer for that card (or none), offer eligibility list |
-| `POST /api/orders/:id/payments` | `{ method: 'card', cardNumber }` → attempt with OTP challenge; `{ method: 'upi_id', upiId }` or `{ method: 'upi_qr' }` → pending attempt (QR URI included) |
+| `GET /api/orders/:id/payment-quote?offerId=&bin=` | Amount to pay, whether the selected offer applies to that card (with the reason if not), the eligibility list, and a suggested offer for the card |
+| `POST /api/orders/:id/payments` | `{ method: 'card', bin, last4, offerId? }` → attempt with OTP challenge; `{ method: 'upi_id', upiId }` or `{ method: 'upi_qr' }` → pending attempt (QR URI included) |
 | `POST /api/payments/:attemptId/verify` | `{ otp }` → success, failure, or remaining tries |
 | `POST /api/payments/:attemptId/upi-response` | `{ approve: boolean }`, from the demo UPI app |
 | `POST /api/payments/:attemptId/cancel` | Withdraw an attempt |
@@ -240,7 +252,8 @@ All routes require sign-in and order ownership.
 **Errors** (409 unless noted):
 - `ORDER_NOT_PENDING`;
 - `HOLD_EXPIRED`;
-- `NOT_A_DEMO_CARD` (400);
+- `INVALID_CARD` (400);
+- `OFFER_NOT_APPLICABLE` (409, with the reason);
 - `INVALID_UPI_ID` (400);
 - `ATTEMPT_NOT_PENDING`.
 
@@ -248,11 +261,12 @@ All routes require sign-in and order ownership.
 
 - **Server state:**
   - the order query;
-  - the payment quote, keyed by the recognised card;
+  - the payment quote, keyed by the selected offer and the card's first 6 digits;
   - the attempt query, polled every 2 seconds while a UPI request is pending.
 - **Local state:**
   - the selected tab;
-  - form fields (the CVV and expiry stay local, never sent).
+  - form fields (the full number, CVV and expiry stay local, never sent);
+  - the selected offer.
 
 ## 12. Loading States
 
@@ -273,7 +287,8 @@ N/A. The payment page always has an order; if no offer applies, the offers list 
 
 ## 15. Security Considerations
 
-- Demo cards only, CVV and expiry never sent, nothing stored but masked data (§6).
+- Only the first 6 and last 4 digits are sent; the full number, CVV and expiry never leave the browser; only masked data is stored (FR-12).
+- The server trusts the first 6 and last 4 sent by the client. That is acceptable only because payment is simulated; a real gateway would tokenise the card instead.
 - OTPs are stored hashed, limited to 3 tries, and valid only for the attempt.
 - Ownership is checked on every order and attempt route. The demo UPI approval route also checks the order owner, so one customer can't approve another's payment.
 - JSON-only POST guard from ADR-003 applies.
@@ -285,15 +300,21 @@ See §5.7.
 ## 17. Acceptance Criteria
 
 1. A product priced ₹6,000 shows "Save ₹600 with Aurora Bank credit cards". A product priced ₹800 shows no banner. All offers lists all three offers with terms, marked as demo offers.
-2. On the payment page, the Aurora demo card on a ₹6,000 order shows "Aurora Bank offer applied: −₹600", and the button reads "Pay ₹5,400". Below the minimum, no offer applies and the eligibility hint shows how much more is needed.
-3. Only one offer ever applies. The server computes it; tampering with the amount on the client has no effect.
-4. A non-demo card number (valid Luhn) is refused without a request being sent. Network logs and the database contain no full card number, expiry or CVV.
-5. A success card plus the correct OTP:
+2. On a ₹6,000 order:
+   - no offer is preselected;
+   - selecting the Aurora offer and entering an Aurora card shows "Aurora Bank offer: −₹600", and the button reads "Pay ₹5,400";
+   - with a non-Aurora card, the page explains why the offer doesn't apply, and the button shows the full amount;
+   - entering an Aurora card with no offer selected shows the Apply hint.
+
+   Offers above the order's amount are disabled, with "Add ₹X more".
+3. Only one offer ever applies. The server checks eligibility and computes the discount; tampering with the amount or forcing an ineligible offer is refused.
+4. Any Luhn-valid number is accepted; invalid numbers are refused in the browser. Network requests and the database contain no full card number, expiry or CVV — only the first 6 and last 4 digits are sent, and only the last 4 are stored.
+5. A succeeding card plus the correct OTP:
    - confirms the order (Payment Successful → Order Confirmed, both timestamped);
    - converts the held stock into a sale (availability unchanged, `on_hand` reduced);
    - removes the ordered items from the cart;
    - shows the confirmation page with masked card and savings.
-6. The decline card and the insufficient-funds card fail with their reason. Three wrong OTPs fail as "Verification failed". In each case the order stays pending, the countdown continues, the cart is intact, and Try again works.
+6. Cards ending `0002` (declined) and `9995` (insufficient funds) fail with their reason. Three wrong OTPs fail as "Verification failed". In each case the order stays pending, the countdown continues, the cart is intact, and Try again works.
 7. UPI ID: Send request → demo UPI app → Approve confirms the order. Decline fails with the reason. No response for 5 minutes expires the request. Cancel request withdraws it.
 8. UPI QR: the QR encodes `demo-payment://pay?orderId=…&amount=…`; Simulate scan → Approve confirms the order.
 9. Payment cannot succeed after the hold expires, including a late UPI approval; the page shows the hold-expired state.
@@ -306,7 +327,8 @@ See §5.7.
 
 - **Unit:**
   - offer selection and discount maths (percent rounding, cap, minimum, best offer for a price);
-  - Luhn check and demo-card recognition;
+  - Luhn check, network and fictional-bank recognition, outcome rule;
+  - offer eligibility for a card and a chosen offer;
   - UPI ID format.
 - **API:**
   - each card outcome;
@@ -320,13 +342,14 @@ See §5.7.
   - analytics recorded once.
 - **Component:**
   - offer banner and panel;
-  - card form (recognition, demo list, non-demo refusal, Pay amount);
+  - card form (recognition, demo list, only the first 6 and last 4 digits sent, Pay amount);
+  - offer selection, mismatch message and Apply hint;
   - bank verification;
   - UPI flows with polling;
   - failure and retry;
   - confirmation page.
 - **E2E:**
-  - product banner → checkout → card success → confirmation → cart reduced;
+  - product banner → checkout → choose offer → card success → confirmation → cart reduced;
   - decline then retry with another card;
   - UPI ID approve;
   - another shopper's view (stock reduced only once);
@@ -360,7 +383,8 @@ F-008 (orders, holds, payment page). F-010 adds order history, order details and
 
 ## 22. Decisions Required From User
 
-1. **Offers:** the catalogue in FR-1 and one offer per order, applied automatically (recommended), versus letting the customer choose.
-2. **Demo cards only** (recommended), versus accepting any Luhn-valid number with an outcome by rule.
-3. **Bank OTP step for cards** (recommended for an Indian-market feel), versus paying in one step.
-4. **UPI:** an in-page demo UPI app dialog with Approve/Decline and a 5-minute request window (recommended), with no UPI PIN.
+Resolved 2026-10-06:
+- the customer chooses the offer, one per order;
+- any Luhn-valid card number is accepted, with the outcome set by its last 4 digits;
+- the bank OTP step is included;
+- UPI uses an in-page demo app with a 5-minute window and no PIN.
