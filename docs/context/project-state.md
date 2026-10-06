@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-009 Simulated payment — implemented and tested, awaiting Gate 2.** F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
+**Next: F-010 Orders — gathering decisions Q9 (cancel/return/refund) and Q16 (delivery OTP).** F-001 to F-009 complete (accepted 2026-10-06). F-001 to F-008 complete (accepted 2026-10-06). F-001 to F-007 complete (accepted 2026-10-06). F-001 to F-006 complete (accepted 2026-10-06). F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -97,8 +97,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 2 F-006: 2026-10-06.
 - Gate 1 F-007: 2026-10-06; Gate 2 F-007: 2026-10-06. ADR-004 accepted.
 - Gate 1 F-008: 2026-10-06; Gate 2 F-008: 2026-10-06.
-- Gate 1 F-009: 2026-10-06 (customer-chosen offer, any Luhn-valid card with first 6/last 4 only, bank OTP, in-page demo UPI app).
+- Gate 1 F-009: 2026-10-06 (customer-chosen offer, any Luhn-valid card with first 6/last 4 only, bank OTP, in-page demo UPI app); Gate 2 F-009: 2026-10-06.
 
 ## Exact next action
 
-Wait for Gate 2 acceptance of F-009 (`docs/features/F-009-payment/acceptance.md`). On acceptance: mark complete, then prepare F-010 (Orders: history, details, cancel/return/refund, delivery OTP). F-010 needs Q9 (cancel/return/refund rules) and Q16 (delivery OTP details).
+Prepare F-010 (Orders: history, details, cancel/return/refund, delivery OTP). F-010 needs Q9 (cancel/return/refund rules) and Q16 (delivery OTP details).
