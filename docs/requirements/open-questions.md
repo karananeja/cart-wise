@@ -41,8 +41,8 @@ Recommendation: import all categories except `vehicle` and `motorcycle` (~184 pr
 
 | # | Question | Blocks | Recommendation |
 |---|---|---|---|
-| Q4 | DummyJSON has no variants (size/colour). Skip variants, or synthesise app-owned variants for a few categories (shoes, shirts)? | F-003 | Synthesise sizes for apparel/footwear only, as app-owned data |
-| Q5 | DummyJSON reviews are generic fabricated data (3 per product). How to present? | F-003 / Reviews | Show them, labelled "Demo reviews" |
+| Q4 | **Resolved 2026-10-06 (user): add app-owned sizes** for apparel and footwear. | F-003 | Size sets proposed in F-003 spec |
+| Q5 | **Resolved 2026-10-06 (user): do not show DummyJSON reviews.** | F-003 / Reviews | Catalog rating stays as shown since F-001; a reviews feature would need application-owned reviews (Phase 2) |
 | Q6 | Store Simulation Console is in brief §16 but not in the MVP priority list. Include in MVP? | F-010 | Yes — without it the order lifecycle cannot be demonstrated |
 | Q7 | Map-assisted address entry: which provider? | F-007 | Manual form first; map via OpenStreetMap + Leaflet + Nominatim (free, no key) — Google Maps needs a billing account |
 | Q8 | Delivery options and pricing (e.g. Standard free over ₹X, Express ₹Y) | F-008 | Propose concrete rules in F-008 spec |

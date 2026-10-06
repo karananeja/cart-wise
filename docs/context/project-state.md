@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-002 Search and search history — implemented and tested, awaiting Gate 2 sign-off.** F-001 complete (accepted 2026-10-06).
+**F-003 Product details, sizes and recently viewed — specification and intent drafted, awaiting Gate 1.** F-001 and F-002 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -21,7 +21,7 @@ Phase 1 — MVP.
 
 ## In progress
 
-None. Waiting for Gate 2 acceptance of F-002.
+None. Waiting for Gate 1 approval of F-003.
 
 ## Remaining
 
@@ -59,7 +59,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 ## Pending questions for the user
 
 - Store name: "Cartwise" kept as placeholder (user did not address it).
-- Q4–Q14 (`requirements/open-questions.md`) for later features.
+- Q4 resolved (add sizes), Q5 resolved (no DummyJSON reviews). Q6–Q14 open for later features.
+- F-003: confirm size sets (spec FR-6).
 
 ## Rejected approaches
 
@@ -71,7 +72,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 1 F-001: 2026-10-06.
 - Gate 2 F-001: 2026-10-06 ("proceed").
 - Gate 1 F-002: 2026-10-06.
+- Gate 2 F-002: 2026-10-06.
 
 ## Exact next action
 
-Wait for Gate 2 acceptance of F-002. On acceptance: mark F-002 complete (spec, acceptance.md, project-plan, this file), then prepare F-003 (Product details + recently viewed) specification and intent for Gate 1. F-003 needs open questions Q4 (variants) and Q5 (review labelling) answered.
+Wait for Gate 1 approval of F-003 (`features/F-003-product-details/`). On approval: technical design (variants table, per-variant inventory, aggregate availability in the listing query, batch endpoint), test plan, implement, test, present for Gate 2.

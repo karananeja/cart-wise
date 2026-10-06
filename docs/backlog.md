@@ -11,3 +11,4 @@ Useful ideas that are outside the currently approved scope. Nothing here is impl
 | 2026-10-06 | Brand landing pages | F-001 scoping | Brand is a filter in F-001 |
 | 2026-10-06 | Route-level code-splitting for the web bundle | F-001 build | Vite warns the main chunk exceeds 500 kB |
 | 2026-10-06 | Product weight/dimensions in specifications | F-001 | Needs units; DummyJSON provides none |
+| 2026-10-06 | Application-owned reviews (write, moderate, display) | Q5 decision | DummyJSON reviews deliberately not shown; brief lists Reviews under "Next" |

@@ -16,3 +16,7 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-002 | Spec and intent presented for Gate 1 | |
 | 2026-10-06 | F-002 Gate 1 | **Approved** | |
 | 2026-10-06 | F-002 implementation | Implemented, tested, presented for Gate 2 | |
+| 2026-10-06 | F-002 Gate 2 | **Accepted** | |
+| 2026-10-06 | Q4 Variants | Add app-owned sizes for apparel and footwear | |
+| 2026-10-06 | Q5 Reviews | Do not show DummyJSON reviews | |
+| 2026-10-06 | F-003 | Spec and intent presented for Gate 1 | |
