@@ -70,7 +70,7 @@ export function ReturnItemsDialog({ order, disabled }: { order: Order; disabled?
       <DialogTrigger asChild>
         <Button disabled={disabled}>Return items</Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         {step === 'choose' ? (
           <>
             <DialogHeader>
@@ -89,7 +89,7 @@ export function ReturnItemsDialog({ order, disabled }: { order: Order; disabled?
                       <input type="checkbox" checked={checked} onChange={(e) => toggle(line.id, e.target.checked)} />
                       <ProductImage src={line.thumbnailUrl} alt="" className="size-10 shrink-0" />
                       <span className="min-w-0 flex-1">
-                        <span className="block truncate font-medium">{line.title}</span>
+                        <span className="line-clamp-2 font-medium break-words">{line.title}</span>
                         <span className="text-muted-foreground">
                           {line.size && <>Size {line.size} · </>}Qty {line.quantity} · refund {formatPrice(refunds.get(line.id) ?? 0)}
                         </span>
@@ -98,7 +98,7 @@ export function ReturnItemsDialog({ order, disabled }: { order: Order; disabled?
                     {checked && (
                       <div className="flex flex-col gap-1 pl-7">
                         <label htmlFor={reasonId} className="text-sm font-medium">
-                          Reason for {line.title}
+                          Reason<span className="sr-only"> for {line.title}</span>
                         </label>
                         <select
                           id={reasonId}
@@ -142,15 +142,16 @@ export function ReturnItemsDialog({ order, disabled }: { order: Order; disabled?
                 {formatPrice(total)} will be refunded to {order.payment?.label} once the items are picked up.
               </DialogDescription>
             </DialogHeader>
-            <ul className="flex flex-col gap-1 text-sm">
+            <ul className="flex flex-col gap-3 text-sm">
               {selected.map((id) => {
                 const line = order.lines.find((l) => l.id === id)!;
                 return (
-                  <li key={id} className="flex justify-between gap-3">
-                    <span className="truncate">
-                      {line.title} · {RETURN_REASONS.find((r) => r.id === reasons.get(id))?.label}
+                  <li key={id} className="flex items-start justify-between gap-3">
+                    <span className="flex min-w-0 flex-col">
+                      <span className="font-medium break-words">{line.title}</span>
+                      <span className="text-muted-foreground">{RETURN_REASONS.find((r) => r.id === reasons.get(id))?.label}</span>
                     </span>
-                    <span className="tabular-nums">{formatPrice(refunds.get(id) ?? 0)}</span>
+                    <span className="shrink-0 tabular-nums">{formatPrice(refunds.get(id) ?? 0)}</span>
                   </li>
                 );
               })}

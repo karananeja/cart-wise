@@ -58,7 +58,7 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 
 ## Tests
 
-- `pnpm test`: 380 passing (shared 38, api 203, web 139). `pnpm e2e`: 42 passing (stable over 3 repeats). Typecheck clean. Build succeeds.
+- `pnpm test`: 380 passing (shared 38, api 203, web 139). `pnpm e2e`: 43 passing (stable over 3 repeats). Typecheck clean. Build succeeds.
 - No failing tests.
 
 ## Known bugs / limitations

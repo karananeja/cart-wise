@@ -65,3 +65,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-010 decisions | Q6: console in MVP, order simulation in F-010; Q14: demo operator password; delivery charge not refunded on returns | |
 | 2026-10-06 | F-010 Gate 1 | **Approved** | |
 | 2026-10-06 | F-010 implementation | Implemented, tested, presented for Gate 2 | |
+| 2026-10-06 | F-010 Gate 2 review | Return dialog width issue reported and fixed | |

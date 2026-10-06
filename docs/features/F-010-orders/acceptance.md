@@ -21,7 +21,7 @@
 ## 2. Test results summary
 
 - 380 unit, API and component tests (shared 38, API 203, web 139).
-- 42 E2E tests, 3 of them new, passing on 3 repeated runs.
+- 43 E2E tests, 4 of them new, passing on 3 repeated runs.
 - Typecheck and build clean.
 
 ## 3. Known issues and limitations
@@ -36,6 +36,12 @@
 None.
 
 ## 5. Other changes
+
+- **Return dialog overflow fixed (Gate 2 review, 2026-10-06).** Long item names pushed the return dialog's content past its edge; at 360 px the prices and Back button were cut off. Two causes:
+  - The shared dialog's grid track could not shrink below its widest unwrapped line. The track now shrinks, which also protects every other dialog.
+  - The return rows kept titles and reasons on one line. Titles now wrap, reasons sit on their own line, and prices stay visible.
+
+  The dialog is also wider on desktop (512 px). A new E2E test checks it with long names at 360 px; it fails without the fix.
 
 - **README:** now documents the demo cards, the on-screen codes and the operator password, and corrects the stated price rate (₹96 = $1).
 - **F-009 API test updated:** it asserted that a paid order could not be cancelled, which F-010 now deliberately allows.

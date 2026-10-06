@@ -148,6 +148,34 @@ test('cancelling while Processing refunds at once and puts the stock back', asyn
 test.describe('mobile', () => {
   test.use({ viewport: { width: 360, height: 780 } });
 
+  test('the return dialog fits long item names without overflowing', async ({ page, browser }) => {
+    const slugs = ['knoll-saarinen-executive-conference-chair', 'olay-ultra-moisture-shea-butter-body-wash'];
+    for (const slug of slugs) setStock(slug, 10);
+    await signedInCustomer(page);
+    const orderId = await paidOrder(page, slugs);
+    const op = await operatorPage(browser);
+    const row = op.getByRole('article', { name: orderId });
+    for (const step of ['processing', 'shipped', 'out for delivery']) await row.getByRole('button', { name: `Advance to ${step}` }).click();
+    await page.goto(`/orders/${orderId}`);
+    const code = (await page.getByText(/Share code \d{4}/).first().textContent())!.match(/\d{4}/)![0];
+    await row.getByLabel('Delivery code').fill(code);
+    await row.getByRole('button', { name: 'Mark delivered' }).click();
+    await expect(row).toContainText(/Delivered/);
+
+    await page.reload();
+    await page.getByRole('button', { name: 'Return items' }).click();
+    const choose = page.getByRole('dialog', { name: 'Return items' });
+    for (const box of await choose.getByRole('checkbox').all()) await box.check();
+    const fits = (dialog: typeof choose) => dialog.evaluate((el) => el.scrollWidth <= el.clientWidth);
+    expect(await fits(choose)).toBe(true);
+    for (const select of await choose.getByRole('combobox').all()) await select.selectOption({ label: 'Size or fit issue' });
+    await choose.getByRole('button', { name: 'Continue' }).click();
+    const confirm = page.getByRole('dialog', { name: 'Confirm your return' });
+    await expect(confirm.getByText('Knoll Saarinen Executive Conference Chair')).toBeVisible();
+    expect(await fits(confirm)).toBe(true);
+    await expect(confirm.getByRole('button', { name: 'Back' })).toBeInViewport();
+  });
+
   test('orders list and order page fit at 360 px', async ({ page }) => {
     const slug = 'family-tree-photo-frame';
     setStock(slug, 10);
