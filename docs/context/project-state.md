@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-005 Wishlist — implemented and tested, awaiting Gate 2.** F-001 to F-004 complete (accepted 2026-10-06).
+**F-006 Sign-up, sign-in and guest merge — specification, intent and ADR-003 drafted, awaiting Gate 1.** F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -21,7 +21,7 @@ Phase 1 — MVP.
 
 ## In progress
 
-None. Waiting for Gate 2 acceptance of F-005.
+None. Waiting for Gate 1 approval of F-006.
 
 ## Remaining
 
@@ -87,7 +87,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 1 F-004: 2026-10-06 (10 per line, 30-day carts; Go to cart later changed to an in-place stepper).
 - Gate 2 F-004: 2026-10-06.
 - Gate 1 F-005: 2026-10-06 (product-level, 100 items, 90 days, hearts on cards).
+- Gate 2 F-005: 2026-10-06.
 
 ## Exact next action
 
-Wait for Gate 2 acceptance of F-005. On acceptance: mark complete, then prepare F-006 (Authentication + guest state merge) specification and intent for Gate 1. F-006 needs Q12 (merge conflict rules) and Q13 (verification/password reset), and touches the security model, so options will be presented.
+Wait for Gate 1 approval of F-006 (`features/F-006-authentication/`), including confirmation of: OTP-default sign-in with password alternative; code rules; sign-out returns device to empty guest. On approval: accept ADR-003, technical design, test plan, implement.

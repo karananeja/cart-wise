@@ -50,8 +50,8 @@ Recommendation: import all categories except `vehicle` and `motorcycle` (~184 pr
 | Q9 | Cancellation / return / refund rules (which states allow which action, refund timing) | F-010 | Cancel before Shipped; return within N days of Delivered; simulated instant refund |
 | Q10 | Inventory reservation: when reserved, how long held | F-008 | Reserve at payment start, hold 10 minutes, release on failure/expiry |
 | Q11 | Taxes: tax-inclusive prices (Indian MRP convention) with GST shown informationally, or tax added at checkout? | F-008 | Tax-inclusive |
-| Q12 | Guest/account merge conflict rules (cart quantity when same item in both) | F-006 | Take the larger quantity, capped by stock |
-| Q13 | Account verification (email/mobile OTP), password reset | F-006 | None in MVP; simulated reset in backlog |
+| Q12 | **Resolved 2026-10-06 (user):** cart merge takes the larger quantity, capped by stock and 10 | F-006 | — |
+| Q13 | **Resolved 2026-10-06 (user):** simulated mobile OTP verification; sign-in by mobile + OTP; forgot password via simulated code | F-006 | — |
 | Q16 | Delivery OTP details: when the code is generated (on Out for Delivery), where the customer sees it (order page and order list), length (4 digits), wrong-code behaviour (message + limited attempts), regeneration | F-010 / F-011 | Generate a 4-digit code on Out for Delivery; show it on the order page; 3 wrong attempts lock delivery for that attempt until a new code is issued; confirm in F-010 spec |
 | Q14 | Simulation console access control | F-011 | Local demo route with a visible "Demo operator" label, no separate admin auth |
 
