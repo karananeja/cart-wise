@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-006 Sign-up, sign-in and guest merge — specification, intent and ADR-003 drafted, awaiting Gate 1.** F-001 to F-005 complete (accepted 2026-10-06).
+**F-006 Sign-up, sign-in and guest merge — implemented and tested, awaiting Gate 2.** F-001 to F-005 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -21,7 +21,7 @@ Phase 1 — MVP.
 
 ## In progress
 
-None. Waiting for Gate 1 approval of F-006.
+None. Waiting for Gate 2 acceptance of F-006.
 
 ## Remaining
 
@@ -35,7 +35,7 @@ F-002 → F-011 per `project-plan.md`, then Phase 2 and optional AI.
 
 ## Architecture decisions
 
-ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application inventory, accepted). F-003: inventory is per sellable unit (size or product); schema version 2 with automatic rebuild of seeded tables.
+ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application inventory, accepted), ADR-003 (sessions, scrypt, simulated OTP, JSON-only POST guard, accepted). F-003: inventory is per sellable unit (size or product); schema version 2 with automatic rebuild of seeded tables.
 
 ## Relevant files
 
@@ -49,11 +49,12 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 - `apps/api/src/inventory/sizes.ts` — size sets; `apps/web/src/lib/localList.ts` — bounded local lists (recent searches, recently viewed)
 - `apps/api/src/cart/` — cart rules, service (cookie identity, limits, expiry), routes; `apps/web/src/features/cart/` — Add to cart, cart page, hooks
 - `apps/api/src/wishlist/`, `apps/web/src/features/wishlist/` — wishlist API, hearts, page, size picker; `apps/api/src/http/cookies.ts` — guest cookies
+- `apps/api/src/auth/` (validation, passwords, otp, sessions, rateLimit, merge, routes), `apps/api/src/http/owner.ts` (user/guest owner), `apps/web/src/features/auth/`
 - `apps/web/src/features/search/SearchBox.tsx` — header combobox; `apps/web/src/lib/recentSearches.ts` — history store
 
 ## Tests
 
-- `pnpm test`: 209 passing (shared 16, api 114, web 79). `pnpm e2e`: 24 passing (stable over 3 repeats). Typecheck clean. Build succeeds.
+- `pnpm test`: 241 passing. `pnpm e2e`: 29 passing (stable over 3 repeats). Typecheck clean. Build succeeds.
 - No failing tests.
 
 ## Known bugs / limitations
@@ -88,7 +89,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 2 F-004: 2026-10-06.
 - Gate 1 F-005: 2026-10-06 (product-level, 100 items, 90 days, hearts on cards).
 - Gate 2 F-005: 2026-10-06.
+- Gate 1 F-006: 2026-10-06 (OTP-default sign-in + password alternative; code rules; sign-out → empty guest). ADR-003 accepted.
 
 ## Exact next action
 
-Wait for Gate 1 approval of F-006 (`features/F-006-authentication/`), including confirmation of: OTP-default sign-in with password alternative; code rules; sign-out returns device to empty guest. On approval: accept ADR-003, technical design, test plan, implement.
+Wait for Gate 2 acceptance of F-006. On acceptance: mark complete, then prepare F-007 (Address management) specification and intent for Gate 1. F-007 needs Q7 (map provider: OpenStreetMap/Leaflet/Nominatim recommended, or manual-only first).

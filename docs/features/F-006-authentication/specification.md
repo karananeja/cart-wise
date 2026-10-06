@@ -4,7 +4,7 @@
 
 **ID:** F-006
 **Name:** Sign-up, sign-in and guest state merge
-**Status:** Approved — In Progress (Gate 1 approved 2026-10-06)
+**Status:** Acceptance — awaiting Gate 2 (Gate 1 approved 2026-10-06)
 **Requirements:** AUTH-1..4, STATE-2
 **User decisions applied (2026-10-06):**
 - verification by simulated mobile OTP;

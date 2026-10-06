@@ -26,3 +26,6 @@ export const clearRecentSearches = recentSearches.clear;
 /** Drops the cache so the next read comes from storage (another tab changed it, or tests). */
 export const reloadRecentSearches = recentSearches.reload;
 export const useRecentSearches = recentSearches.useList;
+
+/** For account sync (F-006). */
+export const recentSearchesStore = recentSearches;

@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useCategories } from '@/features/catalog/api';
+import { HeaderAccount } from '@/features/auth/HeaderAccount';
 import { HeaderCartLink } from '@/features/cart/HeaderCartLink';
 import { HeaderWishlistLink } from '@/features/wishlist/HeaderWishlistLink';
 import { SearchBox } from '@/features/search/SearchBox';
@@ -62,6 +63,7 @@ export function Header() {
           </Button>
           <HeaderWishlistLink />
           <HeaderCartLink />
+          <HeaderAccount />
         </nav>
       </div>
     </header>

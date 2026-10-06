@@ -20,3 +20,6 @@ export const recordProductView = (slug: string) => recentlyViewed.add({ slug, vi
 export const clearRecentlyViewed = recentlyViewed.clear;
 export const reloadRecentlyViewed = recentlyViewed.reload;
 export const useRecentlyViewed = recentlyViewed.useList;
+
+/** For account sync (F-006). */
+export const recentlyViewedStore = recentlyViewed;

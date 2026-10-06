@@ -6,6 +6,10 @@ import { ListingPage } from '@/features/catalog/pages/ListingPage';
 import { ProductPage } from '@/features/catalog/pages/ProductPage';
 import { CartPage } from '@/features/cart/CartPage';
 import { WishlistPage } from '@/features/wishlist/WishlistPage';
+import { AccountPage } from '@/features/auth/AccountPage';
+import { ForgotPasswordPage } from '@/features/auth/ForgotPasswordPage';
+import { LoginPage } from '@/features/auth/LoginPage';
+import { SignupPage } from '@/features/auth/SignupPage';
 import { RootLayout } from './RootLayout';
 import { RouteError } from './RouteError';
 
@@ -20,6 +24,10 @@ export const routes: RouteObject[] = [
       { path: 'search', element: <SearchPage /> },
       { path: 'cart', element: <CartPage /> },
       { path: 'wishlist', element: <WishlistPage /> },
+      { path: 'login', element: <LoginPage /> },
+      { path: 'signup', element: <SignupPage /> },
+      { path: 'forgot-password', element: <ForgotPasswordPage /> },
+      { path: 'account', element: <AccountPage /> },
       { path: 'p/:productSlug', element: <ProductPage /> },
       { path: '*', element: <NotFound /> },
     ],

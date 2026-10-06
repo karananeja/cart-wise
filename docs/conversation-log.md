@@ -39,3 +39,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-006 decisions | Simulated mobile OTP verification; mobile+OTP sign-in; larger-quantity cart merge; forgot password with code | |
 | 2026-10-06 | F-006 | Spec, intent and ADR-003 presented for Gate 1 | |
 | 2026-10-06 | F-006 Gate 1 | **Approved**; ADR-003 accepted | |
+| 2026-10-06 | F-006 implementation | Implemented, tested, presented for Gate 2 | |

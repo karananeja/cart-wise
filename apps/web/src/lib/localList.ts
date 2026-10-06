@@ -16,6 +16,7 @@ export function createLocalList<T>({ storageKey, max, identity, isItem }: LocalL
   const empty: T[] = [];
   let cache: T[] | null = null;
   const listeners = new Set<() => void>();
+  const addListeners = new Set<(item: T) => void>();
 
   function read(): T[] {
     if (cache) return cache;
@@ -58,6 +59,18 @@ export function createLocalList<T>({ storageKey, max, identity, isItem }: LocalL
     add(item: T) {
       const id = identity(item);
       write([item, ...read().filter((existing) => identity(existing) !== id)].slice(0, max));
+      addListeners.forEach((listener) => listener(item));
+    },
+    /** Replaces the whole list (e.g. with the account's merged copy); does not notify add-listeners. */
+    setAll(items: T[]) {
+      write(items.filter(isItem).slice(0, max));
+    },
+    /** Called with each newly added item (used to mirror additions to the account). */
+    onAdd(listener: (item: T) => void) {
+      addListeners.add(listener);
+      return () => {
+        addListeners.delete(listener);
+      };
     },
     remove(id: string) {
       write(read().filter((existing) => identity(existing) !== id));
