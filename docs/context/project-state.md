@@ -8,7 +8,7 @@ Phase 1 — MVP.
 
 ## Current feature
 
-**F-003 Product details, sizes and recently viewed — implemented and tested, awaiting Gate 2.** F-001 and F-002 complete (accepted 2026-10-06).
+**F-004 Guest cart — specification and intent drafted, awaiting Gate 1.** F-001, F-002 and F-003 complete (accepted 2026-10-06).
 
 ## Completed
 
@@ -21,7 +21,7 @@ Phase 1 — MVP.
 
 ## In progress
 
-None. Waiting for Gate 2 acceptance of F-003.
+None. Waiting for Gate 1 approval of F-004.
 
 ## Remaining
 
@@ -31,7 +31,7 @@ F-002 → F-011 per `project-plan.md`, then Phase 2 and optional AI.
 
 - F-001 specification and intent (Gate 1, 2026-10-06); F-001 accepted (Gate 2, 2026-10-06).
 - F-002 specification and intent (Gate 1, 2026-10-06); F-002 accepted (Gate 2, 2026-10-06).
-- F-003 specification and intent (Gate 1, 2026-10-06), size sets as proposed.
+- F-003 specification and intent (Gate 1, 2026-10-06), size sets as proposed; F-003 accepted (Gate 2, 2026-10-06).
 
 ## Architecture decisions
 
@@ -75,7 +75,8 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 1 F-002: 2026-10-06.
 - Gate 2 F-002: 2026-10-06.
 - Gate 1 F-003: 2026-10-06.
+- Gate 2 F-003: 2026-10-06.
 
 ## Exact next action
 
-Wait for Gate 2 acceptance of F-003. On acceptance: mark complete, then prepare F-004 (Guest cart, including Add to cart on the product page with size selection) specification and intent for Gate 1.
+Wait for Gate 1 approval of F-004 (`features/F-004-guest-cart/`), including confirmation of the 10-per-line limit, 30-day guest cart lifetime and "Go to cart" behaviour. On approval: technical design (carts and cart_lines tables, anonymous cookie, cart view builder, optimistic mutations), test plan, implement, test, present for Gate 2.
