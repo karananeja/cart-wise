@@ -38,6 +38,10 @@ const orders = createOrderService({ db, carts, addresses: createAddressService(d
 orders.sweepExpired();
 setInterval(() => orders.sweepExpired(), 30 * 1000).unref();
 
+if (!process.env.SIM_OPERATOR_PASSWORD) {
+  console.log('Demo operator page uses the default password "demo-operator" (set SIM_OPERATOR_PASSWORD to change it).');
+}
+
 createApp(db).listen(port, () => {
   console.log(`API listening on http://localhost:${port}`);
 });

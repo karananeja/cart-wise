@@ -3,7 +3,10 @@ import { addressRouter, geoRouter } from './addresses/routes.js';
 import { createAddressService } from './addresses/service.js';
 import { createGeoService } from './geo/service.js';
 import { orderRouter } from './orders/routes.js';
+import { createOrderLifecycle } from './orders/lifecycle.js';
 import { createOrderService } from './orders/service.js';
+import { createOperatorAccess, DEFAULT_OPERATOR_PASSWORD } from './sim/operator.js';
+import { simRouter } from './sim/routes.js';
 import { paymentRouter } from './payments/routes.js';
 import { createPaymentService } from './payments/service.js';
 import { createMergeService } from './auth/merge.js';
@@ -30,6 +33,8 @@ export interface AppOptions {
   fetch?: typeof fetch;
   /** Time source for order holds (injected in tests). */
   clock?: () => number;
+  /** Demo operator password (F-010); defaults to SIM_OPERATOR_PASSWORD, then the demo default. */
+  operatorPassword?: string;
 }
 
 export function createApp(db: Db, options: AppOptions = {}) {
@@ -61,7 +66,10 @@ export function createApp(db: Db, options: AppOptions = {}) {
   api.use(addressRouter(addresses));
   const record = createEventRecorder(db, options.clock);
   const orders = createOrderService({ db, carts, addresses, record, clock: options.clock });
-  api.use(orderRouter(orders));
+  const lifecycle = createOrderLifecycle({ db, orders, record, clock: options.clock });
+  api.use(orderRouter(orders, lifecycle));
+  const operatorPassword = options.operatorPassword ?? process.env.SIM_OPERATOR_PASSWORD ?? DEFAULT_OPERATOR_PASSWORD;
+  api.use(simRouter(createOperatorAccess(db, operatorPassword, options.clock), lifecycle, createLoginLimiter(undefined, options.clock)));
   api.use(paymentRouter(createPaymentService({ db, orders, record, clock: options.clock })));
   api.use(geoRouter(createGeoService({ fetch: options.fetch ?? fetch })));
   api.use(analyticsRouter(db));

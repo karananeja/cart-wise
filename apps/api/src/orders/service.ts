@@ -1,6 +1,12 @@
 import { randomBytes } from 'node:crypto';
 import {
+  CANCELLABLE_STATUSES,
   deliveryOptions,
+  RETURN_WINDOW_MS,
+  type OrderRefund,
+  type OrderReturn,
+  type ReturnReason,
+  type ReturnState,
   PAYMENT_HOLD_MS,
   type Address,
   type CheckoutBlocker,
@@ -38,9 +44,13 @@ interface OrderRow {
   offer_discount_paise: number;
   paid_paise: number | null;
   paid_at: string | null;
+  delivered_at: string | null;
+  cancelled_at: string | null;
+  cancel_reason: string | null;
 }
 
 interface LineRow {
+  id: number;
   product_id: number;
   variant_id: number | null;
   slug: string;
@@ -93,6 +103,12 @@ export function createOrderService({ db, carts, addresses, record, clock = Date.
   const setStatus = db.prepare('UPDATE orders SET status = ?, updated_at = ? WHERE id = ?');
   const markReleased = db.prepare('UPDATE orders SET hold_released_at = ? WHERE id = ? AND hold_released_at IS NULL');
   const history = db.prepare('SELECT status, at FROM order_status_history WHERE order_id = ? ORDER BY id');
+  const returnsOf = db.prepare('SELECT * FROM returns WHERE order_id = ? ORDER BY created_at, id');
+  const returnLinesOf = db.prepare(`
+    SELECT rl.return_id, rl.order_line_id, rl.reason, rl.refund_paise FROM return_lines rl JOIN returns r ON r.id = rl.return_id
+    WHERE r.order_id = ? ORDER BY rl.order_line_id`);
+  const refundsOf = db.prepare('SELECT * FROM refunds WHERE order_id = ? ORDER BY initiated_at, id');
+  const deliveryCode = db.prepare('SELECT code FROM delivery_codes WHERE order_id = ?');
   const pendingAttempts = db.prepare("SELECT id, method, visitor_id FROM payment_attempts WHERE order_id = ? AND status = 'pending'");
   const failAttempt = db.prepare("UPDATE payment_attempts SET status = 'failed', failure_reason = ?, completed_at = ? WHERE id = ? AND status = 'pending'");
 
@@ -124,10 +140,35 @@ export function createOrderService({ db, carts, addresses, record, clock = Date.
     for (const { id } of expiredPending.all(iso(clock())) as { id: string }[]) end(id, 'payment_expired');
   };
 
-  const toOrder = (row: OrderRow): Order => ({
+  const toOrder = (row: OrderRow, options: { withDeliveryCode?: boolean } = {}): Order => {
+    const lines = orderLines.all(row.id) as LineRow[];
+    const returnLines = returnLinesOf.all(row.id) as { return_id: string; order_line_id: number; reason: ReturnReason; refund_paise: number }[];
+    const returns: OrderReturn[] = (returnsOf.all(row.id) as { id: string; status: OrderReturn['status']; created_at: string; picked_up_at: string | null; refunded_at: string | null }[]).map(
+      (r) => {
+        const own = returnLines.filter((l) => l.return_id === r.id);
+        return {
+          id: r.id,
+          status: r.status,
+          lines: own.map((l) => ({ orderLineId: l.order_line_id, reason: l.reason, refundPaise: l.refund_paise })),
+          refundPaise: own.reduce((sum, l) => sum + l.refund_paise, 0),
+          createdAt: r.created_at,
+          pickedUpAt: r.picked_up_at,
+          refundedAt: r.refunded_at,
+        };
+      },
+    );
+    const refunds: OrderRefund[] = (refundsOf.all(row.id) as { id: string; return_id: string | null; amount_paise: number; label: string; status: OrderRefund['status']; initiated_at: string; refunded_at: string | null }[]).map(
+      (r) => ({ id: r.id, returnId: r.return_id, amountPaise: r.amount_paise, label: r.label, status: r.status, initiatedAt: r.initiated_at, refundedAt: r.refunded_at }),
+    );
+    const returned = new Set(returnLines.map((l) => l.order_line_id));
+    const returnState: ReturnState = returned.size === 0 ? 'none' : returned.size === lines.length ? 'all' : 'partial';
+    const returnWindowEndsAt = row.delivered_at ? iso(Date.parse(row.delivered_at) + RETURN_WINDOW_MS) : null;
+    const code = options.withDeliveryCode && row.status === 'out_for_delivery' ? ((deliveryCode.get(row.id) as { code: string } | undefined)?.code ?? null) : null;
+    return {
     id: row.id,
     status: row.status,
-    lines: (orderLines.all(row.id) as LineRow[]).map((l) => ({
+    lines: lines.map((l) => ({
+      id: l.id,
       productId: l.product_id,
       slug: l.slug,
       title: l.title,
@@ -160,7 +201,20 @@ export function createOrderService({ db, carts, addresses, record, clock = Date.
           }
         : null,
     history: history.all(row.id) as { status: OrderHistoryStatus; at: string }[],
-  });
+    deliveredAt: row.delivered_at,
+    cancelledAt: row.cancelled_at,
+    cancelReason: row.cancel_reason,
+    returns,
+    refunds,
+    deliveryCode: code,
+    actions: {
+      canCancel: CANCELLABLE_STATUSES.includes(row.status),
+      canReturn: row.status === 'delivered' && returnWindowEndsAt !== null && Date.parse(returnWindowEndsAt) > clock() && returned.size < lines.length,
+      returnWindowEndsAt,
+    },
+    returnState,
+    };
+  };
 
   function quote(userId: number, addressId: number | undefined, delivery: DeliveryOption): CheckoutQuote {
     const cart = carts.view({ userId });
@@ -193,7 +247,7 @@ export function createOrderService({ db, carts, addresses, record, clock = Date.
     /** The order as the API shows it; null when it isn't this user's. No sweep. */
     view(userId: number, orderId: string): Order | null {
       const row = findOrder.get(orderId, userId) as OrderRow | undefined;
-      return row ? toOrder(row) : null;
+      return row ? toOrder(row, { withDeliveryCode: true }) : null;
     },
 
     /**
@@ -250,7 +304,7 @@ export function createOrderService({ db, carts, addresses, record, clock = Date.
       sweepExpired();
       const row = findOrder.get(orderId, userId) as OrderRow | undefined;
       if (!row) throw new HttpError(404, 'ORDER_NOT_FOUND', 'Order not found');
-      return toOrder(row);
+      return toOrder(row, { withDeliveryCode: true });
     },
 
     cancel(userId: number, orderId: string): Order {

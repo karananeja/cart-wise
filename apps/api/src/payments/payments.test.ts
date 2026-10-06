@@ -283,9 +283,8 @@ describe('boundaries', () => {
     expect(stock('iphone-x')).toEqual({ onHand: 3, reserved: 0 });
     expect(events('payment_completed')).toHaveLength(1);
     expect(events('order_created')).toHaveLength(1);
-    // A paid order takes no further payments and can't be cancelled from the payment page.
+    // A paid order takes no further payments (cancelling it is F-010's paid cancellation).
     expect((await upiStart(agent, order.id).expect(409)).body.error.code).toBe('ORDER_NOT_PENDING');
-    await agent.post(`/api/orders/${order.id}/cancel`).send({}).expect(409);
   });
 
   it('cancelling the order fails the payment in progress', async () => {

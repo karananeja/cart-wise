@@ -175,7 +175,11 @@ CREATE TABLE IF NOT EXISTS orders (
   offer_id TEXT,
   offer_discount_paise INTEGER NOT NULL DEFAULT 0,
   paid_paise INTEGER,
-  paid_at TEXT
+  paid_at TEXT,
+  -- Lifecycle (F-010).
+  delivered_at TEXT,
+  cancelled_at TEXT,
+  cancel_reason TEXT
 );
 CREATE INDEX IF NOT EXISTS orders_user ON orders(user_id, status);
 
@@ -229,6 +233,52 @@ CREATE TABLE IF NOT EXISTS order_status_history (
   at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS order_status_history_order ON order_status_history(order_id);
+
+-- Delivery OTP (F-010, Q16). Kept readable: the customer is shown it to hand over at the door.
+CREATE TABLE IF NOT EXISTS delivery_codes (
+  order_id TEXT PRIMARY KEY REFERENCES orders(id) ON DELETE CASCADE,
+  code TEXT NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  issued_at TEXT NOT NULL
+);
+
+-- Returns (F-010, Q9): chosen lines, each returned at its full quantity, at most once.
+CREATE TABLE IF NOT EXISTS returns (
+  id TEXT PRIMARY KEY,
+  order_id TEXT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  status TEXT NOT NULL CHECK (status IN ('requested', 'picked_up', 'refunded')),
+  created_at TEXT NOT NULL,
+  picked_up_at TEXT,
+  refunded_at TEXT
+);
+CREATE INDEX IF NOT EXISTS returns_order ON returns(order_id);
+
+CREATE TABLE IF NOT EXISTS return_lines (
+  return_id TEXT NOT NULL REFERENCES returns(id) ON DELETE CASCADE,
+  order_line_id INTEGER NOT NULL UNIQUE REFERENCES order_lines(id) ON DELETE CASCADE,
+  reason TEXT NOT NULL,
+  refund_paise INTEGER NOT NULL
+);
+
+-- Simulated refunds to the original payment method (cancellations and returns).
+CREATE TABLE IF NOT EXISTS refunds (
+  id TEXT PRIMARY KEY,
+  order_id TEXT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  return_id TEXT UNIQUE REFERENCES returns(id) ON DELETE CASCADE,
+  amount_paise INTEGER NOT NULL,
+  label TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('initiated', 'refunded')),
+  initiated_at TEXT NOT NULL,
+  refunded_at TEXT
+);
+CREATE INDEX IF NOT EXISTS refunds_order ON refunds(order_id);
+
+-- Demo operator sessions (F-010, Q14). Only a hash of the token is stored.
+CREATE TABLE IF NOT EXISTS operator_sessions (
+  token_hash TEXT PRIMARY KEY,
+  created_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL
+);
 
 -- Guest carts (F-004), identified by an anonymous random id held in a cookie.
 CREATE TABLE IF NOT EXISTS carts (
