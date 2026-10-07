@@ -114,6 +114,13 @@ describe('paying with Razorpay', () => {
     expect(created).toMatchObject({ amount: 6_000_00, receipt: order.id });
   });
 
+  it('leaves the contact out of the prefill when the account has no mobile (F-016)', async () => {
+    const agent = await customer();
+    db.prepare('UPDATE users SET mobile = NULL').run();
+    const { attempt } = await razorpayAttempt(agent);
+    expect(attempt.gateway!.prefill).toEqual({ name: 'Asha Rao', email: expect.stringContaining('@example.com') });
+  });
+
   it('confirms only after the signature and Razorpay’s record agree, capturing an authorised payment', async () => {
     const agent = await customer();
     const { order, attempt } = await razorpayAttempt(agent);

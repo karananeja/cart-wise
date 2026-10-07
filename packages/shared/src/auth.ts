@@ -35,10 +35,18 @@ export function maskMobile(mobile: string): string {
   return `••••••${mobile.slice(-4)}`;
 }
 
+/** "karan@example.com" → "k••••@example.com": enough to recognise, not to read (F-016). */
+export function maskEmail(email: string): string {
+  const at = email.lastIndexOf('@');
+  if (at < 1) return '••••';
+  return `${email[0]}••••${email.slice(at)}`;
+}
+
 export interface SignupInput {
   name: string;
   email: string;
-  mobile: string;
+  /** Optional since F-016: for delivery updates only, not unique and not verified. */
+  mobile: string | null;
   password: string;
 }
 
@@ -50,31 +58,38 @@ export function checkSignup(input: Partial<Record<SignupField, unknown>>): { err
   if (name.length < 2 || name.length > 60) errors.name = 'Enter your name (2–60 characters)';
   const email = normalizeEmail(text(input.email));
   if (!email) errors.email = 'Enter a valid email address';
-  const mobile = normalizeMobile(text(input.mobile));
-  if (!mobile) errors.mobile = 'Enter a 10-digit Indian mobile number';
+  // Mobile is optional (F-016); when given it must be a valid number.
+  const mobileText = text(input.mobile).trim();
+  const mobile = mobileText ? normalizeMobile(mobileText) : null;
+  if (mobile === undefined) errors.mobile = 'Enter a 10-digit Indian mobile number';
   const password = text(input.password);
   const problem = passwordProblem(password);
   if (problem) errors.password = problem;
-  return { errors, values: { name, email: email ?? '', mobile: mobile ?? '', password } };
+  return { errors, values: { name, email: email ?? '', mobile: mobile ?? null, password } };
 }
 
 export interface PublicUser {
   name: string;
   email: string;
-  /** The account owner's own number (pre-fills forms); shown masked in the UI. */
-  mobile: string;
-  maskedMobile: string;
+  /** The account owner's own number, when given (pre-fills forms); shown masked in the UI. Optional since F-016. */
+  mobile: string | null;
+  maskedMobile: string | null;
 }
 
 export interface MeResponse {
   user: PublicUser | null;
 }
 
-/** Sent when a code is "delivered". Delivery is simulated, so the code comes back as `demoCode`. */
+/**
+ * Sent when a code goes out to the account's email (F-016, ADR-006). With SMTP configured it is
+ * really emailed (`delivery: 'email'`, no code here); otherwise it comes back as `demoCode` for the
+ * labelled demo banner (`delivery: 'demo'`).
+ */
 export interface ChallengeResponse {
   challengeId: string;
-  maskedMobile: string;
-  demoCode: string;
+  maskedEmail: string;
+  delivery: 'email' | 'demo';
+  demoCode?: string;
   resendAfterSeconds: number;
   expiresInSeconds: number;
 }

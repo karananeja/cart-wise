@@ -185,3 +185,65 @@ it('rebuilds a pre-Razorpay payment_attempts table so the new method is allowed,
   expect(indexes).toEqual(expect.arrayContaining(['payment_attempts_order', 'payment_attempts_pending']));
   db.close();
 });
+
+it('upgrades a version 3 database to email accounts (F-016), keeping every user, id and linked row, without reseeding', () => {
+  dir = mkdtempSync(join(tmpdir(), 'store-db-'));
+  const path = join(dir, 'store.db');
+  const first = openDatabase(path);
+  seedDatabase(first);
+  first.close();
+
+  // As F-015 left it: mobile required and unique, codes keyed by mobile.
+  const old = new Database(path);
+  old.pragma('foreign_keys = OFF');
+  old.exec(`
+    DROP TABLE users; DROP TABLE otp_challenges; DROP TABLE otp_sends; DROP TABLE otp_ip_sends;
+    CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, mobile TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL, mobile_verified_at TEXT NOT NULL, created_at TEXT NOT NULL);
+    CREATE TABLE otp_challenges (id TEXT PRIMARY KEY, purpose TEXT NOT NULL, mobile TEXT NOT NULL, user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+      code_hash TEXT NOT NULL, payload TEXT, attempts INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL, expires_at TEXT NOT NULL, last_sent_at TEXT NOT NULL, consumed_at TEXT);
+    CREATE TABLE otp_sends (mobile TEXT NOT NULL, sent_at TEXT NOT NULL);
+    CREATE INDEX otp_sends_mobile ON otp_sends(mobile, sent_at);
+    INSERT INTO users (id, name, email, mobile, password_hash, mobile_verified_at, created_at) VALUES
+      (3, 'Asha', 'asha@example.com', '9000000001', 'scrypt$a', 't', 't'), (7, 'Ravi', 'ravi@example.com', '9000000002', 'scrypt$b', 't', 't');
+    INSERT INTO otp_sends VALUES ('9000000001', 't');
+    INSERT INTO sessions (token_hash, user_id, created_at, expires_at, last_seen_at) VALUES ('tok', 7, 't', '2999-01-01T00:00:00.000Z', 't');
+    INSERT INTO carts (id, user_id, created_at, updated_at) VALUES ('cart-7', 7, 't', 't');
+    INSERT INTO wishlists (id, user_id, created_at, updated_at) VALUES ('wish-7', 7, 't', 't');
+    INSERT INTO addresses (id, user_id, full_name, mobile, pincode, line1, line2, landmark, city, state, type, is_default, created_at, updated_at)
+      VALUES (1, 7, 'Ravi', '9000000002', '560038', 'a', 'b', '', 'Bengaluru', 'Karnataka', 'home', 1, 't', 't');
+    INSERT INTO orders (id, user_id, status, address, delivery, item_count, mrp_paise, discount_paise, delivery_paise, total_paise, created_at, hold_expires_at, updated_at)
+      VALUES ('ORD-7', 7, 'delivered', '{}', '{}', 1, 1, 0, 0, 1, 't', 't', 't');
+  `);
+  old.pragma('user_version = 3');
+  old.close();
+
+  const db = openDatabase(path);
+  expect(db.pragma('user_version', { simple: true })).toBe(4);
+  expect(isSeeded(db)).toBe(true);
+  expect(db.prepare('SELECT id, email, mobile, mobile_verified_at, email_verified_at FROM users ORDER BY id').all()).toEqual([
+    { id: 3, email: 'asha@example.com', mobile: '9000000001', mobile_verified_at: 't', email_verified_at: null },
+    { id: 7, email: 'ravi@example.com', mobile: '9000000002', mobile_verified_at: 't', email_verified_at: null },
+  ]);
+  const owned = (table: string) => db.prepare(`SELECT COUNT(*) AS n FROM ${table} t JOIN users u ON u.id = t.user_id WHERE u.email = 'ravi@example.com'`).get();
+  for (const table of ['sessions', 'carts', 'wishlists', 'addresses', 'orders']) expect(owned(table)).toEqual({ n: 1 });
+  expect(db.pragma('foreign_key_check')).toEqual([]);
+  // References still point at users: a row for a missing account is refused, and deleting one cascades.
+  expect(() => db.prepare("INSERT INTO sessions (token_hash, user_id, created_at, expires_at, last_seen_at) VALUES ('x', 99, 't', 't', 't')").run()).toThrow(/FOREIGN KEY/);
+  db.prepare('DELETE FROM users WHERE id = 3').run();
+  // Mobile is optional and not unique now; new ids continue after the old ones.
+  const add = db.prepare("INSERT INTO users (name, email, mobile, password_hash, email_verified_at, created_at) VALUES ('N', ?, ?, 'h', 't', 't')");
+  add.run('new1@example.com', null);
+  expect(Number(add.run('new2@example.com', '9000000002').lastInsertRowid)).toBeGreaterThan(7);
+  // Codes are keyed by email; codes pending at upgrade time were dropped.
+  expect((db.prepare('PRAGMA table_info(otp_sends)').all() as { name: string }[]).map((c) => c.name)).toEqual(['email', 'sent_at']);
+  expect(db.prepare('SELECT COUNT(*) AS n FROM otp_sends').get()).toEqual({ n: 0 });
+  expect((db.prepare('PRAGMA table_info(otp_challenges)').all() as { name: string }[]).map((c) => c.name)).toContain('email');
+  expect(db.prepare('SELECT COUNT(*) AS n FROM otp_ip_sends').get()).toEqual({ n: 0 });
+  db.close();
+
+  // Opening again changes nothing.
+  const again = openDatabase(path);
+  expect(again.prepare('SELECT COUNT(*) AS n FROM users').get()).toEqual({ n: 3 });
+  again.close();
+});

@@ -211,8 +211,9 @@ export function createPaymentService({ db, orders, record, clock = Date.now, raz
   });
 
   const prefillFor = (orderId: string) => {
-    const user = customer.get((orderRow.get(orderId) as { user_id: number }).user_id) as { name: string; email: string; mobile: string };
-    return { name: user.name, email: user.email, contact: `+91${user.mobile}` };
+    const user = customer.get((orderRow.get(orderId) as { user_id: number }).user_id) as { name: string; email: string; mobile: string | null };
+    // Mobile is optional since F-016: Checkout asks for it when it isn't prefilled.
+    return { name: user.name, email: user.email, ...(user.mobile ? { contact: `+91${user.mobile}` } : {}) };
   };
 
   const reload = (id: string) => attemptById.get(id) as AttemptRow;

@@ -6,10 +6,13 @@ import { saveVariantLabels } from './seed.js';
 export type Db = Database.Database;
 
 /**
- * Bumped when seeded tables change shape. Older databases have their catalog and inventory
- * tables dropped and are re-seeded from the snapshot; analytics events are kept.
+ * Bumped when a table changes in a way `upgradeInPlace` can't express (4: accounts by email, F-016).
+ * Databases older than SEEDED_TABLES_VERSION have their catalog and inventory tables dropped and are
+ * re-seeded from the snapshot; analytics events and user tables are always kept.
  */
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
+/** The last version that changed seeded tables (F-013). */
+const SEEDED_TABLES_VERSION = 3;
 const SEEDED_TABLES = ['inventory', 'product_variants', 'product_reviews', 'products', 'categories'];
 
 const schema = readFileSync(new URL('./schema.sql', import.meta.url), 'utf8');
@@ -26,17 +29,60 @@ export function openDatabase(path: string): Db {
   const transaction = db.transaction.bind(db);
   db.transaction = ((fn: Parameters<typeof transaction>[0]) => transaction(fn).immediate) as typeof db.transaction;
   db.pragma('foreign_keys = ON');
-  if ((db.pragma('user_version', { simple: true }) as number) < SCHEMA_VERSION) {
+  const version = db.pragma('user_version', { simple: true }) as number;
+  if (version < SEEDED_TABLES_VERSION) {
     // Carts and orders point at variant ids; the reseed remaps them by label (seed.ts).
     saveVariantLabels(db);
     db.pragma('foreign_keys = OFF');
     for (const table of SEEDED_TABLES) db.exec(`DROP TABLE IF EXISTS ${table}`);
     db.pragma('foreign_keys = ON');
-    db.pragma(`user_version = ${SCHEMA_VERSION}`);
   }
+  dropMobileOtpTables(db);
   db.exec(schema);
+  rebuildUsersForEmailOtp(db);
   upgradeInPlace(db);
+  if (version < SCHEMA_VERSION) db.pragma(`user_version = ${SCHEMA_VERSION}`);
   return db;
+}
+
+const columnsOf = (db: Db, table: string) => (db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]).map((c) => c.name);
+
+/**
+ * Codes were keyed by mobile before F-016. They only live for minutes, so the old tables are dropped
+ * (pending codes at upgrade time are lost) and schema.sql recreates them keyed by email.
+ */
+function dropMobileOtpTables(db: Db) {
+  for (const table of ['otp_challenges', 'otp_sends']) {
+    if (columnsOf(db, table).includes('mobile')) db.exec(`DROP TABLE ${table}`);
+  }
+}
+
+/**
+ * F-016: mobile becomes optional and non-unique, and email_verified_at is added. SQLite can't drop a
+ * NOT NULL or UNIQUE constraint, so `users` is rebuilt the way SQLite documents: create the new table,
+ * copy every row with its id, drop the old one and rename the new one into place. Foreign keys are off
+ * meanwhile, so nothing cascades, and the tables pointing at `users` (sessions, carts, orders…) resolve
+ * to the new table by name. Renaming the old table instead would rewrite those references.
+ */
+function rebuildUsersForEmailOtp(db: Db) {
+  const columns = columnsOf(db, 'users');
+  if (columns.includes('email_verified_at')) return;
+  const definition = schema.match(/CREATE TABLE IF NOT EXISTS users \([\s\S]*?\n\);/)![0].replace('IF NOT EXISTS users', 'users_f016');
+  // Stray rows that were already dangling must not block the upgrade; only new breakage does.
+  const dangling = () => (db.pragma('foreign_key_check') as unknown[]).length;
+  db.pragma('foreign_keys = OFF');
+  try {
+    db.transaction(() => {
+      const before = dangling();
+      db.exec(definition);
+      db.exec(`INSERT INTO users_f016 (${columns.join(', ')}) SELECT ${columns.join(', ')} FROM users`);
+      db.exec('DROP TABLE users');
+      db.exec('ALTER TABLE users_f016 RENAME TO users');
+      if (dangling() > before) throw new Error('Upgrading accounts would break rows linked to them; the database was left unchanged.');
+    })();
+  } finally {
+    db.pragma('foreign_keys = ON');
+  }
 }
 
 /**

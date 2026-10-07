@@ -71,15 +71,18 @@ CREATE TABLE IF NOT EXISTS inventory (
 );
 CREATE INDEX IF NOT EXISTS inventory_product ON inventory(product_id);
 
--- Accounts (F-006, ADR-003). Only verified accounts exist here; pending sign-ups live in
--- their OTP challenge until the code is entered.
+-- Accounts (F-006, ADR-003; email codes since F-016, ADR-006). Only verified accounts exist here;
+-- pending sign-ups live in their OTP challenge until the code is entered. Mobile is an optional
+-- profile field (not unique, not verified); accounts from before F-016 keep theirs, and their
+-- email_verified_at is set on the first code sign-in.
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE,
-  mobile TEXT NOT NULL UNIQUE,
+  mobile TEXT,
   password_hash TEXT NOT NULL,
-  mobile_verified_at TEXT NOT NULL,
+  mobile_verified_at TEXT,
+  email_verified_at TEXT,
   created_at TEXT NOT NULL
 );
 
@@ -93,11 +96,11 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 CREATE INDEX IF NOT EXISTS sessions_user ON sessions(user_id);
 
--- Simulated one-time codes (stored hashed). `payload` holds pending sign-up details.
+-- One-time codes sent to an email (stored hashed). `payload` holds pending sign-up details.
 CREATE TABLE IF NOT EXISTS otp_challenges (
   id TEXT PRIMARY KEY,
   purpose TEXT NOT NULL CHECK (purpose IN ('signup', 'login', 'reset')),
-  mobile TEXT NOT NULL,
+  email TEXT NOT NULL,
   user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   code_hash TEXT NOT NULL,
   payload TEXT,
@@ -108,11 +111,18 @@ CREATE TABLE IF NOT EXISTS otp_challenges (
   consumed_at TEXT
 );
 
+-- Codes sent per email and per client IP in the last hour (rate limits, F-016 FR-7).
 CREATE TABLE IF NOT EXISTS otp_sends (
-  mobile TEXT NOT NULL,
+  email TEXT NOT NULL,
   sent_at TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS otp_sends_mobile ON otp_sends(mobile, sent_at);
+CREATE INDEX IF NOT EXISTS otp_sends_email ON otp_sends(email, sent_at);
+
+CREATE TABLE IF NOT EXISTS otp_ip_sends (
+  ip TEXT NOT NULL,
+  sent_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS otp_ip_sends_ip ON otp_ip_sends(ip, sent_at);
 
 CREATE TABLE IF NOT EXISTS password_resets (
   token_hash TEXT PRIMARY KEY,

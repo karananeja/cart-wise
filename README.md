@@ -48,7 +48,11 @@ docs             Brief, PRD, plan, decisions and per-feature specs
   and `9995` fail for insufficient funds. The payment page lists demo cards for the fictional
   banks (Aurora, Meridian, Kestrel) whose offers can be applied. Only the first 6 and last 4
   digits leave the browser.
-- **One-time codes** (sign-in, bank verification) are shown on screen; no SMS is sent.
+- **Sign-in codes** (sign-up, sign-in, password reset) go to the account's email. With `SMTP_*` set
+  in `apps/api/.env` (see `apps/api/.env.example`: Brevo, a Gmail app password or MSG91 SMTP), they
+  are really emailed; without them the code is shown on screen as a demo email. The API logs which
+  mode is on when it starts.
+- **Bank verification and delivery codes** are shown on screen; no SMS is sent.
 - **Demo operator console** (`/sim`, password `demo-operator` by default; set
   `SIM_OPERATOR_PASSWORD` to change it):
   - **Orders** moves paid orders through their lifecycle, completes delivery with the customer's

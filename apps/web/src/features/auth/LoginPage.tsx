@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Loader2 } from 'lucide-react';
-import { normalizeMobile, type ChallengeResponse, type SignedInResponse } from '@store/shared';
+import { normalizeEmail, type ChallengeResponse, type SignedInResponse } from '@store/shared';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { ApiError } from '@/lib/api';
@@ -11,17 +11,17 @@ import { authErrorMessage } from './messages';
 import { OtpStep } from './OtpStep';
 import { useReturnTo } from './useReturnTo';
 
-/** Sign in: mobile + code by default; "Use password instead" is one link away. */
+/** Sign in: email + code by default; "Use password instead" is one link away. */
 export function LoginPage() {
   const { returnTo, carry, params } = useReturnTo();
   const usePassword = params.get('method') === 'password';
-  return usePassword ? <PasswordLogin returnTo={returnTo} carry={carry} /> : <OtpLogin returnTo={returnTo} carry={carry} initialMobile={params.get('mobile') ?? ''} />;
+  return usePassword ? <PasswordLogin returnTo={returnTo} carry={carry} /> : <OtpLogin returnTo={returnTo} carry={carry} initialEmail={params.get('email') ?? ''} />;
 }
 
 type Carry = ReturnType<typeof useReturnTo>['carry'];
 
-function OtpLogin({ returnTo, carry, initialMobile }: { returnTo: string; carry: Carry; initialMobile: string }) {
-  const [mobile, setMobile] = useState(initialMobile);
+function OtpLogin({ returnTo, carry, initialEmail }: { returnTo: string; carry: Carry; initialEmail: string }) {
+  const [email, setEmail] = useState(initialEmail);
   const [fieldError, setFieldError] = useState<string>();
   const [challenge, setChallenge] = useState<ChallengeResponse>();
   const request = useRequestOtp();
@@ -30,13 +30,13 @@ function OtpLogin({ returnTo, carry, initialMobile }: { returnTo: string; carry:
 
   const send = (event: FormEvent) => {
     event.preventDefault();
-    const normalized = normalizeMobile(mobile);
+    const normalized = normalizeEmail(email);
     if (!normalized) {
-      setFieldError('Enter a 10-digit Indian mobile number');
+      setFieldError('Enter a valid email address');
       return;
     }
     setFieldError(undefined);
-    request.mutate({ purpose: 'login', mobile: normalized }, { onSuccess: setChallenge });
+    request.mutate({ purpose: 'login', email: normalized }, { onSuccess: setChallenge });
   };
 
   const noAccount = request.error instanceof ApiError && request.error.code === 'NO_ACCOUNT';
@@ -44,10 +44,10 @@ function OtpLogin({ returnTo, carry, initialMobile }: { returnTo: string; carry:
   return (
     <AuthLayout
       title="Sign in"
-      description="We'll send a one-time code to your mobile."
+      description="We'll email you a one-time code."
       footer={
         <>
-          New here? <AuthLink to={`/signup${carry(mobile ? { mobile } : {})}`}>Create an account</AuthLink>
+          New here? <AuthLink to={`/signup${carry(email ? { email } : {})}`}>Create an account</AuthLink>
         </>
       }
     >
@@ -56,18 +56,18 @@ function OtpLogin({ returnTo, carry, initialMobile }: { returnTo: string; carry:
           challenge={challenge}
           onVerified={(result) => complete(result as SignedInResponse, returnTo)}
           onBack={() => setChallenge(undefined)}
-          backLabel="Use a different number"
+          backLabel="Use a different email"
         />
       ) : (
         <form onSubmit={send} className="flex flex-col gap-4" noValidate>
           <FormField
-            label="Mobile number"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel-national"
-            placeholder="98765 43210"
-            value={mobile}
-            onChange={(e) => setMobile(e.target.value)}
+            label="Email"
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             error={fieldError}
           />
           {request.isError && (
@@ -75,7 +75,7 @@ function OtpLogin({ returnTo, carry, initialMobile }: { returnTo: string; carry:
               <AlertDescription>
                 {noAccount ? (
                   <>
-                    No account for this number. <AuthLink to={`/signup${carry({ mobile })}`}>Sign up?</AuthLink>
+                    No account for this email. <AuthLink to={`/signup${carry({ email: email.trim() })}`}>Sign up?</AuthLink>
                   </>
                 ) : (
                   authErrorMessage(request.error)
@@ -95,7 +95,7 @@ function OtpLogin({ returnTo, carry, initialMobile }: { returnTo: string; carry:
 }
 
 function PasswordLogin({ returnTo, carry }: { returnTo: string; carry: Carry }) {
-  const [identifier, setIdentifier] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const login = usePasswordLogin();
   const complete = useCompleteSignIn();
@@ -103,7 +103,7 @@ function PasswordLogin({ returnTo, carry }: { returnTo: string; carry: Carry }) 
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    login.mutate({ identifier, password }, { onSuccess: (result) => complete(result, returnTo) });
+    login.mutate({ email, password }, { onSuccess: (result) => complete(result, returnTo) });
   };
 
   return (
@@ -116,14 +116,14 @@ function PasswordLogin({ returnTo, carry }: { returnTo: string; carry: Carry }) 
       }
     >
       <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
-        <FormField label="Email or mobile" autoComplete="username" value={identifier} onChange={(e) => setIdentifier(e.target.value)} />
+        <FormField label="Email" type="email" inputMode="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} />
         <PasswordField label="Password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
         {login.isError && (
           <Alert variant="destructive">
             <AlertDescription>{authErrorMessage(login.error)}</AlertDescription>
           </Alert>
         )}
-        <Button type="submit" size="lg" className="h-11" disabled={login.isPending || !online || !identifier || !password}>
+        <Button type="submit" size="lg" className="h-11" disabled={login.isPending || !online || !email || !password}>
           {login.isPending && <Loader2 className="animate-spin" aria-hidden />}
           Sign in
         </Button>

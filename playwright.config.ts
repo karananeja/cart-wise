@@ -39,6 +39,14 @@ export default defineConfig({
         RAZORPAY_API_BASE_URL: `http://localhost:${RAZORPAY_PORT}`,
         RAZORPAY_WEBHOOK_SECRET: '',
         RAZORPAY_NO_COST_EMI_OFFER_ID: '',
+        // Codes stay on screen (demo) even when apps/api/.env has SMTP settings (F-016)…
+        SMTP_HOST: '',
+        SMTP_PORT: '',
+        SMTP_USER: '',
+        SMTP_PASS: '',
+        SMTP_FROM: '',
+        // …and the many sign-ups from one address aren't stopped by the per-IP code limit.
+        OTP_MAX_SENDS_PER_IP_PER_HOUR: '10000',
       },
       url: `http://localhost:${API_PORT}/api/health`,
       reuseExistingServer: false,

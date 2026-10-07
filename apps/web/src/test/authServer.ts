@@ -1,21 +1,25 @@
 import { http, HttpResponse } from 'msw';
-import { checkSignup, maskMobile, normalizeMobile, type ChallengeResponse, type HistoryLists } from '@store/shared';
+import { checkSignup, maskEmail, maskMobile, normalizeEmail, type ChallengeResponse, type HistoryLists } from '@store/shared';
 
 /**
  * In-memory stand-in for the auth API: one signed-in user at a time (cookies aren't modelled).
- * Codes are always the `demoCode` returned; the real rules are covered by the API tests.
+ * Codes come back as `demoCode` (demo mode, the default) or are "emailed" (`lastEmailedCode`); the
+ * real rules are covered by the API tests.
  */
 interface User {
   name: string;
   email: string;
-  mobile: string;
+  mobile: string | null;
   password: string;
 }
 
 let users: User[] = [];
 let signedIn: User | undefined;
-let challenges = new Map<string, { purpose: string; mobile: string; code: string; attempts: number; pending?: User }>();
+let challenges = new Map<string, { purpose: string; email: string; code: string; attempts: number; pending?: User }>();
 let nextId = 1;
+let delivery: ChallengeResponse['delivery'] = 'demo';
+let emailFails = false;
+let emailedCode: string | undefined;
 export const syncRequests: HistoryLists[] = [];
 export const historyRemovals: { list: string; key?: string }[] = [];
 /** What the merge step reports on sign-in (set by tests). */
@@ -29,7 +33,18 @@ export function resetAuth() {
   syncRequests.length = 0;
   historyRemovals.length = 0;
   mergeResult = { cart: false, wishlist: false };
+  delivery = 'demo';
+  emailFails = false;
+  emailedCode = undefined;
 }
+
+/** Real-email mode (SMTP configured): no `demoCode`; `failing` makes every send fail with EMAIL_FAILED. */
+export function setEmailDelivery(options: { failing?: boolean } = {}) {
+  delivery = 'email';
+  emailFails = options.failing ?? false;
+}
+
+export const lastEmailedCode = () => emailedCode;
 
 export function setMergeResult(result: { cart: boolean; wishlist: boolean }) {
   mergeResult = result;
@@ -40,15 +55,25 @@ export function addUser(user: User, options: { signedIn?: boolean } = {}) {
   if (options.signedIn) signedIn = user;
 }
 
-const publicUser = (u: User) => ({ name: u.name, email: u.email, mobile: u.mobile, maskedMobile: maskMobile(u.mobile) });
+const publicUser = (u: User) => ({ name: u.name, email: u.email, mobile: u.mobile, maskedMobile: u.mobile ? maskMobile(u.mobile) : null });
 const error = (status: number, code: string, details?: Record<string, unknown>) =>
   HttpResponse.json({ error: { code, message: code, ...(details ? { details } : {}) } }, { status });
 
-function challenge(purpose: string, mobile: string, pending?: User): ChallengeResponse {
+function challenge(purpose: string, email: string, pending?: User) {
+  if (delivery === 'email' && emailFails) return error(502, 'EMAIL_FAILED');
   const id = `c${nextId++}`;
   const code = String(100000 + nextId);
-  challenges.set(id, { purpose, mobile, code, attempts: 0, pending });
-  return { challengeId: id, maskedMobile: maskMobile(mobile), demoCode: code, resendAfterSeconds: 30, expiresInSeconds: 300 };
+  challenges.set(id, { purpose, email, code, attempts: 0, pending });
+  if (delivery === 'email') emailedCode = code;
+  const response: ChallengeResponse = {
+    challengeId: id,
+    maskedEmail: maskEmail(email),
+    delivery,
+    ...(delivery === 'demo' ? { demoCode: code } : {}),
+    resendAfterSeconds: 30,
+    expiresInSeconds: 300,
+  };
+  return HttpResponse.json(response);
 }
 
 const signIn = (user: User) => {
@@ -62,21 +87,22 @@ export const authHandlers = [
     const { errors, values } = checkSignup((await request.json()) as Record<string, unknown>);
     if (Object.keys(errors).length) return error(400, 'VALIDATION', { fields: errors });
     if (users.some((u) => u.email === values.email)) return error(409, 'EMAIL_TAKEN', { fields: { email: 'An account with this email already exists' } });
-    if (users.some((u) => u.mobile === values.mobile)) return error(409, 'MOBILE_TAKEN', { fields: { mobile: 'An account with this mobile already exists' } });
-    return HttpResponse.json(challenge('signup', values.mobile, values));
+    return challenge('signup', values.email, values);
   }),
   http.post('*/api/auth/otp', async ({ request }) => {
-    const body = (await request.json()) as { purpose: string; mobile?: string; identifier?: string };
-    const key = body.purpose === 'login' ? normalizeMobile(body.mobile ?? '') : body.identifier;
-    const user = users.find((u) => u.mobile === normalizeMobile(key ?? '') || u.email === key);
+    const body = (await request.json()) as { purpose: string; email?: string };
+    const email = normalizeEmail(body.email ?? '');
+    if (!email) return error(400, 'VALIDATION', { fields: { email: 'Enter a valid email address' } });
+    const user = users.find((u) => u.email === email);
     if (!user) return error(404, 'NO_ACCOUNT');
-    return HttpResponse.json(challenge(body.purpose, user.mobile));
+    return challenge(body.purpose, user.email);
   }),
   http.post('*/api/auth/otp/resend', async ({ request }) => {
     const { challengeId } = (await request.json()) as { challengeId: string };
     const existing = challenges.get(challengeId)!;
-    challenges.delete(challengeId);
-    return HttpResponse.json(challenge(existing.purpose, existing.mobile, existing.pending));
+    const next = challenge(existing.purpose, existing.email, existing.pending);
+    if (next.status === 200) challenges.delete(challengeId);
+    return next;
   }),
   http.post('*/api/auth/verify', async ({ request }) => {
     const { challengeId, code } = (await request.json()) as { challengeId: string; code: string };
@@ -91,18 +117,18 @@ export const authHandlers = [
       users.push(found.pending!);
       return signIn(found.pending!);
     }
-    const user = users.find((u) => u.mobile === found.mobile)!;
+    const user = users.find((u) => u.email === found.email)!;
     if (found.purpose === 'login') return signIn(user);
-    return HttpResponse.json({ resetToken: `reset-${user.mobile}` });
+    return HttpResponse.json({ resetToken: `reset-${user.email}` });
   }),
   http.post('*/api/auth/password', async ({ request }) => {
-    const { identifier, password } = (await request.json()) as { identifier: string; password: string };
-    const user = users.find((u) => (u.email === identifier.toLowerCase() || u.mobile === normalizeMobile(identifier)) && u.password === password);
+    const { email, password } = (await request.json()) as { email: string; password: string };
+    const user = users.find((u) => u.email === email.trim().toLowerCase() && u.password === password);
     return user ? signIn(user) : error(401, 'INVALID_CREDENTIALS');
   }),
   http.post('*/api/auth/reset', async ({ request }) => {
     const { resetToken, newPassword } = (await request.json()) as { resetToken: string; newPassword: string };
-    const user = users.find((u) => `reset-${u.mobile}` === resetToken)!;
+    const user = users.find((u) => `reset-${u.email}` === resetToken)!;
     user.password = newPassword;
     return signIn(user);
   }),

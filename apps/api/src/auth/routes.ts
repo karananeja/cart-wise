@@ -4,7 +4,6 @@ import { Router, type Request, type Response } from 'express';
 import {
   maskMobile,
   normalizeEmail,
-  normalizeMobile,
   passwordProblem,
   type MeResponse,
   type PublicUser,
@@ -49,28 +48,36 @@ function text(value: unknown): string {
   return typeof value === 'string' ? value : '';
 }
 
-export const publicUser = (user: SessionUser): PublicUser => ({ name: user.name, email: user.email, mobile: user.mobile, maskedMobile: maskMobile(user.mobile) });
+export const publicUser = (user: SessionUser): PublicUser => ({
+  name: user.name,
+  email: user.email,
+  mobile: user.mobile,
+  maskedMobile: user.mobile ? maskMobile(user.mobile) : null,
+});
+
+/** The client address for the per-IP code limit (F-016). */
+const clientIp = (req: Request) => req.ip ?? req.socket.remoteAddress ?? 'unknown';
+
+const NO_EMAIL = { fields: { email: 'Enter a valid email address' } };
 
 export function authRouter({ db, otp, sessions, merge, limiter }: Deps): Router {
   const router = Router();
 
   const byId = db.prepare('SELECT id, name, email, mobile, password_hash FROM users WHERE id = ?');
-  const byMobile = db.prepare('SELECT id, name, email, mobile, password_hash FROM users WHERE mobile = ?');
   const byEmail = db.prepare('SELECT id, name, email, mobile, password_hash FROM users WHERE email = ?');
-  const insertUser = db.prepare(
-    'INSERT INTO users (name, email, mobile, password_hash, mobile_verified_at, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-  );
+  const insertUser = db.prepare('INSERT INTO users (name, email, mobile, password_hash, email_verified_at, created_at) VALUES (?, ?, ?, ?, ?, ?)');
+  // Accounts from before F-016 prove their email on the first code sign-in.
+  const markEmailVerified = db.prepare('UPDATE users SET email_verified_at = ? WHERE id = ? AND email_verified_at IS NULL');
   const setPassword = db.prepare('UPDATE users SET password_hash = ? WHERE id = ?');
   const insertReset = db.prepare('INSERT INTO password_resets (token_hash, user_id, expires_at) VALUES (?, ?, ?)');
   const findReset = db.prepare('SELECT user_id, expires_at, used_at FROM password_resets WHERE token_hash = ?');
   const useReset = db.prepare('UPDATE password_resets SET used_at = ? WHERE token_hash = ?');
 
-  /** Email or mobile, whichever the identifier is. */
-  const findByIdentifier = (identifier: string): UserRow | undefined => {
-    const mobile = normalizeMobile(identifier);
-    if (mobile) return byMobile.get(mobile) as UserRow | undefined;
-    const email = normalizeEmail(identifier);
-    return email ? (byEmail.get(email) as UserRow | undefined) : undefined;
+  /** The email a code request names, or a field error. */
+  const requestedEmail = (value: unknown): string => {
+    const email = normalizeEmail(text(value));
+    if (!email) throw new HttpError(400, 'VALIDATION', 'Enter a valid email address', NO_EMAIL);
+    return email;
   };
 
   /** Starts a session and carries the guest's cart and wishlist into the account. */
@@ -107,35 +114,23 @@ export function authRouter({ db, otp, sessions, merge, limiter }: Deps): Router 
     if (byEmail.get(details.email)) {
       throw new HttpError(409, 'EMAIL_TAKEN', 'An account with this email already exists', { fields: { email: 'An account with this email already exists' } });
     }
-    if (byMobile.get(details.mobile)) {
-      throw new HttpError(409, 'MOBILE_TAKEN', 'An account with this mobile already exists', { fields: { mobile: 'An account with this mobile already exists' } });
-    }
     // The pending account (with its already-hashed password) waits in the challenge until verified.
     const payload = JSON.stringify({ name: details.name, email: details.email, mobile: details.mobile, passwordHash: await hashPassword(details.password) });
-    res.json(otp.start('signup', details.mobile, { payload }));
+    res.json(await otp.start('signup', details.email, { ip: clientIp(req), payload }));
   });
 
-  router.post('/auth/otp', (req, res) => {
-    const { purpose, mobile, identifier } = body(req);
-    if (purpose === 'login') {
-      const normalized = normalizeMobile(text(mobile));
-      if (!normalized) throw new HttpError(400, 'VALIDATION', 'Enter a 10-digit Indian mobile number', { fields: { mobile: 'Enter a 10-digit Indian mobile number' } });
-      const user = byMobile.get(normalized) as UserRow | undefined;
-      if (!user) throw new HttpError(404, 'NO_ACCOUNT', 'No account for this number');
-      res.json(otp.start('login', normalized, { userId: user.id }));
-      return;
-    }
-    if (purpose === 'reset') {
-      const user = findByIdentifier(text(identifier));
-      if (!user) throw new HttpError(404, 'NO_ACCOUNT', 'No account found');
-      res.json(otp.start('reset', user.mobile, { userId: user.id }));
-      return;
-    }
-    throw new HttpError(400, 'BAD_REQUEST', 'Invalid request');
+  router.post('/auth/otp', async (req, res) => {
+    const { purpose, email } = body(req);
+    if (purpose !== 'login' && purpose !== 'reset') throw new HttpError(400, 'BAD_REQUEST', 'Invalid request');
+    const address = requestedEmail(email);
+    const user = byEmail.get(address) as UserRow | undefined;
+    // The code path says whether an account exists (ADR-003, kept by ADR-006); password sign-in doesn't.
+    if (!user) throw new HttpError(404, 'NO_ACCOUNT', purpose === 'login' ? 'No account for this email' : 'No account found');
+    res.json(await otp.start(purpose, address, { ip: clientIp(req), userId: user.id }));
   });
 
-  router.post('/auth/otp/resend', (req, res) => {
-    res.json(otp.resend(text(body(req).challengeId)));
+  router.post('/auth/otp/resend', async (req, res) => {
+    res.json(await otp.resend(text(body(req).challengeId), clientIp(req)));
   });
 
   router.post('/auth/verify', (req, res) => {
@@ -143,10 +138,9 @@ export function authRouter({ db, otp, sessions, merge, limiter }: Deps): Router 
     const challenge = otp.verify(text(challengeId), text(code), ['signup', 'login', 'reset']);
 
     if (challenge.purpose === 'signup') {
-      const pending = JSON.parse(challenge.payload ?? '{}') as { name: string; email: string; mobile: string; passwordHash: string };
-      // Someone may have registered the same email or mobile since this sign-up started.
+      const pending = JSON.parse(challenge.payload ?? '{}') as { name: string; email: string; mobile: string | null; passwordHash: string };
+      // Someone may have registered the same email since this sign-up started.
       if (byEmail.get(pending.email)) throw new HttpError(409, 'EMAIL_TAKEN', 'An account with this email already exists');
-      if (byMobile.get(pending.mobile)) throw new HttpError(409, 'MOBILE_TAKEN', 'An account with this mobile already exists');
       const now = new Date().toISOString();
       const id = Number(insertUser.run(pending.name, pending.email, pending.mobile, pending.passwordHash, now, now).lastInsertRowid);
       res.json(signIn(req, res, byId.get(id) as UserRow));
@@ -155,6 +149,8 @@ export function authRouter({ db, otp, sessions, merge, limiter }: Deps): Router 
 
     const user = challenge.userId ? (byId.get(challenge.userId) as UserRow | undefined) : undefined;
     if (!user) throw new HttpError(404, 'NO_ACCOUNT', 'No account found');
+    // The code reached this inbox, which proves the email (login and reset alike).
+    markEmailVerified.run(new Date().toISOString(), user.id);
     if (challenge.purpose === 'login') {
       res.json(signIn(req, res, user));
       return;
@@ -165,15 +161,16 @@ export function authRouter({ db, otp, sessions, merge, limiter }: Deps): Router 
   });
 
   router.post('/auth/password', async (req, res) => {
-    const identifier = text(body(req).identifier).trim().toLowerCase();
+    // Email only since F-016: a mobile number is no longer unique, so it gets the generic error.
+    const key = text(body(req).email).trim().toLowerCase();
     const password = text(body(req).password);
-    const key = normalizeMobile(identifier) ?? identifier;
     const wait = limiter.retryAfterSeconds(key);
     if (wait > 0) throw new HttpError(429, 'TOO_MANY_ATTEMPTS', 'Too many attempts. Please try again later.', { retryAfterSeconds: wait });
-    const user = findByIdentifier(identifier);
+    const email = normalizeEmail(key);
+    const user = email ? (byEmail.get(email) as UserRow | undefined) : undefined;
     if (!user || !(await verifyPassword(password, user.password_hash))) {
       limiter.fail(key);
-      throw new HttpError(401, 'INVALID_CREDENTIALS', 'Incorrect email/mobile or password');
+      throw new HttpError(401, 'INVALID_CREDENTIALS', 'Incorrect email or password');
     }
     limiter.reset(key);
     res.json(signIn(req, res, user));

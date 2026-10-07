@@ -26,7 +26,7 @@ async function signUp(page: Page) {
   await page.getByLabel('Mobile number').fill(`9${n}`);
   await page.getByLabel('Password', { exact: true }).fill('correct horse battery');
   await page.getByRole('button', { name: 'Continue' }).click();
-  const code = (await page.getByText(/Demo SMS to/).locator('..').textContent())!.match(/\d{6}/)![0];
+  const code = (await page.getByText(/Demo email to/).locator('..').textContent())!.match(/\d{6}/)![0];
   await page.getByLabel('6-digit code').fill(code);
   await expect(page.getByRole('button', { name: 'Account menu for Asha' })).toBeVisible();
 }

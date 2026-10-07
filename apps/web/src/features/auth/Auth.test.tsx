@@ -1,9 +1,9 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { addRecentSearch, recentSearchesStore, reloadRecentSearches, removeRecentSearch } from '@/lib/recentSearches';
 import { recentlyViewedStore, reloadRecentlyViewed } from '@/lib/recentlyViewed';
-import { addUser, historyRemovals, setMergeResult, syncRequests } from '@/test/authServer';
+import { addUser, historyRemovals, lastEmailedCode, setEmailDelivery, setMergeResult, syncRequests } from '@/test/authServer';
 import { renderRoute } from '@/test/render';
 
 const KARAN = { name: 'Karan Aneja', email: 'karan@example.com', mobile: '9876543210', password: 'correct horse battery' };
@@ -18,7 +18,7 @@ const accountMenu = () => screen.findByRole('button', { name: 'Account menu for 
 
 /** Reads the demo code from the banner and types it. */
 async function enterDemoCode(user: ReturnType<typeof userEvent.setup>) {
-  const banner = await screen.findByText(/Demo SMS to/);
+  const banner = await screen.findByText(/Demo email to/);
   const code = banner.parentElement!.textContent!.match(/\d{6}/)![0];
   await user.type(screen.getByLabelText('6-digit code'), code);
 }
@@ -37,12 +37,13 @@ describe('sign-up', () => {
     expect(location().pathname).toBe('/signup');
     expect(location().search).toContain('returnTo=%2Fp%2Fcheck-shirt%3Fsize%3DL');
     await user.type(screen.getByLabelText('Email'), 'karan@example.com');
-    await user.type(screen.getByLabelText('Mobile number'), '+91 98765 43210');
+    await user.type(screen.getByLabelText('Mobile number (optional)'), '+91 98765 43210');
     await user.type(screen.getByLabelText('Password'), 'correct horse battery');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
-    expect(await screen.findByRole('heading', { name: 'Verify your mobile' })).toBeInTheDocument();
-    expect(screen.getByText(/Demo SMS to ••••••3210/)).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Verify your email' })).toBeInTheDocument();
+    expect(screen.getByText(/Demo email to k••••@example.com/)).toBeInTheDocument();
+    expect(screen.getByText(/No real email is sent/)).toBeInTheDocument();
     await enterDemoCode(user);
 
     await waitFor(() => expect(location().pathname + location().search).toBe('/p/check-shirt?size=L'));
@@ -54,6 +55,7 @@ describe('sign-up', () => {
     renderRoute('/signup');
     await user.type(await screen.findByLabelText('Email'), 'not-an-email');
     await user.type(screen.getByLabelText('Password'), 'password');
+    await user.type(screen.getByLabelText('Mobile number (optional)'), '12345');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
 
     expect(screen.getByText('Enter your name (2–60 characters)')).toBeInTheDocument();
@@ -70,7 +72,6 @@ describe('sign-up', () => {
     renderRoute('/signup');
     await user.type(await screen.findByLabelText('Full name'), 'Karan');
     await user.type(screen.getByLabelText('Email'), KARAN.email);
-    await user.type(screen.getByLabelText('Mobile number'), '9123456789');
     await user.type(screen.getByLabelText('Password'), 'another secret');
     await user.click(screen.getByRole('button', { name: 'Continue' }));
     expect(await screen.findByText('An account with this email already exists')).toBeInTheDocument();
@@ -79,30 +80,40 @@ describe('sign-up', () => {
 });
 
 describe('sign-in', () => {
-  it('signs in with mobile and code, showing attempts left after a wrong code', async () => {
+  it('signs in with email and code, showing attempts left after a wrong code', async () => {
     addUser(KARAN);
     const user = userEvent.setup();
     renderRoute('/login');
-    await user.type(await screen.findByLabelText('Mobile number'), '98765 43210');
+    expect(await screen.findByText("We'll email you a one-time code.")).toBeInTheDocument();
+    await user.type(await screen.findByLabelText('Email'), 'Karan@Example.com');
     await user.click(screen.getByRole('button', { name: 'Send code' }));
 
-    await screen.findByText(/Demo SMS to/);
+    await screen.findByText(/Demo email to k••••@example.com/);
     await user.type(screen.getByLabelText('6-digit code'), '000000');
     expect(await screen.findByText("That code isn't right. 4 attempts left.")).toBeInTheDocument();
     await enterDemoCode(user);
     expect(await accountMenu()).toBeInTheDocument();
   });
 
-  it('offers sign-up for an unknown number, keeping the number', async () => {
+  it('offers sign-up for an unknown email, keeping the email', async () => {
     const user = userEvent.setup();
     const { location } = renderRoute('/login');
-    await user.type(await screen.findByLabelText('Mobile number'), '9000000000');
+    await user.type(await screen.findByLabelText('Email'), 'new@example.com');
     await user.click(screen.getByRole('button', { name: 'Send code' }));
+    expect(await screen.findByText(/No account for this email/)).toBeInTheDocument();
     await user.click(await screen.findByRole('link', { name: 'Sign up?' }));
     // Sign-up loads on first visit, so wait for its form.
     expect(await screen.findByLabelText('Full name')).toBeInTheDocument();
     expect(location().pathname).toBe('/signup');
-    expect(screen.getByLabelText('Mobile number')).toHaveValue('9000000000');
+    expect(screen.getByLabelText('Email')).toHaveValue('new@example.com');
+  });
+
+  it('checks the email before sending a code', async () => {
+    const user = userEvent.setup();
+    renderRoute('/login');
+    await user.type(await screen.findByLabelText('Email'), '98765 43210');
+    await user.click(screen.getByRole('button', { name: 'Send code' }));
+    expect(screen.getByText('Enter a valid email address')).toBeInTheDocument();
   });
 
   it('signs in with a password, with one generic error for wrong details', async () => {
@@ -110,10 +121,10 @@ describe('sign-in', () => {
     const user = userEvent.setup();
     renderRoute('/login');
     await user.click(await screen.findByRole('link', { name: 'Use password instead' }));
-    await user.type(screen.getByLabelText('Email or mobile'), KARAN.email);
+    await user.type(screen.getByLabelText('Email'), KARAN.email);
     await user.type(screen.getByLabelText('Password'), 'wrong password');
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
-    expect(await screen.findByText('Incorrect email/mobile or password.')).toBeInTheDocument();
+    expect(await screen.findByText('Incorrect email or password.')).toBeInTheDocument();
 
     await user.clear(screen.getByLabelText('Password'));
     await user.type(screen.getByLabelText('Password'), KARAN.password);
@@ -134,7 +145,7 @@ describe('sign-in', () => {
     addUser(KARAN);
     const user = userEvent.setup();
     const { location } = renderRoute('/login?method=password&returnTo=%2F%2Fevil.example');
-    await user.type(await screen.findByLabelText('Email or mobile'), KARAN.email);
+    await user.type(await screen.findByLabelText('Email'), KARAN.email);
     await user.type(screen.getByLabelText('Password'), KARAN.password);
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
     await waitFor(() => expect(location().pathname).toBe('/'));
@@ -145,7 +156,7 @@ describe('sign-in', () => {
     setMergeResult({ cart: true, wishlist: true });
     const user = userEvent.setup();
     renderRoute('/login?method=password');
-    await user.type(await screen.findByLabelText('Email or mobile'), KARAN.email);
+    await user.type(await screen.findByLabelText('Email'), KARAN.email);
     await user.type(screen.getByLabelText('Password'), KARAN.password);
     await user.click(screen.getByRole('button', { name: 'Sign in' }));
     expect(await screen.findByText('Welcome, Karan. We kept your cart and wishlist.')).toBeInTheDocument();
@@ -157,7 +168,7 @@ describe('forgot password', () => {
     addUser(KARAN);
     const user = userEvent.setup();
     renderRoute('/forgot-password');
-    await user.type(await screen.findByLabelText('Email or mobile'), KARAN.email);
+    await user.type(await screen.findByLabelText('Email'), KARAN.email);
     await user.click(screen.getByRole('button', { name: 'Send code' }));
     await enterDemoCode(user);
     expect(await screen.findByRole('heading', { name: 'Choose a new password' })).toBeInTheDocument();
@@ -217,5 +228,65 @@ describe('signed in', () => {
     const page = details.parentElement!;
     expect(within(page).getByText('karan@example.com')).toBeInTheDocument();
     expect(within(page).getByText('••••••3210')).toBeInTheDocument();
+  });
+
+  it('leaves the mobile out of account details when there is none', async () => {
+    addUser({ ...KARAN, mobile: null }, { signedIn: true });
+    renderRoute('/account');
+    const page = (await screen.findByRole('heading', { name: 'My account' })).parentElement!;
+    expect(within(page).getByText('karan@example.com')).toBeInTheDocument();
+    expect(within(page).queryByText('Mobile')).not.toBeInTheDocument();
+  });
+});
+
+describe('real email (SMTP configured, F-016)', () => {
+  beforeEach(() => setEmailDelivery());
+  afterEach(() => vi.useRealTimers());
+
+  it('signs up without a mobile: says the code was emailed, shows no code, and hints at spam after 30 s', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    renderRoute('/signup');
+    await user.type(await screen.findByLabelText('Full name'), 'Karan Aneja');
+    await user.type(screen.getByLabelText('Email'), 'karan@example.com');
+    await user.type(screen.getByLabelText('Password'), 'correct horse battery');
+    await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+    expect(await screen.findByText(/We emailed a code to/)).toHaveTextContent('We emailed a code to k••••@example.com.');
+    expect(screen.queryByText(/Demo email to/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/spam/)).not.toBeInTheDocument();
+    for (let i = 0; i < 30; i++) act(() => vi.advanceTimersByTime(1000));
+    expect(await screen.findByText('Check your spam folder.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Resend code' })).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('6-digit code'), lastEmailedCode()!);
+    expect(await accountMenu()).toBeInTheDocument();
+  });
+
+  it('resets a password with an emailed code', async () => {
+    addUser(KARAN);
+    const user = userEvent.setup();
+    renderRoute('/forgot-password');
+    await user.type(await screen.findByLabelText('Email'), KARAN.email);
+    await user.click(screen.getByRole('button', { name: 'Send code' }));
+    expect(await screen.findByText(/We emailed a code to/)).toHaveTextContent('k••••@example.com');
+    await user.type(screen.getByLabelText('6-digit code'), lastEmailedCode()!);
+    expect(await screen.findByRole('heading', { name: 'Choose a new password' })).toBeInTheDocument();
+  });
+
+  it('says when the email could not be sent, so the shopper can try again', async () => {
+    addUser(KARAN);
+    setEmailDelivery({ failing: true });
+    const user = userEvent.setup();
+    renderRoute('/login');
+    await user.type(await screen.findByLabelText('Email'), KARAN.email);
+    await user.click(screen.getByRole('button', { name: 'Send code' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent("We couldn't send the code. Please try again.");
+
+    setEmailDelivery();
+    await user.click(screen.getByRole('button', { name: 'Send code' }));
+    expect(await screen.findByText(/We emailed a code to/)).toBeInTheDocument();
+    await user.type(screen.getByLabelText('6-digit code'), lastEmailedCode()!);
+    expect(await accountMenu()).toBeInTheDocument();
   });
 });

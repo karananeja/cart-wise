@@ -8,6 +8,7 @@ import { createOrderService } from './orders/service.js';
 import { openDatabase } from './db/database.js';
 import { createEventRecorder } from './analytics/record.js';
 import { isSeeded, repriceIfRateChanged, seedDatabase } from './db/seed.js';
+import { createSmtpMailer, loadMailerConfig } from './mail/mailer.js';
 import { loadRazorpayConfig } from './payments/razorpay.js';
 import { DEFAULT_DB_PATH } from './paths.js';
 import { operatorPasswordFrom } from './sim/operator.js';
@@ -52,11 +53,21 @@ const razorpay = loadRazorpayConfig(process.env);
 if (razorpay.enabled) console.log(`Razorpay test mode is on (key ${razorpay.config.keyId}).`);
 else if (razorpay.error) console.error(razorpay.error);
 
+// Email codes (F-016, ADR-006): SMTP settings come from apps/api/.env. The password and codes are never logged.
+const mail = loadMailerConfig(process.env);
+if (mail.enabled) console.log(`Email codes are sent through ${mail.config.host}:${mail.config.port} as ${mail.config.from}.`);
+else {
+  if (mail.error) console.error(mail.error);
+  console.log('Email codes are shown on screen (demo). Set SMTP_* in apps/api/.env to send real emails.');
+}
+// Only for automated tests that sign up many shoppers from one address; blank means the default (20).
+const maxOtpSendsPerIp = Number(process.env.OTP_MAX_SENDS_PER_IP_PER_HOUR?.trim()) || undefined;
+
 if (operatorPasswordFrom(process.env).isDefault) {
   console.log('Demo operator page uses the default password "demo-operator" (set SIM_OPERATOR_PASSWORD to change it).');
 }
 
 // Inventory automation (F-011) runs only here, with the switches saved in the database.
-createApp(db, { simScheduler: true, razorpay }).listen(port, () => {
+createApp(db, { simScheduler: true, razorpay, mailer: mail.enabled ? createSmtpMailer(mail.config) : undefined, maxOtpSendsPerIp }).listen(port, () => {
   console.log(`API listening on http://localhost:${port}`);
 });

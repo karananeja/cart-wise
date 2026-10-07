@@ -131,7 +131,7 @@ describe('sign-in merge', () => {
     await addLine(guest, { productSlug: PHONE, option: '128 GB', quantity: 3 }).expect(200);
     await addLine(guest, { productSlug: PHONE, option: '256 GB' }).expect(200);
     const email = `o${counter}@example.com`;
-    await guest.post('/api/auth/password').send({ identifier: email, password: 'correct horse battery' }).expect(200);
+    await guest.post('/api/auth/password').send({ email, password: 'correct horse battery' }).expect(200);
     const cart = (await guest.get('/api/cart')).body as CartView;
     expect(cart.lines.map((l) => [l.option, l.quantity]).sort()).toEqual([['128 GB', 3], ['256 GB', 1]]);
   });

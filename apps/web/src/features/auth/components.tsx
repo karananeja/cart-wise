@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState, type InputHTMLAttributes, type ReactNode, type Ref } from 'react';
-import { Eye, EyeOff, MessageSquareText } from 'lucide-react';
+import { Eye, EyeOff, Mail } from 'lucide-react';
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,16 +67,28 @@ export function PasswordField(props: Omit<FormFieldProps, 'type' | 'trailing'>) 
   );
 }
 
-/** Delivery is simulated (ADR-003): the "SMS" is shown here instead of being sent. */
-export function DemoSmsBanner({ maskedMobile, code }: { maskedMobile: string; code: string }) {
+/** Without SMTP (ADR-006), the "email" is shown here instead of being sent. */
+export function DemoEmailBanner({ maskedEmail, code }: { maskedEmail: string; code: string }) {
   return (
     <div role="status" className="flex items-start gap-3 rounded-xl border border-dashed border-sky-300 bg-sky-50 p-3 text-sm text-sky-950 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-100">
-      <MessageSquareText className="mt-0.5 size-4 shrink-0" aria-hidden />
+      <Mail className="mt-0.5 size-4 shrink-0" aria-hidden />
       <p>
-        <span className="font-medium">Demo SMS to {maskedMobile}:</span> your code is{' '}
-        <span className="font-mono font-semibold tracking-widest">{code}</span>. No real message is sent.
+        <span className="font-medium">Demo email to {maskedEmail}:</span> your code is{' '}
+        <span className="font-mono font-semibold tracking-widest">{code}</span>. No real email is sent.
       </p>
     </div>
+  );
+}
+
+/** With SMTP, the code really went out: say where, politely announced. */
+export function EmailSentNote({ maskedEmail }: { maskedEmail: string }) {
+  return (
+    <p role="status" className="flex items-center gap-2 text-sm">
+      <Mail className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+      <span>
+        We emailed a code to <span className="font-medium">{maskedEmail}</span>.
+      </span>
+    </p>
   );
 }
 

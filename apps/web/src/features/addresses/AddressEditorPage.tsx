@@ -53,7 +53,7 @@ export function AddressEditorPage() {
   const base: AddressInput = draft ??
     existing ?? {
       fullName: user.name,
-      mobile: user.mobile,
+      mobile: user.mobile ?? '',
       pincode: '',
       line1: '',
       line2: '',

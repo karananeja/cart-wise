@@ -16,8 +16,6 @@ export function authErrorMessage(error: unknown): string {
       return 'Please check the highlighted fields.';
     case 'EMAIL_TAKEN':
       return 'An account with this email already exists.';
-    case 'MOBILE_TAKEN':
-      return 'An account with this mobile already exists.';
     case 'NO_ACCOUNT':
       return 'No account found.';
     case 'INVALID_CODE': {
@@ -32,12 +30,14 @@ export function authErrorMessage(error: unknown): string {
         ? `Too many attempts. Try again in ${Math.ceil(wait / 60)} ${Math.ceil(wait / 60) === 1 ? 'minute' : 'minutes'}.`
         : 'Too many wrong attempts. Request a new code.';
     }
+    case 'EMAIL_FAILED':
+      return "We couldn't send the code. Please try again.";
     case 'TOO_MANY_CODES':
       return 'Too many codes requested. Please try again later.';
     case 'RESEND_TOO_SOON':
       return 'Please wait a few seconds before requesting another code.';
     case 'INVALID_CREDENTIALS':
-      return 'Incorrect email/mobile or password.';
+      return 'Incorrect email or password.';
     case 'RESET_EXPIRED':
     case 'CHALLENGE_NOT_FOUND':
       return 'This step has expired. Please start again.';

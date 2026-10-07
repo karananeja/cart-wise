@@ -21,8 +21,12 @@ export function AccountPage() {
         <dd>{user.name}</dd>
         <dt className="text-muted-foreground">Email</dt>
         <dd className="break-all">{user.email}</dd>
-        <dt className="text-muted-foreground">Mobile</dt>
-        <dd>{user.maskedMobile}</dd>
+        {user.maskedMobile && (
+          <>
+            <dt className="text-muted-foreground">Mobile</dt>
+            <dd>{user.maskedMobile}</dd>
+          </>
+        )}
       </dl>
       <Button asChild variant="outline" className="w-fit">
         <Link to="/account/orders">

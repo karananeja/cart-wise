@@ -10,7 +10,7 @@ function newCustomer() {
 }
 
 async function enterDemoCode(page: Page) {
-  const banner = page.getByText(/Demo SMS to/);
+  const banner = page.getByText(/Demo email to/);
   const code = (await banner.locator('..').textContent())!.match(/\d{6}/)![0];
   await page.getByLabel('6-digit code').fill(code);
 }
@@ -18,7 +18,8 @@ async function enterDemoCode(page: Page) {
 async function signUp(page: Page, customer: ReturnType<typeof newCustomer>) {
   await page.getByLabel('Full name').fill(customer.name);
   await page.getByLabel('Email').fill(customer.email);
-  await page.getByLabel('Mobile number').fill(customer.mobile);
+  // Mobile is optional (F-016): left blank when the customer has none.
+  if (customer.mobile) await page.getByLabel('Mobile number (optional)').fill(customer.mobile);
   await page.getByLabel('Password', { exact: true }).fill(customer.password);
   await page.getByRole('button', { name: 'Continue' }).click();
   await enterDemoCode(page);
@@ -26,9 +27,9 @@ async function signUp(page: Page, customer: ReturnType<typeof newCustomer>) {
   await expect(page.getByRole('button', { name: `Account menu for ${customer.name.split(' ')[0]}` })).toBeVisible();
 }
 
-async function otpSignIn(page: Page, mobile: string) {
+async function otpSignIn(page: Page, email: string) {
   await page.goto('/login');
-  await page.getByLabel('Mobile number').fill(mobile);
+  await page.getByLabel('Email').fill(email);
   await page.getByRole('button', { name: 'Send code' }).click();
   await enterDemoCode(page);
   await expect(page.getByRole('button', { name: 'Account menu for Asha' })).toBeVisible();
@@ -59,7 +60,7 @@ test('a guest signs up from a product page, keeps cart and wishlist, and lands b
   await expect(wishlistLink(page)).toHaveAccessibleName('Wishlist, 0 items');
 
   // Signing back in with a code restores the account's items.
-  await otpSignIn(page, customer.mobile);
+  await otpSignIn(page, customer.email);
   await expect(cartLink(page)).toHaveAccessibleName('Cart, 1 item');
   await expect(wishlistLink(page)).toHaveAccessibleName('Wishlist, 1 item');
 });
@@ -76,7 +77,7 @@ test('cart, wishlist and recently viewed follow the account to another browser',
   const other = await browser.newContext();
   const second = await other.newPage();
   await second.goto('/login?method=password');
-  await second.getByLabel('Email or mobile').fill(customer.email);
+  await second.getByLabel('Email').fill(customer.email);
   await second.getByLabel('Password', { exact: true }).fill(customer.password);
   await second.getByRole('button', { name: 'Sign in' }).click();
   await expect(cartLink(second)).toHaveAccessibleName('Cart, 1 item');
@@ -105,12 +106,13 @@ test('the guest cart merges with the account cart, larger quantity winning', asy
   await page.getByRole('button', { name: 'Add to cart' }).click();
   await expect(cartLink(page)).toHaveAccessibleName('Cart, 3 items');
 
-  await otpSignIn(page, customer.mobile);
+  await otpSignIn(page, customer.email);
   await expect(cartLink(page)).toHaveAccessibleName('Cart, 3 items');
 });
 
 test('forgot password signs in and signs out other devices', async ({ browser, page }) => {
-  const customer = newCustomer();
+  // Signed up without a mobile (F-016).
+  const customer = { ...newCustomer(), mobile: '' };
   await page.goto('/signup');
   await signUp(page, customer);
   await expect(page.getByRole('button', { name: 'Account menu for Asha' })).toBeVisible();
@@ -118,7 +120,7 @@ test('forgot password signs in and signs out other devices', async ({ browser, p
   const other = await browser.newContext();
   const second = await other.newPage();
   await second.goto('/forgot-password');
-  await second.getByLabel('Email or mobile').fill(customer.email);
+  await second.getByLabel('Email').fill(customer.email);
   await second.getByRole('button', { name: 'Send code' }).click();
   await enterDemoCode(second);
   await second.getByLabel('New password').fill('a brand new secret');

@@ -8,7 +8,8 @@ export interface SessionUser {
   id: number;
   name: string;
   email: string;
-  mobile: string;
+  /** Optional since F-016. */
+  mobile: string | null;
 }
 
 export function currentUser(res: Response): SessionUser | undefined {

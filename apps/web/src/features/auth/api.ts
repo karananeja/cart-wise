@@ -31,7 +31,7 @@ export const useSignupStart = () =>
 
 export const useRequestOtp = () =>
   useMutation({
-    mutationFn: (input: { purpose: 'login'; mobile: string } | { purpose: 'reset'; identifier: string }) =>
+    mutationFn: (input: { purpose: 'login' | 'reset'; email: string }) =>
       apiSend<ChallengeResponse>('POST', '/auth/otp', input),
   });
 
@@ -46,7 +46,7 @@ export const useVerifyOtp = () =>
 
 export const usePasswordLogin = () =>
   useMutation({
-    mutationFn: (input: { identifier: string; password: string }) => apiSend<SignedInResponse>('POST', '/auth/password', input),
+    mutationFn: (input: { email: string; password: string }) => apiSend<SignedInResponse>('POST', '/auth/password', input),
   });
 
 export const useResetPassword = () =>

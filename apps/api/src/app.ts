@@ -18,6 +18,7 @@ import { createRazorpayClient, loadRazorpayConfig, type RazorpaySetup } from './
 import { createMergeService } from './auth/merge.js';
 import { createOtpService } from './auth/otp.js';
 import { createLoginLimiter } from './auth/rateLimit.js';
+import type { Mailer } from './mail/mailer.js';
 import { authRouter } from './auth/routes.js';
 import { createSessionService, SESSION_COOKIE } from './auth/sessions.js';
 import { createEventRecorder } from './analytics/record.js';
@@ -47,8 +48,12 @@ export interface AppOptions {
   simScheduler?: boolean;
   /** Razorpay test-mode setup (F-014); defaults to the environment. Its HTTP uses `fetch`. */
   razorpay?: RazorpaySetup;
-  /** Gateway problems for the operator (defaults to console.error). */
+  /** Gateway and email problems for the operator (defaults to console.error). */
   log?: (message: string) => void;
+  /** Sends one-time codes by email (F-016, ADR-006). Without one, codes are shown on screen (demo). */
+  mailer?: Mailer;
+  /** Overrides the per-IP hourly code limit (20); E2E signs up many shoppers from one address. */
+  maxOtpSendsPerIp?: number;
 }
 
 export function createApp(db: Db, options: AppOptions = {}) {
@@ -78,7 +83,8 @@ export function createApp(db: Db, options: AppOptions = {}) {
   api.use(cartRouter(carts));
   api.use(recommendationRouter(createRecommendationService(db), carts));
   api.use(wishlistRouter(createWishlistService(db, catalog)));
-  api.use(authRouter({ db, otp: createOtpService(db), sessions, merge: createMergeService(db), limiter: createLoginLimiter() }));
+  const otp = createOtpService(db, { clock: options.clock, mailer: options.mailer, maxSendsPerIpPerHour: options.maxOtpSendsPerIp, log: options.log });
+  api.use(authRouter({ db, otp, sessions, merge: createMergeService(db), limiter: createLoginLimiter() }));
   api.use(addressRouter(addresses));
   const record = createEventRecorder(db, options.clock);
   const orders = createOrderService({ db, carts, addresses, record, clock: options.clock });

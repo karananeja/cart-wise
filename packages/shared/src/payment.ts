@@ -273,7 +273,7 @@ export interface RazorpayCheckout {
   keyId: string;
   orderId: string;
   amountPaise: number;
-  prefill: { name: string; email: string; contact: string };
+  prefill: { name: string; email: string; contact?: string };
 }
 
 export interface PaymentConfig {

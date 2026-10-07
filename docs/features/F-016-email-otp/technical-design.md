@@ -1,0 +1,37 @@
+# Technical Design — F-016 Email OTP
+
+- **Mailer:** `apps/api/src/mail/mailer.ts`.
+  - `Mailer { send({to, subject, text, html}) }`, the only interface the rest of the API sees.
+  - `loadMailerConfig(env)` is pure. It returns `{enabled: true, config}` or `{enabled: false, error?}`. Blank values count as unset, and partial settings are "off" with a message naming the missing keys. `SMTP_SECURE` defaults to `port === 465`.
+  - `createSmtpMailer(config)` is a nodemailer transport with 10 s connection, greeting and socket timeouts.
+  - `mail/otpEmail.ts` builds the FR-6 email: subject "123456 is your Cartwise code", purpose text, 5 minutes, "If this wasn't you, ignore this email", and no links.
+- **Startup:** `server.ts` logs the mode ("Email codes are shown on screen (demo)…" or the host, port and sender). It never logs the password or codes. `createApp(db, { mailer })` injects the mailer; with none, delivery is the demo. `OTP_MAX_SENDS_PER_IP_PER_HOUR` (blank means 20) exists only for E2E, which signs up many shoppers from one address.
+- **OTP service (`auth/otp.ts`):**
+  - Keyed by email. `start` and `resend` are async.
+  - Both limits are checked and the send is recorded before mailing, so a failed send still counts: 5 per email and 20 per IP (`req.ip`) per hour, both in SQLite.
+  - The challenge is stored only after a successful send. A failed resend keeps the previous code valid.
+  - Failure: `502 EMAIL_FAILED`. The log gets only the SMTP error code (for example `EAUTH 535`).
+  - Response: `{challengeId, maskedEmail, delivery}`, plus `demoCode` only when `delivery: 'demo'`.
+- **Routes (`auth/routes.ts`):**
+  - `signup {name, email, password, mobile?}`. `MOBILE_TAKEN` is gone.
+  - `otp {purpose: 'login' | 'reset', email}`, with `400 VALIDATION` for a bad email and `404 NO_ACCOUNT`.
+  - `password {email, password}`: "Incorrect email or password". The lock is keyed by email.
+  - A successful login or reset code sets `email_verified_at` if it is null. New accounts get it at creation.
+  - `publicUser.mobile` and `maskedMobile` may be null.
+- **Schema v4 (`db/database.ts`):**
+  - `SCHEMA_VERSION = 4`. The catalog reseed is now gated on a separate `SEEDED_TABLES_VERSION = 3`, so the upgrade doesn't reseed inventory.
+  - `dropMobileOtpTables` drops `otp_challenges` and `otp_sends` when they still have `mobile`, before `schema.sql` recreates them (plus `otp_ip_sends`).
+  - `rebuildUsersForEmailOtp` uses SQLite's documented procedure, with foreign keys off inside one transaction: create `users_f016` from the `schema.sql` definition, copy every row with its id, drop `users`, and rename. Renaming the *old* table instead would rewrite the foreign keys in sessions, carts, orders and other tables.
+  - The rebuild aborts if `foreign_key_check` finds more dangling rows than before. It is shape-detected (no `email_verified_at`), so it is idempotent.
+- **Payments:** the Razorpay prefill includes `contact` only when the account has a mobile (`prefill.contact` is optional in the shared types).
+- **Web:**
+  - Login: Email + code, and email + password.
+  - Unknown email: "No account for this email. Sign up?" carries `?email=`.
+  - Forgot password: email only.
+  - Sign-up: "Mobile number (optional)", hint "For delivery updates", placed last.
+  - `OtpStep`:
+    - Demo mode shows `DemoEmailBanner`. Email mode shows `EmailSentNote` (`role="status"`) and, once the resend wait (30 s) is over, "Check your spam folder." next to Resend.
+    - A resend failure shows an alert with Try again on `EMAIL_FAILED`.
+    - The code field re-mounts per round, not per code.
+  - Account page shows Mobile only when present. The address form prefill falls back to an empty mobile.
+- **Unchanged:** delivery OTP (orders) and bank OTP (payments).

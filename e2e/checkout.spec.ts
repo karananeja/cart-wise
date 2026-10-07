@@ -13,7 +13,7 @@ function setStock(slug: string, onHand: number) {
 }
 
 async function enterDemoCode(page: Page) {
-  const code = (await page.getByText(/Demo SMS to/).locator('..').textContent())!.match(/\d{6}/)![0];
+  const code = (await page.getByText(/Demo email to/).locator('..').textContent())!.match(/\d{6}/)![0];
   await page.getByLabel('6-digit code').fill(code);
 }
 

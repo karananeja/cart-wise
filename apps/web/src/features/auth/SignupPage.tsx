@@ -12,7 +12,7 @@ import { useReturnTo } from './useReturnTo';
 
 export function SignupPage() {
   const { returnTo, carry, params } = useReturnTo();
-  const [form, setForm] = useState({ name: '', email: '', mobile: params.get('mobile') ?? '', password: '' });
+  const [form, setForm] = useState({ name: '', email: params.get('email') ?? '', mobile: '', password: '' });
   const [errors, setErrors] = useState<FieldErrors>({});
   const [challenge, setChallenge] = useState<ChallengeResponse>();
   const start = useSignupStart();
@@ -40,7 +40,7 @@ export function SignupPage() {
 
   return (
     <AuthLayout
-      title={challenge ? 'Verify your mobile' : 'Create your account'}
+      title={challenge ? 'Verify your email' : 'Create your account'}
       footer={
         <>
           Already have an account? <AuthLink to={`/login${carry()}`}>Sign in</AuthLink>
@@ -57,17 +57,15 @@ export function SignupPage() {
       ) : (
         <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
           <FormField label="Full name" name="name" autoComplete="name" value={form.name} onChange={set('name')} error={errors.name} />
-          <FormField label="Email" name="email" type="email" autoComplete="email" value={form.email} onChange={set('email')} error={errors.email} />
           <FormField
-            label="Mobile number"
-            name="mobile"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel-national"
-            value={form.mobile}
-            onChange={set('mobile')}
-            error={errors.mobile}
-            hint="We'll send a code to verify it."
+            label="Email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            value={form.email}
+            onChange={set('email')}
+            error={errors.email}
+            hint="We'll email you a code to verify it."
           />
           <PasswordField
             label="Password"
@@ -77,6 +75,17 @@ export function SignupPage() {
             onChange={set('password')}
             error={errors.password}
             hint="At least 8 characters."
+          />
+          <FormField
+            label="Mobile number (optional)"
+            name="mobile"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel-national"
+            value={form.mobile}
+            onChange={set('mobile')}
+            error={errors.mobile}
+            hint="For delivery updates"
           />
           {taken && (
             <p className="text-sm">

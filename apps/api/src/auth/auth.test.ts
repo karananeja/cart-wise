@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { CartView, ChallengeResponse, HistoryLists, SignedInResponse, WishlistView } from '@store/shared';
 import { createApp } from '../app.js';
 import { openDatabase, type Db } from '../db/database.js';
+import type { MailMessage, Mailer } from '../mail/mailer.js';
 import { seedDatabase } from '../db/seed.js';
 
 let db: Db;
@@ -24,8 +25,8 @@ async function signUp(agent: Agent = request.agent(app), details = SIGNUP) {
   return { agent, challenge, result };
 }
 
-async function otpLogin(agent: Agent, mobile = '9876543210') {
-  const challenge = (await agent.post('/api/auth/otp').send({ purpose: 'login', mobile }).expect(200)).body as ChallengeResponse;
+async function otpLogin(agent: Agent, email = 'karan@example.com') {
+  const challenge = (await agent.post('/api/auth/otp').send({ purpose: 'login', email }).expect(200)).body as ChallengeResponse;
   return (await agent.post('/api/auth/verify').send({ challengeId: challenge.challengeId, code: challenge.demoCode }).expect(200))
     .body as SignedInResponse;
 }
@@ -34,7 +35,7 @@ describe('sign-up', () => {
   it('sends a code, then creates the account, normalises details, and signs in', async () => {
     const agent = request.agent(app);
     const challenge = (await agent.post('/api/auth/signup').send(SIGNUP).expect(200)).body as ChallengeResponse;
-    expect(challenge).toMatchObject({ maskedMobile: '••••••3210', resendAfterSeconds: 30, expiresInSeconds: 300 });
+    expect(challenge).toMatchObject({ maskedEmail: 'k••••@example.com', delivery: 'demo', resendAfterSeconds: 30, expiresInSeconds: 300 });
     expect(challenge.demoCode).toMatch(/^\d{6}$/);
     // Nothing exists until the code is verified.
     expect((db.prepare('SELECT COUNT(*) AS n FROM users').get() as { n: number }).n).toBe(0);
@@ -43,6 +44,15 @@ describe('sign-up', () => {
     expect(String(verify.headers['set-cookie'])).toMatch(/session=[\w-]{40,}.*HttpOnly/);
     expect(verify.body.user).toEqual({ name: 'Karan Aneja', email: 'karan@example.com', mobile: '9876543210', maskedMobile: '••••••3210' });
     expect((await agent.get('/api/auth/me')).body.user.name).toBe('Karan Aneja');
+    // Entering the emailed code proves the email; the mobile is just a profile field now.
+    expect(db.prepare('SELECT email_verified_at, mobile_verified_at FROM users').get()).toEqual({ email_verified_at: expect.any(String), mobile_verified_at: null });
+  });
+
+  it('works without a mobile (F-016)', async () => {
+    const { result } = await signUp(request.agent(app), { ...SIGNUP, mobile: '' });
+    expect(result.user).toEqual({ name: 'Karan Aneja', email: 'karan@example.com', mobile: null, maskedMobile: null });
+    const other = { name: 'Asha Rao', email: 'asha@example.com', password: 'correct horse battery' };
+    expect((await signUp(request.agent(app), other as typeof SIGNUP)).result.user.mobile).toBeNull();
   });
 
   it('stores only hashes for passwords, codes and sessions', async () => {
@@ -64,10 +74,11 @@ describe('sign-up', () => {
     });
   });
 
-  it('refuses an email or mobile that already has an account', async () => {
+  it('refuses an email that already has an account, but a mobile may be shared (F-016)', async () => {
     await signUp();
     expect((await request(app).post('/api/auth/signup').send({ ...SIGNUP, mobile: '9123456789' }).expect(409)).body.error.code).toBe('EMAIL_TAKEN');
-    expect((await request(app).post('/api/auth/signup').send({ ...SIGNUP, email: 'new@example.com' }).expect(409)).body.error.code).toBe('MOBILE_TAKEN');
+    const { result } = await signUp(request.agent(app), { ...SIGNUP, email: 'new@example.com' });
+    expect(result.user).toMatchObject({ email: 'new@example.com', mobile: '9876543210' });
   });
 
   it('lets an unverified sign-up be started again', async () => {
@@ -102,7 +113,7 @@ describe('codes', () => {
     await agent.post('/api/auth/verify').send({ challengeId, code: fresh.demoCode }).expect(200);
   });
 
-  it('allows at most 5 codes per mobile per hour', async () => {
+  it('allows at most 5 codes per email per hour', async () => {
     for (let i = 0; i < 5; i++) await request(app).post('/api/auth/signup').send(SIGNUP).expect(200);
     expect((await request(app).post('/api/auth/signup').send(SIGNUP).expect(429)).body.error.code).toBe('TOO_MANY_CODES');
   });
@@ -114,27 +125,32 @@ describe('codes', () => {
 });
 
 describe('sign-in', () => {
-  it('signs in with mobile and code, and says when there is no account', async () => {
+  it('signs in with email and code, and says when there is no account', async () => {
     await signUp();
     const agent = request.agent(app);
-    expect((await otpLogin(agent)).user.name).toBe('Karan Aneja');
-    expect((await request(app).post('/api/auth/otp').send({ purpose: 'login', mobile: '9000000000' }).expect(404)).body.error.code).toBe('NO_ACCOUNT');
-    await request(app).post('/api/auth/otp').send({ purpose: 'login', mobile: '123' }).expect(400);
+    expect((await otpLogin(agent, ' KARAN@example.com ')).user.name).toBe('Karan Aneja');
+    const none = await request(app).post('/api/auth/otp').send({ purpose: 'login', email: 'who@example.com' }).expect(404);
+    expect(none.body.error).toMatchObject({ code: 'NO_ACCOUNT', message: 'No account for this email' });
+    const invalid = await request(app).post('/api/auth/otp').send({ purpose: 'login', email: 'nope' }).expect(400);
+    expect(invalid.body.error.details.fields).toEqual({ email: 'Enter a valid email address' });
+    // A mobile number is no longer a way in.
+    await request(app).post('/api/auth/otp').send({ purpose: 'login', mobile: '9876543210' }).expect(400);
   });
 
-  it('signs in with email or mobile plus password, with one generic error', async () => {
+  it('signs in with email plus password only, with one generic error', async () => {
     await signUp();
-    await request.agent(app).post('/api/auth/password').send({ identifier: 'KARAN@example.com', password: SIGNUP.password }).expect(200);
-    await request.agent(app).post('/api/auth/password').send({ identifier: '98765 43210', password: SIGNUP.password }).expect(200);
-    const wrong = await request(app).post('/api/auth/password').send({ identifier: 'karan@example.com', password: 'nope nope' }).expect(401);
-    const unknown = await request(app).post('/api/auth/password').send({ identifier: 'who@example.com', password: 'nope nope' }).expect(401);
-    expect(wrong.body.error.message).toBe(unknown.body.error.message);
+    await request.agent(app).post('/api/auth/password').send({ email: 'KARAN@example.com', password: SIGNUP.password }).expect(200);
+    const byMobile = await request(app).post('/api/auth/password').send({ email: '98765 43210', password: SIGNUP.password }).expect(401);
+    const wrong = await request(app).post('/api/auth/password').send({ email: 'karan@example.com', password: 'nope nope' }).expect(401);
+    const unknown = await request(app).post('/api/auth/password').send({ email: 'who@example.com', password: 'nope nope' }).expect(401);
+    expect(wrong.body.error.message).toBe('Incorrect email or password');
+    expect([unknown.body.error.message, byMobile.body.error.message]).toEqual([wrong.body.error.message, wrong.body.error.message]);
   });
 
-  it('locks an identifier after 5 failed passwords in 15 minutes', async () => {
+  it('locks an email after 5 failed passwords in 15 minutes', async () => {
     await signUp();
-    for (let i = 0; i < 5; i++) await request(app).post('/api/auth/password').send({ identifier: '9876543210', password: 'wrong pass' }).expect(401);
-    const locked = await request(app).post('/api/auth/password').send({ identifier: '+919876543210', password: SIGNUP.password }).expect(429);
+    for (let i = 0; i < 5; i++) await request(app).post('/api/auth/password').send({ email: 'karan@example.com', password: 'wrong pass' }).expect(401);
+    const locked = await request(app).post('/api/auth/password').send({ email: 'Karan@Example.com', password: SIGNUP.password }).expect(429);
     expect(locked.body.error.details.retryAfterSeconds).toBeGreaterThan(0);
   });
 
@@ -161,19 +177,20 @@ describe('forgot password', () => {
   it('resets with a code, signs in, and signs out other sessions', async () => {
     const { agent: other } = await signUp();
     const agent = request.agent(app);
-    const challenge = (await agent.post('/api/auth/otp').send({ purpose: 'reset', identifier: 'karan@example.com' }).expect(200)).body as ChallengeResponse;
+    const challenge = (await agent.post('/api/auth/otp').send({ purpose: 'reset', email: 'karan@example.com' }).expect(200)).body as ChallengeResponse;
+    expect(challenge).toMatchObject({ maskedEmail: 'k••••@example.com', delivery: 'demo' });
     const { resetToken } = (await agent.post('/api/auth/verify').send({ challengeId: challenge.challengeId, code: challenge.demoCode }).expect(200)).body;
     await agent.post('/api/auth/reset').send({ resetToken, newPassword: 'short' }).expect(400);
     await agent.post('/api/auth/reset').send({ resetToken, newPassword: 'a brand new secret' }).expect(200);
 
     expect((await agent.get('/api/auth/me')).body.user.name).toBe('Karan Aneja');
     expect((await other.get('/api/auth/me')).body.user).toBeNull();
-    await request.agent(app).post('/api/auth/password').send({ identifier: '9876543210', password: 'a brand new secret' }).expect(200);
+    await request.agent(app).post('/api/auth/password').send({ email: 'karan@example.com', password: 'a brand new secret' }).expect(200);
     await agent.post('/api/auth/reset').send({ resetToken, newPassword: 'another new secret' }).expect(410);
   });
 
   it('says when there is no account', async () => {
-    expect((await request(app).post('/api/auth/otp').send({ purpose: 'reset', identifier: 'who@example.com' }).expect(404)).body.error.code).toBe('NO_ACCOUNT');
+    expect((await request(app).post('/api/auth/otp').send({ purpose: 'reset', email: 'who@example.com' }).expect(404)).body.error.code).toBe('NO_ACCOUNT');
   });
 });
 
@@ -274,5 +291,118 @@ describe('cross-site guard', () => {
     await request(app).post('/api/cart/lines').set('Content-Type', 'text/plain').send('{}').expect(415);
     const event = { name: 'filter_applied', properties: {}, visitorId: 'visitor-12345', occurredAt: new Date().toISOString() };
     await request(app).post('/api/events').set('Content-Type', 'text/plain').send(JSON.stringify({ events: [event] })).expect(202);
+  });
+});
+
+describe('email delivery (F-016)', () => {
+  let sent: MailMessage[];
+  let failing: boolean;
+  let logs: string[];
+  const fakeMailer: Mailer = {
+    async send(message) {
+      if (failing) throw Object.assign(new Error('Invalid login: 535 bad credentials for secret-pass'), { code: 'EAUTH', responseCode: 535 });
+      sent.push(message);
+    },
+  };
+  const codeFrom = (message: MailMessage) => message.subject.match(/^(\d{6}) is your Cartwise code$/)![1]!;
+
+  beforeEach(() => {
+    sent = [];
+    failing = false;
+    logs = [];
+    app = createApp(db, { mailer: fakeMailer, log: (m) => logs.push(m) });
+  });
+
+  it('emails the sign-up code and never returns it', async () => {
+    const agent = request.agent(app);
+    const challenge = (await agent.post('/api/auth/signup').send(SIGNUP).expect(200)).body as ChallengeResponse;
+    expect(challenge).toEqual({ challengeId: expect.any(String), maskedEmail: 'k••••@example.com', delivery: 'email', resendAfterSeconds: 30, expiresInSeconds: 300 });
+    expect(sent).toHaveLength(1);
+    const [email] = sent;
+    expect(email!.to).toBe('karan@example.com');
+    const code = codeFrom(email!);
+    for (const body of [email!.text, email!.html]) {
+      expect(body).toContain(code);
+      expect(body).toContain('verify your email');
+      expect(body).toContain('valid for 5 minutes');
+      expect(body).toContain("If this wasn't you, ignore this email.");
+      // No links in a code email.
+      expect(body).not.toMatch(/https?:|href=/);
+    }
+    const verified = (await agent.post('/api/auth/verify').send({ challengeId: challenge.challengeId, code }).expect(200)).body as SignedInResponse;
+    expect(verified.user.email).toBe('karan@example.com');
+  });
+
+  it('emails sign-in, resend and reset codes with their purpose', async () => {
+    await signUp(request.agent(createApp(db)));
+    const agent = request.agent(app);
+    const login = (await agent.post('/api/auth/otp').send({ purpose: 'login', email: 'karan@example.com' }).expect(200)).body as ChallengeResponse;
+    expect(login.demoCode).toBeUndefined();
+    expect(sent.at(-1)!.text).toContain('sign in to Cartwise');
+
+    db.prepare("UPDATE otp_challenges SET last_sent_at = '2000-01-01T00:00:00.000Z'").run();
+    const resent = (await agent.post('/api/auth/otp/resend').send({ challengeId: login.challengeId }).expect(200)).body as ChallengeResponse;
+    expect(resent).toMatchObject({ delivery: 'email' });
+    expect(resent.demoCode).toBeUndefined();
+    expect(sent).toHaveLength(2);
+    await agent.post('/api/auth/verify').send({ challengeId: login.challengeId, code: codeFrom(sent[1]!) }).expect(200);
+
+    const reset = (await request(app).post('/api/auth/otp').send({ purpose: 'reset', email: 'karan@example.com' }).expect(200)).body as ChallengeResponse;
+    expect(sent.at(-1)!.text).toContain('reset your Cartwise password');
+    const token = (await request(app).post('/api/auth/verify').send({ challengeId: reset.challengeId, code: codeFrom(sent.at(-1)!) }).expect(200)).body;
+    expect(token.resetToken).toEqual(expect.any(String));
+  });
+
+  it('says when the email could not be sent, counts the attempt, and logs no secrets', async () => {
+    failing = true;
+    const res = await request(app).post('/api/auth/signup').send(SIGNUP).expect(502);
+    expect(res.body.error).toMatchObject({ code: 'EMAIL_FAILED', message: "We couldn't send the code. Please try again." });
+    expect(db.prepare('SELECT COUNT(*) AS n FROM otp_challenges').get()).toEqual({ n: 0 });
+    expect(logs).toEqual(['Could not email a signup code (EAUTH 535).']);
+    expect(logs.join()).not.toMatch(/secret|password/i);
+
+    for (let i = 0; i < 4; i++) await request(app).post('/api/auth/signup').send(SIGNUP).expect(502);
+    failing = false;
+    expect((await request(app).post('/api/auth/signup').send(SIGNUP).expect(429)).body.error.code).toBe('TOO_MANY_CODES');
+  });
+
+  it('keeps the previous code usable when a resend fails', async () => {
+    const agent = request.agent(app);
+    const challenge = (await agent.post('/api/auth/signup').send(SIGNUP).expect(200)).body as ChallengeResponse;
+    const first = codeFrom(sent[0]!);
+    db.prepare("UPDATE otp_challenges SET last_sent_at = '2000-01-01T00:00:00.000Z'").run();
+    failing = true;
+    expect((await agent.post('/api/auth/otp/resend').send({ challengeId: challenge.challengeId }).expect(502)).body.error.code).toBe('EMAIL_FAILED');
+    await agent.post('/api/auth/verify').send({ challengeId: challenge.challengeId, code: first }).expect(200);
+  });
+});
+
+describe('per-IP code limit (F-016)', () => {
+  it('allows 20 codes per IP per hour across different emails', async () => {
+    for (let i = 0; i < 20; i++) await request(app).post('/api/auth/signup').send({ ...SIGNUP, email: `k${i}@example.com` }).expect(200);
+    const refused = await request(app).post('/api/auth/signup').send({ ...SIGNUP, email: 'k20@example.com' }).expect(429);
+    expect(refused.body.error.code).toBe('TOO_MANY_CODES');
+    // An hour later the address may send again.
+    db.prepare("UPDATE otp_ip_sends SET sent_at = '2000-01-01T00:00:00.000Z'").run();
+    await request(app).post('/api/auth/signup').send({ ...SIGNUP, email: 'k20@example.com' }).expect(200);
+  });
+
+  it('can be raised for automated tests', async () => {
+    const relaxed = createApp(db, { maxOtpSendsPerIp: 100 });
+    for (let i = 0; i < 21; i++) await request(relaxed).post('/api/auth/signup').send({ ...SIGNUP, email: `k${i}@example.com` }).expect(200);
+  });
+});
+
+describe('accounts from before F-016', () => {
+  it('sign in by email code, which verifies the email; password sign-in still works', async () => {
+    db.prepare("INSERT INTO users (name, email, mobile, password_hash, mobile_verified_at, created_at) VALUES ('Old Timer', 'old@example.com', '9876500000', 'scrypt$x', 't', 't')").run();
+    const verified = () => (db.prepare("SELECT email_verified_at FROM users WHERE email = 'old@example.com'").get() as { email_verified_at: string | null }).email_verified_at;
+    expect(verified()).toBeNull();
+    const result = await otpLogin(request.agent(app), 'old@example.com');
+    expect(result.user).toEqual({ name: 'Old Timer', email: 'old@example.com', mobile: '9876500000', maskedMobile: '••••••0000' });
+    const first = verified();
+    expect(first).toEqual(expect.any(String));
+    await otpLogin(request.agent(app), 'old@example.com');
+    expect(verified()).toBe(first);
   });
 });
