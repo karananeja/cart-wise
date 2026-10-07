@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { expect, test, type Browser, type Page } from '@playwright/test';
 
@@ -202,4 +203,18 @@ test.describe('mobile', () => {
     await expect(page.getByRole('list', { name: 'Order progress' })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   });
+});
+
+test('download the invoice of a paid order (F-019)', async ({ page }) => {
+  const slugs = ['apple', 'plant-pot'];
+  for (const slug of slugs) setStock(slug, 10);
+  await signedInCustomer(page);
+  const orderId = await paidOrder(page, slugs);
+
+  await page.goto(`/orders/${orderId}`);
+  const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Download invoice' }).click()]);
+  expect(download.suggestedFilename()).toBe(`Cartwise-Invoice-${orderId}.pdf`);
+  const file = readFileSync((await download.path())!);
+  expect(file.subarray(0, 5).toString()).toBe('%PDF-');
+  expect(file.length).toBeGreaterThan(5_000);
 });

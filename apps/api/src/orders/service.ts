@@ -120,6 +120,8 @@ export function createOrderService({ db, carts, addresses, record, clock = Date.
   const deliveryCode = db.prepare('SELECT code FROM delivery_codes WHERE order_id = ?');
   const pendingAttempts = db.prepare("SELECT id, method, visitor_id FROM payment_attempts WHERE order_id = ? AND status = 'pending'");
   const failAttempt = db.prepare("UPDATE payment_attempts SET status = 'failed', failure_reason = ?, completed_at = ? WHERE id = ? AND status = 'pending'");
+  // Product ids are the catalog's and survive reseeds; the slug is a fallback.
+  const categoryOf = db.prepare('SELECT category_slug FROM products WHERE id = ? OR slug = ? ORDER BY id = ? DESC LIMIT 1');
 
   const pickAddress = (userId: number, addressId: number | undefined): Address | null => {
     const list = addresses.list(userId);
@@ -337,6 +339,13 @@ export function createOrderService({ db, carts, addresses, record, clock = Date.
       const row = findOrder.get(orderId, userId) as OrderRow | undefined;
       if (!row) throw new HttpError(404, 'ORDER_NOT_FOUND', 'Order not found');
       return toOrder(row, { withDeliveryCode: true });
+    },
+
+    /** Category slug by product id, for the invoice's GST rates (F-019); null when the product is gone. */
+    categoriesOf(order: Order): Map<number, string | null> {
+      return new Map(
+        order.lines.map((l) => [l.productId, (categoryOf.get(l.productId, l.slug, l.productId) as { category_slug: string } | undefined)?.category_slug ?? null]),
+      );
     },
 
     cancel(userId: number, orderId: string): Order {

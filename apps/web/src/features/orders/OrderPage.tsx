@@ -14,6 +14,7 @@ import { emiCostText, instalments, offerName } from '@/features/payment/emiText'
 import { useOrderDetails } from './api';
 import { CancelOrderDialog } from './CancelOrderDialog';
 import { DeliveryCode } from './DeliveryCode';
+import { DownloadInvoiceButton } from './DownloadInvoiceButton';
 import { formatDate, formatDateTime, formatShortDate } from './format';
 import { OrderTimeline } from './OrderTimeline';
 import { ReturnItemsDialog } from './ReturnItemsDialog';
@@ -55,18 +56,21 @@ export function OrderPage() {
   return (
     <div className="mx-auto grid w-full max-w-4xl grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_18rem]">
       <div className="flex min-w-0 flex-col gap-6">
-        <div className="flex flex-col gap-1">
-          <p className="text-sm text-muted-foreground">
-            <Link to="/account/orders" className="underline-offset-4 hover:underline">
-              Your orders
-            </Link>{' '}
-            · Placed {formatDate(o.createdAt)}
-          </p>
-          <h1 className="font-mono text-2xl font-semibold tracking-tight sm:text-3xl">{o.id}</h1>
-          <p className="flex flex-wrap items-center gap-2 font-medium">
-            {ORDER_STATUS_LABELS[o.status]}
-            {badge && <Badge variant="secondary">{badge}</Badge>}
-          </p>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <p className="text-sm text-muted-foreground">
+              <Link to="/account/orders" className="underline-offset-4 hover:underline">
+                Your orders
+              </Link>{' '}
+              · Placed {formatDate(o.createdAt)}
+            </p>
+            <h1 className="font-mono text-2xl font-semibold tracking-tight sm:text-3xl">{o.id}</h1>
+            <p className="flex flex-wrap items-center gap-2 font-medium">
+              {ORDER_STATUS_LABELS[o.status]}
+              {badge && <Badge variant="secondary">{badge}</Badge>}
+            </p>
+          </div>
+          <DownloadInvoiceButton orderId={o.id} />
         </div>
 
         {o.deliveryCode && <DeliveryCode code={o.deliveryCode} />}

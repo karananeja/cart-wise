@@ -84,6 +84,16 @@ export const ordersHandlers = [
     return HttpResponse.json({ orders: page.map(summary), nextCursor: cursor + 10 < paid.length ? String(cursor + 10) : null });
   }),
 
+  /** F-019: a stand-in PDF; the real document is covered by the API tests. */
+  http.get('*/api/orders/:id/invoice.pdf', ({ params }) => {
+    const order = getOrder(String(params.id));
+    if (!order) return error(404, 'ORDER_NOT_FOUND');
+    if (!order.payment) return error(409, 'INVOICE_NOT_AVAILABLE');
+    return new HttpResponse('%PDF-1.3 mock', {
+      headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="Cartwise-Invoice-${order.id}.pdf"` },
+    });
+  }),
+
   http.post('*/api/orders/:id/cancel', async ({ params, request }) => {
     const order = getOrder(String(params.id));
     if (!order) return error(404, 'ORDER_NOT_FOUND');

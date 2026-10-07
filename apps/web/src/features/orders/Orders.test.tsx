@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { addUser } from '@/test/authServer';
 import { getOrder } from '@/test/checkoutServer';
 import { seedOrder } from '@/test/ordersServer';
@@ -158,5 +158,72 @@ describe('order page', () => {
     unmount();
     renderRoute('/orders/ORD-NOPE0001');
     expect(await screen.findByText("We couldn't find that order")).toBeInTheDocument();
+  });
+});
+
+describe('invoice download (F-019)', () => {
+  function captureDownloads() {
+    const names: string[] = [];
+    URL.createObjectURL = vi.fn(() => 'blob:invoice');
+    URL.revokeObjectURL = vi.fn();
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+      names.push(this.download);
+    });
+    return names;
+  }
+
+  it('offers the invoice on paid orders, including cancelled ones, and saves it with its name', async () => {
+    addUser(KARAN, { signedIn: true });
+    const names = captureDownloads();
+    seedOrder({ id: 'ORD-INVOICE1' });
+    seedOrder({ id: 'ORD-INVOICE2', status: 'cancelled', cancelledAt: ago(DAY), history: history('confirmed', 'cancelled') });
+    const user = userEvent.setup();
+    const { unmount } = renderRoute('/orders/ORD-INVOICE1');
+    await user.click(await screen.findByRole('button', { name: 'Download invoice' }));
+    await waitFor(() => expect(names).toEqual(['Cartwise-Invoice-ORD-INVOICE1.pdf']));
+    expect(screen.getByRole('button', { name: 'Download invoice' })).toBeEnabled();
+    unmount();
+
+    const cancelled = renderRoute('/orders/ORD-INVOICE2');
+    expect(await screen.findByRole('button', { name: 'Download invoice' })).toBeInTheDocument();
+    cancelled.unmount();
+
+    renderRoute('/orders/ORD-INVOICE1/confirmation');
+    expect(await screen.findByRole('button', { name: 'Download invoice' })).toBeInTheDocument();
+    vi.restoreAllMocks();
+  });
+
+  it('has no invoice for an unpaid order', async () => {
+    addUser(KARAN, { signedIn: true });
+    seedOrder({ id: 'ORD-UNPAID01', status: 'pending_payment', payment: null, history: [] });
+    const { location } = renderRoute('/orders/ORD-UNPAID01');
+    await waitFor(() => expect(location().pathname).toBe('/checkout/pay/ORD-UNPAID01'));
+    expect(screen.queryByRole('button', { name: 'Download invoice' })).not.toBeInTheDocument();
+  });
+
+  it('says so when the download fails, and can try again', async () => {
+    addUser(KARAN, { signedIn: true });
+    const names = captureDownloads();
+    seedOrder({ id: 'ORD-INVOICE3' });
+    server.use(http.get('*/api/orders/:id/invoice.pdf', () => HttpResponse.json({ error: { code: 'INTERNAL', message: 'x' } }, { status: 500 }), { once: true }));
+    const user = userEvent.setup();
+    renderRoute('/orders/ORD-INVOICE3');
+    await user.click(await screen.findByRole('button', { name: 'Download invoice' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent("Couldn't download the invoice. Please try again.");
+    expect(names).toEqual([]);
+
+    await user.click(screen.getByRole('button', { name: 'Download invoice' }));
+    await waitFor(() => expect(names).toEqual(['Cartwise-Invoice-ORD-INVOICE3.pdf']));
+    expect(screen.queryByText("Couldn't download the invoice. Please try again.")).not.toBeInTheDocument();
+    vi.restoreAllMocks();
+  });
+
+  it('is disabled offline', async () => {
+    addUser(KARAN, { signedIn: true });
+    seedOrder({ id: 'ORD-INVOICE4' });
+    const onLine = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    renderRoute('/orders/ORD-INVOICE4');
+    expect(await screen.findByRole('button', { name: 'Download invoice' })).toBeDisabled();
+    onLine.mockRestore();
   });
 });

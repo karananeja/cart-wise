@@ -9,6 +9,7 @@ import { formatEstimate, useOrder } from '@/features/checkout/api';
 import { ProductImage } from '@/features/catalog/components/ProductImage';
 import { ApiError } from '@/lib/api';
 import { emiCostText, instalments, notChargedNote, offerName } from '@/features/payment/emiText';
+import { DownloadInvoiceButton } from './DownloadInvoiceButton';
 
 /** After a successful payment (spec FR-23). Reloadable; owner only (the API returns 404 otherwise). */
 export function ConfirmationPage() {
@@ -79,6 +80,7 @@ export function ConfirmationPage() {
           )}
         </dl>
         <p className="text-xs text-muted-foreground">{notChargedNote(o.payment)}</p>
+        <DownloadInvoiceButton orderId={o.id} className="w-full sm:w-fit" />
       </section>
 
       <section aria-labelledby="delivery-details" className="flex flex-col gap-2 rounded-xl border p-5 text-sm">

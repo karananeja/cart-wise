@@ -4,6 +4,8 @@ import { isCancelReason, isDeliveryOption, RETURN_REASONS, type ReturnReason } f
 import { HttpError } from '../http/errors.js';
 import { currentUser } from '../http/owner.js';
 import type { GatewayRefunds } from '../payments/gatewayRefunds.js';
+import { buildInvoice } from './invoice.js';
+import { renderInvoicePdf } from './invoicePdf.js';
 import type { OrderLifecycle } from './lifecycle.js';
 import type { OrderService } from './service.js';
 
@@ -49,6 +51,18 @@ export function orderRouter(orders: OrderService, lifecycle: OrderLifecycle, gat
 
   router.get('/orders/:id', (req, res) => {
     res.json({ order: orders.get(requireUserId(res), orderId(req)) });
+  });
+
+  /** The demo tax invoice (F-019): paid orders only, including ones cancelled after payment. */
+  router.get('/orders/:id/invoice.pdf', async (req, res) => {
+    const userId = requireUserId(res);
+    const order = orders.get(userId, orderId(req));
+    if (!order.payment) throw new HttpError(409, 'INVOICE_NOT_AVAILABLE', 'This order has no invoice until it is paid');
+    const pdf = await renderInvoicePdf(buildInvoice(order, orders.categoriesOf(order)));
+    res
+      .status(200)
+      .set({ 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="Cartwise-Invoice-${order.id}.pdf"`, 'Cache-Control': 'private, no-store' })
+      .send(pdf);
   });
 
   /** Unpaid holds (F-008) and paid orders before shipping (F-010) share the cancel route. */

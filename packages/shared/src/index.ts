@@ -14,3 +14,4 @@ export * from './recommendations.js';
 export * from './emi.js';
 export * from './serviceability.js';
 export * from './newsletter.js';
+export * from './gst.js';
