@@ -1,8 +1,8 @@
 # Feature Intent
 
 **Feature:** F-017 — Account overview hub
-**Status:** Awaiting Approval
-**Approved by / date:** —
+**Status:** Approved (Gate 1, 2026-10-07)
+**Approved by / date:** User, 2026-10-07
 
 ---
 
@@ -42,8 +42,8 @@ Acceptance criteria in `specification.md` §17.
 
 ## 6. Decisions needed before implementation
 
-None (scope chosen 2026-10-07).
+Resolved 2026-10-07: approved as proposed. (None (scope chosen 2026-10-07).)
 
 ## 7. Approval
 
-- [ ] Approved for implementation (Gate 1)
+- [x] Approved for implementation (Gate 1) — 2026-10-07

@@ -4,7 +4,7 @@
 
 **ID:** F-017
 **Name:** Account overview hub
-**Status:** Proposed
+**Status:** Approved (Gate 1, 2026-10-07)
 
 ---
 

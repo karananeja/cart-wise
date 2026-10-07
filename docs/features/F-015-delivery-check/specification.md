@@ -4,7 +4,7 @@
 
 **ID:** F-015
 **Name:** Pincode delivery check
-**Status:** Proposed
+**Status:** Approved (Gate 1, 2026-10-07)
 
 ---
 

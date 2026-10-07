@@ -1,8 +1,8 @@
 # Feature Intent
 
 **Feature:** F-018 — Site footer with newsletter and help pages
-**Status:** Awaiting Approval
-**Approved by / date:** —
+**Status:** Approved (Gate 1, 2026-10-07)
+**Approved by / date:** User, 2026-10-07
 
 ---
 
@@ -49,8 +49,8 @@ Acceptance criteria in `specification.md` §17.
 
 ## 6. Decisions needed before implementation
 
-D1: confirm the three help pages and the "Store simulation" link belong in your "full marketing footer".
+Resolved 2026-10-07: approved as proposed. (D1: confirm the three help pages and the "Store simulation" link belong in your "full marketing footer".)
 
 ## 7. Approval
 
-- [ ] Approved for implementation (Gate 1)
+- [x] Approved for implementation (Gate 1) — 2026-10-07

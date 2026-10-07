@@ -1,8 +1,8 @@
 # Feature Intent
 
 **Feature:** F-015 — Pincode delivery check
-**Status:** Awaiting Approval
-**Approved by / date:** —
+**Status:** Approved (Gate 1, 2026-10-07)
+**Approved by / date:** User, 2026-10-07
 
 ---
 
@@ -55,8 +55,8 @@ Acceptance criteria in `specification.md` §17.
 
 ## 6. Decisions needed before implementation
 
-D1: confirm the zone table (prefixes and days in `specification.md` FR-1).
+Resolved 2026-10-07: approved as proposed. (D1: confirm the zone table (prefixes and days in `specification.md` FR-1).)
 
 ## 7. Approval
 
-- [ ] Approved for implementation (Gate 1)
+- [x] Approved for implementation (Gate 1) — 2026-10-07

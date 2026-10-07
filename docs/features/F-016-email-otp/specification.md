@@ -4,7 +4,7 @@
 
 **ID:** F-016
 **Name:** Email OTP (replaces mobile OTP)
-**Status:** Proposed
+**Status:** Approved (Gate 1, 2026-10-07)
 
 ---
 

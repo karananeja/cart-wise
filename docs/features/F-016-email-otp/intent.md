@@ -1,8 +1,8 @@
 # Feature Intent
 
 **Feature:** F-016 — Email OTP (replaces mobile OTP)
-**Status:** Awaiting Approval
-**Approved by / date:** —
+**Status:** Approved (Gate 1, 2026-10-07)
+**Approved by / date:** User, 2026-10-07
 
 ---
 
@@ -47,8 +47,8 @@ Acceptance criteria in `specification.md` §17.
 
 ## 6. Decisions needed before implementation
 
-None (decided 2026-10-07). ADR-006 is proposed for acceptance with this gate.
+Resolved 2026-10-07: approved as proposed. (None (decided 2026-10-07). ADR-006 is proposed for acceptance with this gate.)
 
 ## 7. Approval
 
-- [ ] Approved for implementation (Gate 1)
+- [x] Approved for implementation (Gate 1) — 2026-10-07
