@@ -47,7 +47,7 @@ Loading / empty / error / offline states (STATE-1) and analytics events (ANL-1) 
 | F-015 | Pincode delivery check on the product page; zone rules enforced at checkout | User request 2026-10-07 | F-003, F-007, F-008 | Implemented and tested — awaiting Gate 2 |
 | F-016 | Email OTP replaces mobile OTP (SMTP, demo fallback); ADR-006 | User request 2026-10-07 | F-006 | Implemented and tested — awaiting Gate 2 |
 | F-017 | Account overview hub | User request 2026-10-07 | F-005, F-006, F-007, F-010 | Implemented and tested — awaiting Gate 2 |
-| F-018 | Site footer: links, help pages, newsletter, decorative social/app badges | User request 2026-10-07 | F-016 (welcome email only) | Approved (Gate 1, 2026-10-07) |
+| F-018 | Site footer: links, help pages, newsletter, decorative social/app badges | User request 2026-10-07 | F-016 (welcome email only) | Implemented and tested — awaiting Gate 2 |
 
 
 Reviews, related products, frequently bought together, continue shopping, order tracking timeline, notifications, price-drop / back-in-stock, improved discovery homepage. To be sequenced after MVP acceptance.

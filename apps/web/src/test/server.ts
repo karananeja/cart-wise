@@ -6,6 +6,7 @@ import { authHandlers } from './authServer';
 import { cartHandlers } from './cartServer';
 import { checkoutHandlers } from './checkoutServer';
 import { discoveryHandlers } from './discoveryServer';
+import { newsletterHandlers } from './newsletterServer';
 import { ordersHandlers } from './ordersServer';
 import { paymentHandlers } from './paymentServer';
 import { simHandlers } from './simServer';
@@ -29,6 +30,7 @@ export const handlers = [
   ...checkoutHandlers,
   ...simHandlers,
   ...wishlistHandlers,
+  ...newsletterHandlers,
   http.get('*/api/categories', () => HttpResponse.json({ categories })),
   http.get('*/api/products', ({ request }) => {
     const params = parseListingParams(new URL(request.url).searchParams);

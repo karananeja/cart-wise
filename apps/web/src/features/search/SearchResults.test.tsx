@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -46,7 +46,7 @@ describe('search results', () => {
     renderRoute('/search?q=qwxzv');
     expect(await screen.findByRole('heading', { name: 'No results for “qwxzv”' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Browse categories' })).toBeInTheDocument();
-    expect(await screen.findByRole('link', { name: 'Laptops' })).toBeInTheDocument();
+    expect(await within(screen.getByRole('main')).findByRole('link', { name: 'Laptops' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Top rated' })).toBeInTheDocument();
   });
 

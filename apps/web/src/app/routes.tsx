@@ -64,6 +64,11 @@ export const routes: RouteObject[] = [
           { path: 'inventory', lazy: page(() => import('@/features/sim/SimInventoryPage'), 'SimInventoryPage') },
         ],
       },
+      // Footer pages (F-018).
+      { path: 'help/delivery', lazy: page(() => import('@/features/help/HelpPages'), 'DeliveryHelpPage') },
+      { path: 'help/returns', lazy: page(() => import('@/features/help/HelpPages'), 'ReturnsHelpPage') },
+      { path: 'help/payments', lazy: page(() => import('@/features/help/HelpPages'), 'PaymentsHelpPage') },
+      { path: 'newsletter/unsubscribe', lazy: page(() => import('@/features/newsletter/UnsubscribePage'), 'UnsubscribePage') },
       { path: '*', element: <NotFound /> },
     ],
   },

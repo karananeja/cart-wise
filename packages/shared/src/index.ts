@@ -13,3 +13,4 @@ export * from './simulation.js';
 export * from './recommendations.js';
 export * from './emi.js';
 export * from './serviceability.js';
+export * from './newsletter.js';

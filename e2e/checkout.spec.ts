@@ -32,7 +32,7 @@ test('guest cart → sign up → add address → Express → payment hold → ca
   await page.getByRole('link', { name: 'Create an account' }).click();
   const n = Math.floor(Math.random() * 1e9).toString().padStart(9, '0');
   await page.getByLabel('Full name').fill('Asha Rao');
-  await page.getByLabel('Email').fill(`asha.${n}@example.com`);
+  await page.getByLabel('Email', { exact: true }).fill(`asha.${n}@example.com`);
   await page.getByLabel('Mobile number').fill(`9${n}`);
   await page.getByLabel('Password', { exact: true }).fill('correct horse battery');
   await page.getByRole('button', { name: 'Continue' }).click();
@@ -77,11 +77,13 @@ test.describe('mobile', () => {
     setStock('apple-magsafe-battery-pack', 10);
     await page.goto('/p/apple-magsafe-battery-pack');
     await page.getByRole('button', { name: 'Add to cart' }).click();
+    // The add must land before navigating away, or the request can be cut off under load.
+    await expect(page.getByRole('banner').getByRole('link', { name: /^Cart, 1 item/ })).toBeVisible();
     await page.goto('/login?returnTo=%2Fcheckout');
     await page.getByRole('link', { name: 'Create an account' }).click();
     const n = Math.floor(Math.random() * 1e9).toString().padStart(9, '0');
     await page.getByLabel('Full name').fill('Asha Rao');
-    await page.getByLabel('Email').fill(`asha.m${n}@example.com`);
+    await page.getByLabel('Email', { exact: true }).fill(`asha.m${n}@example.com`);
     await page.getByLabel('Mobile number').fill(`8${n}`);
     await page.getByLabel('Password', { exact: true }).fill('correct horse battery');
     await page.getByRole('button', { name: 'Continue' }).click();

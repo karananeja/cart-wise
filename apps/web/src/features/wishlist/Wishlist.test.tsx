@@ -13,8 +13,8 @@ beforeEach(async () => {
   receivedEvents.length = 0;
 });
 
-const wishlistLink = () => screen.getByRole('link', { name: /^Wishlist(,|$)/ });
-const cartLink = () => screen.getByRole('link', { name: /^Cart(,|$)/ });
+const wishlistLink = () => within(screen.getAllByRole('banner')[0]!).getByRole('link', { name: /^Wishlist(,|$)/ });
+const cartLink = () => within(screen.getAllByRole('banner')[0]!).getByRole('link', { name: /^Cart(,|$)/ });
 
 async function save(slug: string) {
   await fetch(new URL(`/api/wishlist/items/${slug}`, window.location.origin), { method: 'PUT' });

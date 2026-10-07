@@ -31,7 +31,7 @@ async function sizedProduct(request: APIRequestContext) {
   throw new Error('No sized product with an in-stock size');
 }
 
-const cartLink = (page: Page) => page.getByRole('link', { name: /^Cart(,|$)/ });
+const cartLink = (page: Page) => page.getByRole('banner').getByRole('link', { name: /^Cart(,|$)/ });
 const UNSIZED = 'apple-macbook-pro-14-inch-space-grey';
 
 test('add unsized and sized products, adjust, remove and undo; the cart survives a reload', async ({ page, request }) => {

@@ -10,7 +10,7 @@ export const DELIVERY_OPTIONS = ['standard', 'express'] as const;
 export type DeliveryOption = (typeof DELIVERY_OPTIONS)[number];
 
 /** Prices are the same everywhere; days depend on the pincode's zone (F-015, `ZONE_DAYS`). */
-const RULES: Record<DeliveryOption, { label: string; pricePaise: number }> = {
+export const DELIVERY_RULES: Record<DeliveryOption, { label: string; pricePaise: number }> = {
   standard: { label: 'Standard', pricePaise: 49_00 },
   express: { label: 'Express', pricePaise: 149_00 },
 };
@@ -40,7 +40,7 @@ export function deliveryOptions(subtotalPaise: number, now: Date, zone: Delivery
   return DELIVERY_OPTIONS.flatMap((option) => {
     const days = ZONE_DAYS[zone][option];
     if (!days) return [];
-    const rule = RULES[option];
+    const rule = DELIVERY_RULES[option];
     const free = option === 'standard' && subtotalPaise >= FREE_DELIVERY_THRESHOLD_PAISE;
     return [
       {

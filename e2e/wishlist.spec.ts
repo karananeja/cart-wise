@@ -1,8 +1,8 @@
 import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 import type { ListingResponse, ProductDetail } from '@store/shared';
 
-const wishlistLink = (page: Page) => page.getByRole('link', { name: /^Wishlist(,|$)/ });
-const cartLink = (page: Page) => page.getByRole('link', { name: /^Cart(,|$)/ });
+const wishlistLink = (page: Page) => page.getByRole('banner').getByRole('link', { name: /^Wishlist(,|$)/ });
+const cartLink = (page: Page) => page.getByRole('banner').getByRole('link', { name: /^Cart(,|$)/ });
 
 /** A sized product with an in-stock size, from the seeded data. */
 async function sizedProduct(request: APIRequestContext) {

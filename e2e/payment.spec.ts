@@ -97,7 +97,7 @@ test('offer banner → choose Aurora offer → card + bank OTP → confirmation,
   expect(bodies.join('\n')).not.toContain('4242424242424242');
   expect(bodies.join('\n')).not.toMatch(/cvv|expiry|1230/i);
   expect(stock(slug)).toEqual({ onHand: 5, reserved: 0 });
-  await expect(page.getByRole('link', { name: /^Cart, 0 items|^Cart$/ })).toBeVisible();
+  await expect(page.getByRole('banner').getByRole('link', { name: /^Cart, 0 items|^Cart$/ })).toBeVisible();
 
   // Reloading the payment page of a paid order goes to the confirmation.
   await page.goto(`/checkout/pay/${orderId}`);

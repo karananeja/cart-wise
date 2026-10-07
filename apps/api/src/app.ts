@@ -32,6 +32,8 @@ import { readCookie } from './http/cookies.js';
 import { errorHandler, notFoundHandler } from './http/errors.js';
 import { requireJsonPosts } from './http/guards.js';
 import { createSearchIndex } from './search/searchIndex.js';
+import { newsletterRouter } from './newsletter/routes.js';
+import { createNewsletterService } from './newsletter/service.js';
 import { wishlistRouter } from './wishlist/routes.js';
 import { createWishlistService } from './wishlist/service.js';
 
@@ -52,6 +54,8 @@ export interface AppOptions {
   log?: (message: string) => void;
   /** Sends one-time codes by email (F-016, ADR-006). Without one, codes are shown on screen (demo). */
   mailer?: Mailer;
+  /** Where the shop runs, for links in emails (F-018); defaults to WEB_BASE_URL, then http://localhost:5173. */
+  webBaseUrl?: string;
   /** Overrides the per-IP hourly code limit (20); E2E signs up many shoppers from one address. */
   maxOtpSendsPerIp?: number;
 }
@@ -111,6 +115,7 @@ export function createApp(db: Db, options: AppOptions = {}) {
   api.use(paymentRouter(payments, razorpay?.keyId ?? null));
   api.use(geoRouter(createGeoService({ fetch: options.fetch ?? fetch })));
   api.use(analyticsRouter(db));
+  api.use(newsletterRouter(createNewsletterService(db, { clock: options.clock, mailer: options.mailer, webBaseUrl: options.webBaseUrl ?? process.env.WEB_BASE_URL, log: options.log })));
   app.use('/api', api);
 
   app.use(notFoundHandler);

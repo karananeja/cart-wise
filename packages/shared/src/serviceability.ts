@@ -16,6 +16,17 @@ export const ZONE_DAYS: Record<Exclude<DeliveryZone, 'unserviceable'>, Record<De
   remote: { standard: { minDays: 6, maxDays: 9 }, express: null },
 };
 
+/**
+ * The areas each zone covers, in words, for the delivery help page (F-018). Kept beside the prefixes
+ * above so the two change together. Checkout and the product page never show zone names (F-015).
+ */
+export const ZONE_AREAS: Record<DeliveryZone, string> = {
+  metro: 'Delhi NCR, Mumbai, Pune, Ahmedabad, Hyderabad, Bengaluru, Chennai and Kolkata',
+  regional: 'The rest of India',
+  remote: 'Jammu & Kashmir, Ladakh, Sikkim and the North-East',
+  unserviceable: 'Andaman & Nicobar, Lakshadweep and Army or Field Post addresses',
+};
+
 /** "560 038" → "560038"; null unless it is a 6-digit Indian pincode. Same rule as addresses. */
 export function normalizePincode(input: string): string | null {
   const pincode = input.replace(/\s/g, '');

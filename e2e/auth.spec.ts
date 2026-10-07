@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const cartLink = (page: Page) => page.getByRole('link', { name: /^Cart(,|$)/ });
-const wishlistLink = (page: Page) => page.getByRole('link', { name: /^Wishlist(,|$)/ });
+const cartLink = (page: Page) => page.getByRole('banner').getByRole('link', { name: /^Cart(,|$)/ });
+const wishlistLink = (page: Page) => page.getByRole('banner').getByRole('link', { name: /^Wishlist(,|$)/ });
 
 /** A fresh account per test, so codes, limits and merges never collide. */
 function newCustomer() {
@@ -17,7 +17,7 @@ async function enterDemoCode(page: Page) {
 
 async function signUp(page: Page, customer: ReturnType<typeof newCustomer>) {
   await page.getByLabel('Full name').fill(customer.name);
-  await page.getByLabel('Email').fill(customer.email);
+  await page.getByLabel('Email', { exact: true }).fill(customer.email);
   // Mobile is optional (F-016): left blank when the customer has none.
   if (customer.mobile) await page.getByLabel('Mobile number (optional)').fill(customer.mobile);
   await page.getByLabel('Password', { exact: true }).fill(customer.password);
@@ -29,7 +29,7 @@ async function signUp(page: Page, customer: ReturnType<typeof newCustomer>) {
 
 async function otpSignIn(page: Page, email: string) {
   await page.goto('/login');
-  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Email', { exact: true }).fill(email);
   await page.getByRole('button', { name: 'Send code' }).click();
   await enterDemoCode(page);
   await expect(page.getByRole('button', { name: 'Account menu for Asha' })).toBeVisible();
@@ -77,7 +77,7 @@ test('cart, wishlist and recently viewed follow the account to another browser',
   const other = await browser.newContext();
   const second = await other.newPage();
   await second.goto('/login?method=password');
-  await second.getByLabel('Email').fill(customer.email);
+  await second.getByLabel('Email', { exact: true }).fill(customer.email);
   await second.getByLabel('Password', { exact: true }).fill(customer.password);
   await second.getByRole('button', { name: 'Sign in' }).click();
   await expect(cartLink(second)).toHaveAccessibleName('Cart, 1 item');
@@ -120,7 +120,7 @@ test('forgot password signs in and signs out other devices', async ({ browser, p
   const other = await browser.newContext();
   const second = await other.newPage();
   await second.goto('/forgot-password');
-  await second.getByLabel('Email').fill(customer.email);
+  await second.getByLabel('Email', { exact: true }).fill(customer.email);
   await second.getByRole('button', { name: 'Send code' }).click();
   await enterDemoCode(second);
   await second.getByLabel('New password').fill('a brand new secret');

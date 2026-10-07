@@ -8,7 +8,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## Current feature
 
-F-015–F-018 approved at Gate 1 (2026-10-07). **F-015 delivery check, F-016 email OTP, F-017 account hub: implemented and tested, awaiting Gate 2.** F-018 footer: in implementation (sub-agent). F-014 accepted 2026-10-07.
+F-015–F-018 approved at Gate 1 (2026-10-07). **F-015 delivery check, F-016 email OTP, F-017 account hub, F-018 footer: implemented and tested, awaiting Gate 2.** F-014 accepted 2026-10-07.
 
 ## Completed
 
@@ -19,7 +19,7 @@ F-015–F-018 approved at Gate 1 (2026-10-07). **F-015 delivery check, F-016 ema
 
 ## In progress
 
-F-018 implementation, then present F-015–F-018 together for Gate 2. Docs: each `docs/features/F-01[5-8]-*/acceptance.md`.
+Gate 2 for F-015–F-018 (presented together). Docs: each `docs/features/F-01[5-8]-*/acceptance.md`.
 
 ## Remaining
 
@@ -56,12 +56,13 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 - F-014: `packages/shared/src/emi.ts`; `apps/api/src/payments/{razorpay,gatewayRefunds,fakeRazorpay}.ts`, payments service (EMI, Razorpay start/verify/finalize/reconcile/webhook); `apps/api/.env(.example)` loaded in `server.ts`; web `features/payment/{EmiBanner,EmiPlans,RazorpayPayment,razorpayCheckout,emiText,summary}`; tests `emi.test.ts`, `emi.api.test.ts`, `razorpay.api.test.ts`, `Emi.test.tsx`, `e2e/emi-razorpay.spec.ts`
 - F-015: `packages/shared/src/serviceability.ts` (zones), `deliveryOptions(subtotal, now, zone)`, order quote `NOT_SERVICEABLE`/`expressUnavailable`; web `features/delivery/DeliveryCheck.tsx`, `lib/deliveryPincode.ts`
 - F-016: `apps/api/src/mail/` (mailer, OTP email), `auth/otp.ts` keyed by email, schema v4 (users rebuilt: mobile optional, `email_verified_at`; seeded tables still v3); `SMTP_*` in `.env`
+- F-018: `apps/api/src/newsletter/`, `mail/newsletterEmail.ts`, `newsletter_subscribers`; web `app/Footer.tsx`, `features/help/`, `features/newsletter/`; `WEB_BASE_URL`
 - F-017: `apps/web/src/features/account/` (AccountLayout sidebar, AccountPage overview), `PublicUser.memberSince`
 - F-013: `apps/api/src/inventory/options.ts` (tiers, `tierPrices`), `apps/api/src/db/seed.ts` (`saveVariantLabels`, `remapUnits`), schema v3 (`product_variants.kind/price_paise/mrp_paise`, `order_lines.option_label`), `apps/web/src/features/catalog/selection.ts` (option/size hooks, `unitLabel`, `productLink`), `OptionSelector.tsx`; tests `options.test.ts`, `options.api.test.ts`, `ProductOptions.test.tsx`, `e2e/options.spec.ts`
 
 ## Tests
 
-- After F-017 (2026-10-07): `pnpm test` 551 passing (shared 75, API 276, web 200); `pnpm e2e` 59 passing. Typecheck clean.
+- After F-018 (2026-10-07): `pnpm test` 577 passing (shared 75, API 285, web 217); `pnpm e2e` 62 passing. Typecheck clean.
 - E2E starts a fake Razorpay on port 3199 and blanks `SMTP_*` (demo codes); `OTP_MAX_SENDS_PER_IP_PER_HOUR` raised for E2E.
 
 ## Known bugs / limitations
@@ -112,4 +113,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Review F-018 from the sub-agent (tests, screenshots), commit, then present F-015–F-018 for Gate 2. The user should restart `pnpm dev` (operator-password fix; API reads `.env` at start). To send real OTP emails the user adds `SMTP_*` to `apps/api/.env`.
+Wait for Gate 2 on F-015–F-018; fix anything the user reports, then record sign-offs and ask what comes next. The user should restart `pnpm dev` (operator-password fix; API reads `.env` at start). To send real OTP emails the user adds `SMTP_*` to `apps/api/.env`.

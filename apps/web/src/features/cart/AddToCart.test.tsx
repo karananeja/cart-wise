@@ -15,7 +15,7 @@ beforeEach(async () => {
   reloadRecentlyViewed();
 });
 
-const cartLink = () => screen.getByRole('link', { name: /^Cart(,|$)/ });
+const cartLink = () => within(screen.getAllByRole('banner')[0]!).getByRole('link', { name: /^Cart(,|$)/ });
 
 describe('Add to cart', () => {
   it('adds an unsized product, then adjusts quantity in place with a separate Go to cart', async () => {

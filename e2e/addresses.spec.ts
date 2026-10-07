@@ -22,7 +22,7 @@ async function signUp(page: Page) {
   const n = Math.floor(Math.random() * 1e9).toString().padStart(9, '0');
   await page.goto('/signup');
   await page.getByLabel('Full name').fill('Asha Rao');
-  await page.getByLabel('Email').fill(`asha.${n}@example.com`);
+  await page.getByLabel('Email', { exact: true }).fill(`asha.${n}@example.com`);
   await page.getByLabel('Mobile number').fill(`9${n}`);
   await page.getByLabel('Password', { exact: true }).fill('correct horse battery');
   await page.getByRole('button', { name: 'Continue' }).click();

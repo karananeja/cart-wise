@@ -376,3 +376,13 @@ CREATE TABLE IF NOT EXISTS analytics_events (
   received_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS analytics_events_name ON analytics_events(name, occurred_at);
+
+-- Newsletter sign-ups from the footer (F-018). Only a hash of the unsubscribe token is stored;
+-- unsubscribing keeps the row (re-subscribing clears unsubscribed_at and issues a new token).
+CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+  email TEXT PRIMARY KEY,
+  token_hash TEXT NOT NULL UNIQUE,
+  source TEXT NOT NULL DEFAULT 'footer',
+  created_at TEXT NOT NULL,
+  unsubscribed_at TEXT
+);
