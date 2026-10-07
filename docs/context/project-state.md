@@ -8,7 +8,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## Current feature
 
-F-015–F-018 approved at Gate 1 (2026-10-07). **F-015 delivery check, F-016 email OTP, F-017 account hub, F-018 footer: accepted (Gate 2, 2026-10-07).** **F-019 order invoice PDF: implemented and tested, awaiting Gate 2.** F-014 accepted 2026-10-07.
+F-015–F-018 approved at Gate 1 (2026-10-07). **F-015 delivery check, F-016 email OTP, F-017 account hub, F-018 footer: accepted (Gate 2, 2026-10-07).** F-019 order invoice PDF accepted (Gate 2, 2026-10-07). No feature in progress. F-014 accepted 2026-10-07.
 
 ## Completed
 
@@ -19,7 +19,7 @@ F-015–F-018 approved at Gate 1 (2026-10-07). **F-015 delivery check, F-016 ema
 
 ## In progress
 
-F-019 Gate 2. Docs: each `docs/features/F-01[5-8]-*/acceptance.md`.
+Nothing in progress. Docs: each `docs/features/F-01[5-8]-*/acceptance.md`.
 
 ## Remaining
 
@@ -110,9 +110,10 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 2 F-014: 2026-10-07 (manual Razorpay run not reported).
 - Gate 1 F-015, F-016, F-017, F-018: 2026-10-07 (as proposed); ADR-006 accepted.
 - Gate 2 F-015, F-016, F-017, F-018: 2026-10-07.
+- Gate 1 F-019: 2026-10-07 (rates, Karnataka seller); Gate 2 F-019: 2026-10-07.
 - Gate 1 F-014: 2026-10-06 (D1 EMI terms as proposed; D2 normal EMI + bank offer, no-cost excludes; D3 refunds via Razorpay). ADR-005 accepted.
 - F-014 direction (2026-10-06): Razorpay test keys only; customer chooses Razorpay or demo payment; EMI simulated in demo mode, Razorpay EMI in Razorpay mode.
 
 ## Exact next action
 
-Wait for Gate 2 on F-019, then ask what comes next (recommended: order notification emails). The user should restart `pnpm dev` (operator-password fix; API reads `.env` at start). To send real OTP emails the user adds `SMTP_*` to `apps/api/.env`.
+Ask the user what comes next (recommended: order notification emails, which can attach the F-019 invoice). The user should restart `pnpm dev` (operator-password fix; API reads `.env` at start). To send real OTP emails the user adds `SMTP_*` to `apps/api/.env`.

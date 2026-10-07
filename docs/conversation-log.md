@@ -103,3 +103,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-07 | F-015–F-018 Gate 2 | **Accepted** | |
 | 2026-10-07 | New request: order invoice | PDF download; GST by category (GST 2.0 slabs); once paid, refunds noted | Specified as F-019 for Gate 1 |
 | 2026-10-07 | F-019 Gate 1 | **Approved** as proposed | |
+| 2026-10-07 | F-019 Gate 2 | **Accepted** | |
