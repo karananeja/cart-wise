@@ -60,7 +60,8 @@ if (mail.enabled) {
   if (!mail.config.newsletterTemplateId) console.log('No newsletter welcome email (set MSG91_NEWSLETTER_TEMPLATE_ID to send one).');
 } else {
   if (mail.error) console.error(mail.error);
-  console.log('Email codes are shown on screen (demo). Set MSG91_* in apps/api/.env to send real emails.');
+  if (process.env.EMAIL_DELIVERY?.trim().toLowerCase() === 'demo') console.log('Email codes are shown on screen (EMAIL_DELIVERY=demo).');
+  else console.log('Email codes are shown on screen (demo). Set MSG91_* in apps/api/.env to send real emails.');
 }
 // Only for automated tests that sign up many shoppers from one address; blank means the default (20).
 const maxOtpSendsPerIp = Number(process.env.OTP_MAX_SENDS_PER_IP_PER_HOUR?.trim()) || undefined;

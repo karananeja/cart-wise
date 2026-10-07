@@ -49,3 +49,7 @@ The newsletter welcome email (F-018) also used Nodemailer. The user chose to mov
 - The domain must be verified and the templates approved in the MSG91 panel before real emails go out. Until then, the demo fallback keeps working.
 - The request body follows MSG91's v5 Email API format as documented in the panel's API Integration page. It is built in one function (`msg91EmailRequest`) so it is easy to compare and adjust.
 - **Vercel:** the email path is serverless-safe, but the API as a whole isn't yet. It uses SQLite on local disk and background timers (holds, simulation). Deploying it needs a hosted database and scheduled jobs, which is separate production work.
+
+## Amendment (2026-10-07)
+
+`EMAIL_DELIVERY=demo` forces on-screen codes even when the MSG91 settings are complete. The user asked for this while their MSG91 sending wasn't working.

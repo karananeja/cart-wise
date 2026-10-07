@@ -9,6 +9,12 @@ describe('loadMailerConfig (MSG91, ADR-007)', () => {
     expect(loadMailerConfig({ MSG91_AUTH_KEY: ' ', MSG91_TEMPLATE_ID: '', MSG91_FROM_EMAIL: '' })).toEqual({ enabled: false });
   });
 
+  it('is off when EMAIL_DELIVERY=demo, even with complete settings', () => {
+    expect(loadMailerConfig({ ...FULL, EMAIL_DELIVERY: 'demo' })).toEqual({ enabled: false });
+    expect(loadMailerConfig({ ...FULL, EMAIL_DELIVERY: ' Demo ' })).toEqual({ enabled: false });
+    expect(loadMailerConfig({ ...FULL, EMAIL_DELIVERY: '' })).toMatchObject({ enabled: true });
+  });
+
   it('is off with partial settings, naming what is missing but never the auth key', () => {
     expect(loadMailerConfig({ ...FULL, MSG91_TEMPLATE_ID: '' })).toEqual({ enabled: false, error: 'Email is off (codes are shown on screen): set MSG91_TEMPLATE_ID too.' });
     expect(JSON.stringify(loadMailerConfig({ ...FULL, MSG91_FROM_EMAIL: '' }))).not.toContain('secret-auth-key');

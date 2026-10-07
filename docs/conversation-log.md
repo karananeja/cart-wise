@@ -105,3 +105,4 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-07 | F-019 Gate 1 | **Approved** as proposed | |
 | 2026-10-07 | F-019 Gate 2 | **Accepted** | |
 | 2026-10-07 | Email via MSG91 | User: MSG91 Email API only, no OTP widget, no SMTP/Nodemailer; newsletter welcome moved to MSG91 too | ADR-007; F-016 amended |
+| 2026-10-07 | Fallback to local OTP | `EMAIL_DELIVERY=demo` switch added (MSG91 settings kept) | User request |

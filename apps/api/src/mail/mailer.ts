@@ -42,6 +42,8 @@ const PURPOSES: Record<OtpEmailPurpose, string> = {
 /** Reads the environment. Blank values count as unset; partial settings leave email off (demo codes). */
 export function loadMailerConfig(env: Record<string, string | undefined>): MailerSetup {
   const value = (key: string) => env[key]?.trim() || undefined;
+  // EMAIL_DELIVERY=demo keeps codes on screen while the MSG91 settings stay in .env for later.
+  if (value('EMAIL_DELIVERY')?.toLowerCase() === 'demo') return { enabled: false };
   const missing = REQUIRED.filter((key) => !value(key));
   if (missing.length === REQUIRED.length) return { enabled: false };
   if (missing.length) return { enabled: false, error: `Email is off (codes are shown on screen): set ${missing.join(', ')} too.` };
