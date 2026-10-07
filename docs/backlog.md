@@ -15,6 +15,10 @@ Triage (MVP wrap-up, 2026-10-06): **Phase 2** = fits the brief's next phase; **L
 | 2026-10-06 | Automated accessibility checks (axe) in component/E2E tests | MVP wrap-up | Accessibility is built in but not machine-verified | Later |
 | 2026-10-06 | Electronics variants: storage for phones and tablets, RAM + storage for laptops; price steps up per tier; no colour; accessories and watches unchanged | User feedback (F-012 Gate 2 review) | Built as F-013, accepted 2026-10-06 | Done |
 | 2026-10-06 | Price cap for "Pairs well with" companions (e.g. companion ≤ 50% of the main product's price, falling back to the current rule) | F-012 acceptance (known limitation) | Product change; offered at F-012 Gate 2, user accepted F-012 without choosing | Later (awaiting user decision) |
-| 2026-10-06 | EMI (normal and no-cost) and Razorpay payments | User request | Decided: Razorpay test keys only; Razorpay and demo payment both offered; EMI simulated in demo mode and via Razorpay in Razorpay mode. Built as F-014, awaiting Gate 2 | F-014 |
+| 2026-10-06 | EMI (normal and no-cost) and Razorpay payments | User request | Decided: Razorpay test keys only; Razorpay and demo payment both offered; EMI simulated in demo mode and via Razorpay in Razorpay mode. Built as F-014, accepted 2026-10-07 | Done |
 | 2026-10-06 | Investigate a one-off E2E failure in the wishlist "move a sized product to the cart" test (1 of 9 runs during F-014) | F-014 testing | Passed alone and in 8 other full runs; trace not kept. Next time it fails, keep `test-results/` | Later |
 | 2026-10-06 | Show Razorpay's EMI tenure on orders paid by Razorpay EMI | F-014 | Needs Razorpay's payment fields for EMI confirmed against their docs | Later |
+| 2026-10-07 | MSG91 SMS OTP (widget or DLT template) | User request | Replaced by email OTP over SMTP (F-016, ADR-006); revisit if SMS is wanted later | Dropped for now |
+| 2026-10-07 | Pincode delivery check on cart, listing and wishlist pages | F-015 scoping | F-015 covers product page and checkout | Later |
+| 2026-10-07 | Order notification emails (confirmed, shipped, delivered, refunded) using the F-016 mailer | F-016 scoping | Needs SMTP; not requested | Later |
+| 2026-10-07 | Profile editing: name, password, email/mobile change | F-017 scoping | User chose overview hub only | Later |

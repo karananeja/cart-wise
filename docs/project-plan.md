@@ -42,8 +42,12 @@ Loading / empty / error / offline states (STATE-1) and analytics events (ANL-1) 
 | #     | Feature                                                                                                | Brief §24 items | Depends on          | Status                                            |
 | ----- | ------------------------------------------------------------------------------------------------------ | --------------- | ------------------- | ------------------------------------------------- |
 | F-012 | Product discovery: related products, frequently bought together, continue shopping, discovery homepage | 14, 15, 16, 20  | F-003, F-004, F-010 | **Complete** (accepted 2026-10-06)                |
-| F-013 | Electronics variants: storage (phones, tablets), RAM + storage (laptops), per-option price and stock   | PDP-3, brief §6 | F-003–F-012         | Implemented and tested — awaiting Gate 2 sign-off |
-| F-014 | EMI (normal + no-cost) and Razorpay payments in test mode | PAY-1..6, ORD-2..4 | F-009, F-010, F-013 | Implemented and tested — awaiting Gate 2 sign-off |
+| F-013 | Electronics variants: storage (phones, tablets), RAM + storage (laptops), per-option price and stock   | PDP-3, brief §6 | F-003–F-012         | Accepted 2026-10-07 |
+| F-014 | EMI (normal + no-cost) and Razorpay payments in test mode | PAY-1..6, ORD-2..4 | F-009, F-010, F-013 | Accepted 2026-10-07 |
+| F-015 | Pincode delivery check on the product page; zone rules enforced at checkout | User request 2026-10-07 | F-003, F-007, F-008 | Spec + intent awaiting Gate 1 |
+| F-016 | Email OTP replaces mobile OTP (SMTP, demo fallback); ADR-006 | User request 2026-10-07 | F-006 | Spec + intent awaiting Gate 1 |
+| F-017 | Account overview hub | User request 2026-10-07 | F-005, F-006, F-007, F-010 | Spec + intent awaiting Gate 1 |
+| F-018 | Site footer: links, help pages, newsletter, decorative social/app badges | User request 2026-10-07 | F-016 (welcome email only) | Spec + intent awaiting Gate 1 |
 
 
 Reviews, related products, frequently bought together, continue shopping, order tracking timeline, notifications, price-drop / back-in-stock, improved discovery homepage. To be sequenced after MVP acceptance.

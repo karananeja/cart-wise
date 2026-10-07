@@ -1,6 +1,6 @@
 # Project State Checkpoint
 
-**Last updated:** 2026-10-06
+**Last updated:** 2026-10-07
 
 ## Current phase
 
@@ -8,7 +8,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## Current feature
 
-**F-014 EMI + Razorpay (test mode) — implemented and tested, awaiting Gate 2** (`docs/features/F-014-emi-and-razorpay/`, ADR-005 accepted). F-013 accepted 2026-10-06; previously (`docs/features/F-013-electronics-variants/`). F-012 accepted 2026-10-06.
+**F-015 to F-018 specified, awaiting Gate 1** (2026-10-07): F-015 pincode delivery check, F-016 email OTP (ADR-006 proposed), F-017 account overview hub, F-018 site footer. F-014 accepted 2026-10-07.
 
 ## Completed
 
@@ -19,7 +19,7 @@ Phase 1 MVP delivered — F-001 to F-011 all accepted (Gates 1 and 2, 2026-10-06
 
 ## In progress
 
-F-014 Gate 2 (and the user's manual Razorpay test-mode check with their keys).
+Gate 1 for F-015–F-018. Open decisions: F-015 D1 (zone table), F-018 D1 (help pages + Store simulation link). Proposed order: F-015 → F-016 → F-017 → F-018 (the footer's welcome email reuses the F-016 mailer).
 
 ## Remaining
 
@@ -31,7 +31,7 @@ All F-001–F-011 specifications and intents approved at Gate 1 and accepted at 
 
 ## Architecture decisions
 
-ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application inventory, accepted), ADR-003 (sessions, scrypt, simulated OTP, JSON-only POST guard, accepted), ADR-004 (Leaflet + OSM tiles + Nominatim via API proxy, accepted), ADR-005 (Razorpay test mode only, accepted). F-003: inventory is per sellable unit (size or product); schema version 2 with automatic rebuild of seeded tables.
+ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application inventory, accepted), ADR-003 (sessions, scrypt, simulated OTP, JSON-only POST guard, accepted), ADR-004 (Leaflet + OSM tiles + Nominatim via API proxy, accepted), ADR-005 (Razorpay test mode only, accepted), ADR-006 (email OTP over SMTP with demo fallback, proposed). F-003: inventory is per sellable unit (size or product); schema version 2 with automatic rebuild of seeded tables.
 
 ## Relevant files
 
@@ -58,7 +58,7 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 
 ## Tests
 
-- `pnpm test`: 484 passing (shared 43, api 259, web 182). `pnpm e2e`: 56 passing (8 of 9 runs clean; one unexplained wishlist failure, in backlog). Typecheck clean. Build succeeds (main bundle 421 kB).
+- `pnpm test`: 484 passing (shared 43, api 260, web 182; 485 total since the 2026-10-07 operator-password fix). `pnpm e2e`: 56 passing (8 of 9 runs clean; one unexplained wishlist failure, in backlog). Typecheck clean. Build succeeds (main bundle 421 kB).
 - E2E starts a fake Razorpay on port 3199 (`e2e/fake-razorpay-server.ts`); the API under E2E uses test keys pointed at it.
 
 ## Known bugs / limitations
@@ -102,9 +102,10 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 - Gate 1 F-011: 2026-10-06; Gate 2 F-011: 2026-10-06.
 - Gate 1 F-012: 2026-10-06; Gate 2 F-012: 2026-10-06 (companion price cap not chosen; in backlog).
 - Gate 1 F-013: 2026-10-06 (D1 tiers as proposed; D2 cheapest in-stock preselected; D3 "From ₹X"); Gate 2 F-013: 2026-10-06.
+- Gate 2 F-014: 2026-10-07 (manual Razorpay run not reported).
 - Gate 1 F-014: 2026-10-06 (D1 EMI terms as proposed; D2 normal EMI + bank offer, no-cost excludes; D3 refunds via Razorpay). ADR-005 accepted.
 - F-014 direction (2026-10-06): Razorpay test keys only; customer chooses Razorpay or demo payment; EMI simulated in demo mode, Razorpay EMI in Razorpay mode.
 
 ## Exact next action
 
-Wait for Gate 2 on F-014 (`docs/features/F-014-emi-and-razorpay/acceptance.md`). The user may add Razorpay test keys to `apps/api/.env`, restart `pnpm dev` and try one payment + refund; record the result in acceptance §1. Then ask which item comes next.
+Get Gate 1 approval for F-015–F-018 (and ADR-006). Then implement in the approved order, starting with F-015. Also done 2026-10-07: fixed blank `SIM_OPERATOR_PASSWORD` in `.env` disabling the operator password (`operatorPasswordFrom` in `apps/api/src/sim/operator.ts`); the user must restart `pnpm dev`.
