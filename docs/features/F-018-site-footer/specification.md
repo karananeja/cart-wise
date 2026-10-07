@@ -4,7 +4,7 @@
 
 **ID:** F-018
 **Name:** Site footer with newsletter and help pages
-**Status:** Approved (Gate 1, 2026-10-07)
+**Status:** Complete (accepted 2026-10-07)
 
 ---
 

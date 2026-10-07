@@ -1,7 +1,7 @@
 # Acceptance
 
 **Feature:** F-015 — Pincode delivery check
-**Status:** Pending user sign-off (Gate 2)
+**Status:** Accepted (Gate 2, 2026-10-07)
 
 ## 1. Acceptance criteria verification
 
@@ -40,4 +40,4 @@
 
 ## 6. User sign-off (Gate 2)
 
-- [ ] Accepted by user — date:
+- [x] Accepted by user — date: 2026-10-07 ("accept")

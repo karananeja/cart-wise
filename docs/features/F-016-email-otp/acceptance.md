@@ -1,7 +1,7 @@
 # Acceptance
 
 **Feature:** F-016 — Email OTP (replaces mobile OTP)
-**Status:** Pending user sign-off (Gate 2)
+**Status:** Accepted (Gate 2, 2026-10-07)
 
 ## 1. Acceptance criteria verification
 
@@ -56,4 +56,4 @@ SMTP_FROM=Cartwise <you@yourdomain-or-verified-sender>
 
 ## 7. User sign-off (Gate 2)
 
-- [ ] Accepted by user — date:
+- [x] Accepted by user — date: 2026-10-07 ("accept")
