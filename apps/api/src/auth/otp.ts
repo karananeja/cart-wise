@@ -3,7 +3,6 @@ import { maskEmail, type ChallengeResponse } from '@store/shared';
 import type { Db } from '../db/database.js';
 import { HttpError } from '../http/errors.js';
 import type { Mailer } from '../mail/mailer.js';
-import { otpEmail } from '../mail/otpEmail.js';
 
 export type OtpPurpose = 'signup' | 'login' | 'reset';
 
@@ -11,7 +10,7 @@ export const OTP_RULES = {
   digits: 6,
   validForMs: 5 * 60 * 1000,
   maxAttempts: 5,
-  resendAfterMs: 30 * 1000,
+  resendAfterMs: 60 * 1000,
   maxSendsPerHour: 5,
   /** Per client IP, so sign-up can't be used to flood a stranger's inbox (F-016 FR-7). */
   maxSendsPerIpPerHour: 20,
@@ -28,7 +27,7 @@ export interface Challenge {
 export interface OtpOptions {
   clock?: () => number;
   /**
-   * Sends the codes (F-016, ADR-006). Without one, delivery is a demo: the code comes back as
+   * Sends the codes through MSG91 (F-016, ADR-007). Without one, delivery is a demo: the code comes back as
    * `demoCode` for the on-screen banner. This is the only place a code leaves the server.
    */
   mailer?: Mailer;
@@ -42,10 +41,10 @@ function hashCode(challengeId: string, code: string): string {
   return createHash('sha256').update(`${challengeId}:${code}`).digest('base64url');
 }
 
-/** A short reason for the log: an SMTP error code, never the message (which could echo settings). */
+/** A short reason for the log (e.g. "HTTP 401", "TIMEOUT"), never the response or the code. */
 function failureCode(error: unknown): string {
-  const { code, responseCode } = (error ?? {}) as { code?: unknown; responseCode?: unknown };
-  return [code, responseCode].filter((part) => typeof part === 'string' || typeof part === 'number').join(' ') || 'unknown error';
+  const { code } = (error ?? {}) as { code?: unknown };
+  return typeof code === 'string' ? code : 'unknown error';
 }
 
 export function createOtpService(db: Db, options: OtpOptions = {}) {
@@ -65,9 +64,10 @@ export function createOtpService(db: Db, options: OtpOptions = {}) {
     INSERT INTO otp_challenges (id, purpose, email, user_id, code_hash, payload, created_at, expires_at, last_sent_at)
     VALUES (@id, @purpose, @email, @userId, @codeHash, @payload, @now, @expiresAt, @now)`);
   const find = db.prepare('SELECT * FROM otp_challenges WHERE id = ?');
-  const reissue = db.prepare('UPDATE otp_challenges SET code_hash = ?, attempts = 0, expires_at = ?, last_sent_at = ? WHERE id = ?');
+  const reissue = db.prepare('UPDATE otp_challenges SET code_hash = ?, attempts = 0, expires_at = ? WHERE id = ?');
+  const markSent = db.prepare('UPDATE otp_challenges SET last_sent_at = ? WHERE id = ?');
   const countAttempt = db.prepare('UPDATE otp_challenges SET attempts = attempts + 1 WHERE id = ?');
-  const consume = db.prepare('UPDATE otp_challenges SET consumed_at = ? WHERE id = ?');
+  const remove = db.prepare('DELETE FROM otp_challenges WHERE id = ?');
 
   /** Checks both limits and counts the send (even if the email then fails), returning a fresh code. */
   function allowSend(email: string, ip: string): string {
@@ -90,7 +90,7 @@ export function createOtpService(db: Db, options: OtpOptions = {}) {
   async function deliver(email: string, code: string, purpose: OtpPurpose) {
     if (!mailer) return;
     try {
-      await mailer.send(otpEmail(email, code, purpose, OTP_RULES.validForMs / 60_000));
+      await mailer.sendOtp(email, code, purpose, OTP_RULES.validForMs / 60_000);
     } catch (error) {
       log(`Could not email a ${purpose} code (${failureCode(error)}).`);
       throw new HttpError(502, 'EMAIL_FAILED', "We couldn't send the code. Please try again.");
@@ -140,14 +140,15 @@ export function createOtpService(db: Db, options: OtpOptions = {}) {
         throw new HttpError(429, 'RESEND_TOO_SOON', 'Please wait before requesting another code', { retryAfterSeconds: Math.ceil(wait / 1000) });
       }
       const code = allowSend(row.email, ip);
-      // The previous code stays valid if this email fails, so a retry can follow at once.
+      // The previous code stops working now, even if this email then fails. The wait restarts only
+      // once the new code is out, so a failed send can be retried straight away.
+      reissue.run(hashCode(row.id, code), iso(clock() + OTP_RULES.validForMs), row.id);
       await deliver(row.email, code, row.purpose);
-      const now = clock();
-      reissue.run(hashCode(row.id, code), iso(now + OTP_RULES.validForMs), iso(now), row.id);
+      markSent.run(iso(clock()), row.id);
       return response(row.id, row.email, code);
     },
 
-    /** Checks a code. Each wrong attempt counts; after 5 a new code is needed. Single use. */
+    /** Checks a code. Each wrong attempt counts; after 5 a new code is needed. Deleted once used. */
     verify(challengeId: string, code: string, purposes: OtpPurpose[]): Challenge {
       const row = find.get(challengeId) as Row | undefined;
       if (!row || row.consumed_at || !purposes.includes(row.purpose)) {
@@ -165,7 +166,7 @@ export function createOtpService(db: Db, options: OtpOptions = {}) {
         if (attemptsLeft <= 0) throw new HttpError(429, 'TOO_MANY_ATTEMPTS', 'Too many wrong attempts. Request a new code.');
         throw new HttpError(401, 'INVALID_CODE', 'That code is not right', { attemptsLeft });
       }
-      consume.run(iso(clock()), row.id);
+      remove.run(row.id);
       return { id: row.id, purpose: row.purpose, email: row.email, userId: row.user_id, payload: row.payload };
     },
   };

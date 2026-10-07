@@ -67,7 +67,7 @@ export function PasswordField(props: Omit<FormFieldProps, 'type' | 'trailing'>) 
   );
 }
 
-/** Without SMTP (ADR-006), the "email" is shown here instead of being sent. */
+/** Without MSG91 email settings (ADR-007), the "email" is shown here instead of being sent. */
 export function DemoEmailBanner({ maskedEmail, code }: { maskedEmail: string; code: string }) {
   return (
     <div role="status" className="flex items-start gap-3 rounded-xl border border-dashed border-sky-300 bg-sky-50 p-3 text-sm text-sky-950 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-100">
@@ -80,7 +80,7 @@ export function DemoEmailBanner({ maskedEmail, code }: { maskedEmail: string; co
   );
 }
 
-/** With SMTP, the code really went out: say where, politely announced. */
+/** With MSG91, the code really went out: say where, politely announced. */
 export function EmailSentNote({ maskedEmail }: { maskedEmail: string }) {
   return (
     <p role="status" className="flex items-center gap-2 text-sm">

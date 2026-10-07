@@ -217,11 +217,11 @@ describe('signed in', () => {
   });
 });
 
-describe('real email (SMTP configured, F-016)', () => {
+describe('real email (MSG91 configured, F-016)', () => {
   beforeEach(() => setEmailDelivery());
   afterEach(() => vi.useRealTimers());
 
-  it('signs up without a mobile: says the code was emailed, shows no code, and hints at spam after 30 s', async () => {
+  it('signs up without a mobile: says the code was emailed, shows no code, and hints at spam after 60 s', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     renderRoute('/signup');
@@ -233,7 +233,7 @@ describe('real email (SMTP configured, F-016)', () => {
     expect(await screen.findByText(/We emailed a code to/)).toHaveTextContent('We emailed a code to k••••@example.com.');
     expect(screen.queryByText(/Demo email to/)).not.toBeInTheDocument();
     expect(screen.queryByText(/spam/)).not.toBeInTheDocument();
-    for (let i = 0; i < 30; i++) act(() => vi.advanceTimersByTime(1000));
+    for (let i = 0; i < 60; i++) act(() => vi.advanceTimersByTime(1000));
     expect(await screen.findByText('Check your spam folder.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Resend code' })).toBeInTheDocument();
 

@@ -52,7 +52,7 @@ export interface AppOptions {
   razorpay?: RazorpaySetup;
   /** Gateway and email problems for the operator (defaults to console.error). */
   log?: (message: string) => void;
-  /** Sends one-time codes by email (F-016, ADR-006). Without one, codes are shown on screen (demo). */
+  /** Sends one-time codes (and the newsletter welcome) through MSG91 (F-016, ADR-007). Without one, codes are shown on screen (demo). */
   mailer?: Mailer;
   /** Where the shop runs, for links in emails (F-018); defaults to WEB_BASE_URL, then http://localhost:5173. */
   webBaseUrl?: string;

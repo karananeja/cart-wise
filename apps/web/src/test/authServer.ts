@@ -39,7 +39,7 @@ export function resetAuth() {
   emailedCode = undefined;
 }
 
-/** Real-email mode (SMTP configured): no `demoCode`; `failing` makes every send fail with EMAIL_FAILED. */
+/** Real-email mode (MSG91 configured): no `demoCode`; `failing` makes every send fail with EMAIL_FAILED. */
 export function setEmailDelivery(options: { failing?: boolean } = {}) {
   delivery = 'email';
   emailFails = options.failing ?? false;
@@ -77,7 +77,7 @@ function challenge(purpose: string, email: string, pending?: User) {
     maskedEmail: maskEmail(email),
     delivery,
     ...(delivery === 'demo' ? { demoCode: code } : {}),
-    resendAfterSeconds: 30,
+    resendAfterSeconds: 60,
     expiresInSeconds: 300,
   };
   return HttpResponse.json(response);

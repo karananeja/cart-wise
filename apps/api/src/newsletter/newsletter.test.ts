@@ -2,18 +2,20 @@ import request from 'supertest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createApp } from '../app.js';
 import { openDatabase, type Db } from '../db/database.js';
-import type { MailMessage, Mailer } from '../mail/mailer.js';
+import { EmailSendError, type Mailer } from '../mail/mailer.js';
 
 let db: Db;
 let now: number;
-let sent: MailMessage[];
+let sent: { to: string; unsubscribeUrl: string }[];
 let failing: boolean;
 let logs: string[];
 
 const fakeMailer: Mailer = {
-  async send(message) {
-    if (failing) throw Object.assign(new Error('Invalid login: 535 bad credentials for secret-pass'), { code: 'EAUTH', responseCode: 535 });
-    sent.push(message);
+  async sendOtp() {},
+  sendsNewsletterWelcome: true,
+  async sendNewsletterWelcome(to, unsubscribeUrl) {
+    if (failing) throw new EmailSendError('HTTP 401');
+    sent.push({ to, unsubscribeUrl });
   },
 };
 
@@ -28,7 +30,7 @@ beforeEach(() => {
 const appWith = (options: Parameters<typeof createApp>[1] = {}) => createApp(db, { clock: () => now, log: (m) => logs.push(m), ...options });
 const rows = () => db.prepare('SELECT * FROM newsletter_subscribers').all() as { email: string; token_hash: string; source: string; unsubscribed_at: string | null }[];
 /** The token from the welcome email's unsubscribe link. */
-const tokenFrom = (message: MailMessage) => new URL(message.text.match(/Unsubscribe: (\S+)/)![1]!).searchParams.get('token')!;
+const tokenFrom = (message: { unsubscribeUrl: string }) => new URL(message.unsubscribeUrl).searchParams.get('token')!;
 
 describe('newsletter sign-up (F-018)', () => {
   it('saves a new address, normalised, with only a hash of the token', async () => {
@@ -67,17 +69,21 @@ describe('newsletter sign-up (F-018)', () => {
 });
 
 describe('newsletter welcome email and unsubscribe (F-018)', () => {
+  it('sends no welcome when MSG91 has no newsletter template', async () => {
+    const app = appWith({ mailer: { ...fakeMailer, sendsNewsletterWelcome: false } });
+    await request(app).post('/api/newsletter').send({ email: 'karan@example.com' }).expect(200);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(sent).toHaveLength(0);
+    expect(rows()).toHaveLength(1);
+  });
+
   it('emails a welcome with an unsubscribe link that opens the page and unsubscribes on POST only', async () => {
     const app = appWith({ mailer: fakeMailer, webBaseUrl: 'https://shop.example/' });
     await request(app).post('/api/newsletter').send({ email: 'karan@example.com' }).expect(200);
     await vi.waitFor(() => expect(sent).toHaveLength(1));
     const [email] = sent;
-    expect(email).toMatchObject({ to: 'karan@example.com', subject: 'Welcome to the Cartwise newsletter' });
-    for (const body of [email!.text, email!.html]) {
-      expect(body).toContain('demo store');
-      expect(body).toContain('no campaigns are sent');
-      expect(body).toContain('https://shop.example/newsletter/unsubscribe?token=');
-    }
+    expect(email!.to).toBe('karan@example.com');
+    expect(email!.unsubscribeUrl).toMatch(/^https:\/\/shop\.example\/newsletter\/unsubscribe\?token=/);
     const token = tokenFrom(email!);
     expect(rows()[0]!.token_hash).not.toBe(token);
 
@@ -96,7 +102,7 @@ describe('newsletter welcome email and unsubscribe (F-018)', () => {
     const app = appWith({ mailer: fakeMailer });
     await request(app).post('/api/newsletter').send({ email: 'karan@example.com' }).expect(200);
     await vi.waitFor(() => expect(sent).toHaveLength(1));
-    expect(sent[0]!.text).toContain('http://localhost:5173/newsletter/unsubscribe?token=');
+    expect(sent[0]!.unsubscribeUrl).toMatch(/^http:\/\/localhost:5173\/newsletter\/unsubscribe\?token=/);
     await request(app).post('/api/newsletter').send({ email: 'karan@example.com' }).expect(200);
     await new Promise((resolve) => setTimeout(resolve, 20));
     expect(sent).toHaveLength(1);
@@ -123,7 +129,7 @@ describe('newsletter welcome email and unsubscribe (F-018)', () => {
     failing = true;
     const app = appWith({ mailer: fakeMailer });
     await request(app).post('/api/newsletter').send({ email: 'karan@example.com' }).expect(200);
-    await vi.waitFor(() => expect(logs).toEqual(['Could not email a newsletter welcome (EAUTH 535).']));
+    await vi.waitFor(() => expect(logs).toEqual(['Could not email a newsletter welcome (HTTP 401).']));
     expect(rows()).toHaveLength(1);
   });
 

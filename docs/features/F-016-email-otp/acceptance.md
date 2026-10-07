@@ -57,3 +57,17 @@ SMTP_FROM=Cartwise <you@yourdomain-or-verified-sender>
 ## 7. User sign-off (Gate 2)
 
 - [x] Accepted by user — date: 2026-10-07 ("accept")
+
+## 8. Change of 2026-10-07: MSG91 Email API (ADR-007)
+
+- Nodemailer and the SMTP settings are removed. Codes go through `POST https://control.msg91.com/api/v5/email/send` with the `MSG91_*` settings.
+- **Rules now:** resend after 60 s; the old code is invalid as soon as a resend is asked for, even if the email then fails; the code is deleted when verified. 5 minutes and 5 attempts are unchanged.
+- **Verified:**
+  - 301 API, 221 web and 87 shared tests.
+  - 63 E2E tests (demo path).
+  - A manual run against a local fake MSG91 server checked:
+    - the request body and `authkey` header;
+    - the 60 s cooldown and that a used code is gone;
+    - the newsletter template;
+    - that an HTTP 401 from MSG91 gives `502 EMAIL_FAILED` with the log showing only "HTTP 401" and never the key.
+- **Not yet verified:** a real send through MSG91. It needs your verified domain, an approved template and your auth key.

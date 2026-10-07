@@ -4,7 +4,15 @@
 
 **ID:** F-016
 **Name:** Email OTP (replaces mobile OTP)
-**Status:** Complete (accepted 2026-10-07)
+**Status:** Complete (accepted 2026-10-07); changed 2026-10-07: MSG91 Email API (ADR-007)
+
+> **Change 2026-10-07 (user request):**
+> - Codes are sent through the **MSG91 Email API** with an MSG91 template, not SMTP; the `SMTP_*` settings are replaced by `MSG91_*`.
+> - The resend cooldown is **60 s**.
+> - A resend **invalidates the previous code even if the send fails**.
+> - A verified code is **deleted**.
+>
+> FR-5/FR-6/FR-7 below are amended accordingly. The email's wording now lives in the MSG91 template (variables `otp`, `purpose`, `minutes`, `store`).
 
 ---
 

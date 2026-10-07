@@ -9,4 +9,5 @@ Template: `../templates/adr.md`.
 | [ADR-003](ADR-003-authentication-and-sessions.md) | Authentication and sessions | Accepted |
 | [ADR-004](ADR-004-maps-and-geocoding.md) | Maps and geocoding | Accepted |
 | [ADR-005](ADR-005-razorpay-test-mode.md) | Razorpay payments in test mode only | Accepted |
-| [ADR-006](ADR-006-email-otp-over-smtp.md) | Email OTP over SMTP with demo fallback | Accepted |
+| [ADR-006](ADR-006-email-otp-over-smtp.md) | Email OTP over SMTP with demo fallback | Accepted; transport superseded by ADR-007 |
+| [ADR-007](ADR-007-msg91-email-api.md) | MSG91 Email API for codes and newsletter email | Accepted |

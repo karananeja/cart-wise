@@ -31,7 +31,7 @@ All F-001–F-011 specifications and intents approved at Gate 1 and accepted at 
 
 ## Architecture decisions
 
-ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application inventory, accepted), ADR-003 (sessions, scrypt, simulated OTP, JSON-only POST guard, accepted), ADR-004 (Leaflet + OSM tiles + Nominatim via API proxy, accepted), ADR-005 (Razorpay test mode only, accepted), ADR-006 (email OTP over SMTP with demo fallback, accepted). F-003: inventory is per sellable unit (size or product); schema version 2 with automatic rebuild of seeded tables.
+ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application inventory, accepted), ADR-003 (sessions, scrypt, simulated OTP, JSON-only POST guard, accepted), ADR-004 (Leaflet + OSM tiles + Nominatim via API proxy, accepted), ADR-005 (Razorpay test mode only, accepted), ADR-006 (email OTP with demo fallback, accepted; SMTP transport superseded), ADR-007 (MSG91 Email API, accepted). F-003: inventory is per sellable unit (size or product); schema version 2 with automatic rebuild of seeded tables.
 
 ## Relevant files
 
@@ -55,7 +55,7 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 - `apps/web/src/features/search/SearchBox.tsx` — header combobox; `apps/web/src/lib/recentSearches.ts` — history store
 - F-014: `packages/shared/src/emi.ts`; `apps/api/src/payments/{razorpay,gatewayRefunds,fakeRazorpay}.ts`, payments service (EMI, Razorpay start/verify/finalize/reconcile/webhook); `apps/api/.env(.example)` loaded in `server.ts`; web `features/payment/{EmiBanner,EmiPlans,RazorpayPayment,razorpayCheckout,emiText,summary}`; tests `emi.test.ts`, `emi.api.test.ts`, `razorpay.api.test.ts`, `Emi.test.tsx`, `e2e/emi-razorpay.spec.ts`
 - F-015: `packages/shared/src/serviceability.ts` (zones), `deliveryOptions(subtotal, now, zone)`, order quote `NOT_SERVICEABLE`/`expressUnavailable`; web `features/delivery/DeliveryCheck.tsx`, `lib/deliveryPincode.ts`
-- F-016: `apps/api/src/mail/` (mailer, OTP email), `auth/otp.ts` keyed by email, schema v4 (users rebuilt: mobile optional, `email_verified_at`; seeded tables still v3); `SMTP_*` in `.env`
+- F-016: `apps/api/src/mail/mailer.ts` (MSG91 Email API, ADR-007), `auth/otp.ts` keyed by email (60 s resend, invalidate on resend, delete on verify), schema v4 (users rebuilt: mobile optional, `email_verified_at`; seeded tables still v3); `MSG91_*` in `.env`
 - F-019: `packages/shared/src/gst.ts`, `apps/api/src/orders/{invoice,invoicePdf}.ts`, `apps/api/assets/fonts/` (Noto Sans, OFL), `GET /orders/:id/invoice.pdf`, web `features/orders/DownloadInvoiceButton.tsx`
 - F-018: `apps/api/src/newsletter/`, `mail/newsletterEmail.ts`, `newsletter_subscribers`; web `app/Footer.tsx`, `features/help/`, `features/newsletter/`; `WEB_BASE_URL`
 - F-017: `apps/web/src/features/account/` (AccountLayout sidebar, AccountPage overview), `PublicUser.memberSince`
@@ -63,8 +63,8 @@ ADR-001 (architecture, accepted), ADR-002 (catalog snapshot + application invent
 
 ## Tests
 
-- After F-019 (2026-10-07): `pnpm test` 604 passing (shared 87, API 296, web 221); `pnpm e2e` 63 passing. Typecheck clean.
-- E2E starts a fake Razorpay on port 3199 and blanks `SMTP_*` (demo codes); `OTP_MAX_SENDS_PER_IP_PER_HOUR` raised for E2E.
+- After the MSG91 change (2026-10-07): `pnpm test` 609 passing (shared 87, API 301, web 221); `pnpm e2e` 63 passing. Typecheck clean.
+- E2E starts a fake Razorpay on port 3199 and blanks `MSG91_*` (demo codes); `OTP_MAX_SENDS_PER_IP_PER_HOUR` raised for E2E.
 
 ## Known bugs / limitations
 
@@ -116,4 +116,4 @@ See `features/F-001-catalog-browsing/acceptance.md` §3. No known bugs.
 
 ## Exact next action
 
-Ask the user what comes next (recommended: order notification emails, which can attach the F-019 invoice). The user should restart `pnpm dev` (operator-password fix; API reads `.env` at start). To send real OTP emails the user adds `SMTP_*` to `apps/api/.env`.
+Ask the user what comes next (recommended: order notification emails, which can attach the F-019 invoice). The user should restart `pnpm dev` (operator-password fix; API reads `.env` at start). To send real OTP emails the user adds `MSG91_*` to `apps/api/.env`.

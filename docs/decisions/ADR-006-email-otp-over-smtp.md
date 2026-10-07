@@ -1,6 +1,6 @@
 # ADR-006: Email OTP over SMTP, with an On-Screen Demo Fallback
 
-**Status:** Accepted (with F-016 Gate 1, 2026-10-07)
+**Status:** Accepted (with F-016 Gate 1, 2026-10-07); SMTP transport superseded by ADR-007 (2026-10-07)
 **Date:** 2026-10-07
 
 ## Decision

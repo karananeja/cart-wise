@@ -16,8 +16,8 @@ interface OtpStepProps {
 }
 
 /**
- * Enter the emailed code, with resend (after 30 s) and clear messages for wrong or expired codes.
- * Without SMTP the code is shown in a demo banner instead (F-016, ADR-006).
+ * Enter the emailed code, with resend (after 60 s) and clear messages for wrong or expired codes.
+ * Without MSG91 email settings the code is shown in a demo banner instead (F-016, ADR-007).
  */
 export function OtpStep({ challenge: initial, onVerified, onBack, backLabel }: OtpStepProps) {
   const [challenge, setChallenge] = useState(initial);
@@ -94,7 +94,7 @@ export function OtpStep({ challenge: initial, onVerified, onBack, backLabel }: O
           </span>
         ) : (
           <span className="flex flex-wrap items-center gap-x-2">
-            {/* Real emails can land in spam; a hint once the resend wait is over (30 s). */}
+            {/* Real emails can land in spam; a hint once the resend wait is over (60 s). */}
             {challenge.delivery === 'email' && <span className="text-muted-foreground">Check your spam folder.</span>}
             <Button type="button" variant="link" className="h-auto px-0" onClick={requestNew} disabled={resend.isPending}>
               {resend.isPending && <Loader2 className="animate-spin" aria-hidden />}

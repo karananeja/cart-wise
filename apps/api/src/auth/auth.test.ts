@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { CartView, ChallengeResponse, HistoryLists, SignedInResponse, WishlistView } from '@store/shared';
 import { createApp } from '../app.js';
 import { openDatabase, type Db } from '../db/database.js';
-import type { MailMessage, Mailer } from '../mail/mailer.js';
+import { EmailSendError, type Mailer, type OtpEmailPurpose } from '../mail/mailer.js';
 import { seedDatabase } from '../db/seed.js';
 
 let db: Db;
@@ -35,7 +35,7 @@ describe('sign-up', () => {
   it('sends a code, then creates the account, normalises details, and signs in', async () => {
     const agent = request.agent(app);
     const challenge = (await agent.post('/api/auth/signup').send(SIGNUP).expect(200)).body as ChallengeResponse;
-    expect(challenge).toMatchObject({ maskedEmail: 'k••••@example.com', delivery: 'demo', resendAfterSeconds: 30, expiresInSeconds: 300 });
+    expect(challenge).toMatchObject({ maskedEmail: 'k••••@example.com', delivery: 'demo', resendAfterSeconds: 60, expiresInSeconds: 300 });
     expect(challenge.demoCode).toMatch(/^\d{6}$/);
     // Nothing exists until the code is verified.
     expect((db.prepare('SELECT COUNT(*) AS n FROM users').get() as { n: number }).n).toBe(0);
@@ -56,12 +56,14 @@ describe('sign-up', () => {
   });
 
   it('stores only hashes for passwords, codes and sessions', async () => {
-    const { challenge } = await signUp();
+    // The code is checked while it waits (it is deleted once used).
+    const pending = (await request(app).post('/api/auth/signup').send({ ...SIGNUP, email: 'pending@example.com' }).expect(200)).body as ChallengeResponse;
+    const stored = db.prepare('SELECT code_hash FROM otp_challenges').get() as { code_hash: string };
+    expect(stored.code_hash).not.toContain(pending.demoCode);
+    await signUp();
     const user = db.prepare('SELECT password_hash FROM users').get() as { password_hash: string };
     expect(user.password_hash).toMatch(/^scrypt\$/);
     expect(user.password_hash).not.toContain(SIGNUP.password);
-    const stored = db.prepare('SELECT code_hash FROM otp_challenges').get() as { code_hash: string };
-    expect(stored.code_hash).not.toContain(challenge.demoCode);
   });
 
   it('returns field errors for invalid details and common passwords', async () => {
@@ -100,11 +102,11 @@ describe('codes', () => {
     await agent.post('/api/auth/verify').send({ challengeId, code: demoCode }).expect(429);
   });
 
-  it('expires codes after 5 minutes and allows resend only after 30 seconds', async () => {
+  it('expires codes after 5 minutes and allows resend only after 60 seconds', async () => {
     const agent = request.agent(app);
     const { challengeId, demoCode } = (await agent.post('/api/auth/signup').send(SIGNUP)).body as ChallengeResponse;
     const early = await agent.post('/api/auth/otp/resend').send({ challengeId }).expect(429);
-    expect(early.body.error.code).toBe('RESEND_TOO_SOON');
+    expect(early.body.error).toMatchObject({ code: 'RESEND_TOO_SOON', details: { retryAfterSeconds: 60 } });
 
     db.prepare("UPDATE otp_challenges SET expires_at = '2000-01-01T00:00:00.000Z', last_sent_at = '2000-01-01T00:00:00.000Z'").run();
     expect((await agent.post('/api/auth/verify').send({ challengeId, code: demoCode }).expect(410)).body.error.code).toBe('CODE_EXPIRED');
@@ -118,9 +120,21 @@ describe('codes', () => {
     expect((await request(app).post('/api/auth/signup').send(SIGNUP).expect(429)).body.error.code).toBe('TOO_MANY_CODES');
   });
 
-  it('cannot reuse a code', async () => {
+  it('deletes the code once used, so it cannot be reused', async () => {
     const { challenge } = await signUp();
+    expect(db.prepare('SELECT COUNT(*) AS n FROM otp_challenges').get()).toEqual({ n: 0 });
     await request(app).post('/api/auth/verify').send({ challengeId: challenge.challengeId, code: challenge.demoCode }).expect(404);
+  });
+
+  it('invalidates the previous code when a new one is sent', async () => {
+    const agent = request.agent(app);
+    const first = (await agent.post('/api/auth/signup').send(SIGNUP)).body as ChallengeResponse;
+    db.prepare("UPDATE otp_challenges SET last_sent_at = '2000-01-01T00:00:00.000Z'").run();
+    const second = (await agent.post('/api/auth/otp/resend').send({ challengeId: first.challengeId }).expect(200)).body as ChallengeResponse;
+    expect(second.challengeId).toBe(first.challengeId);
+    expect(second.demoCode).not.toBe(first.demoCode);
+    expect((await agent.post('/api/auth/verify').send({ challengeId: first.challengeId, code: first.demoCode }).expect(401)).body.error.code).toBe('INVALID_CODE');
+    await agent.post('/api/auth/verify').send({ challengeId: first.challengeId, code: second.demoCode }).expect(200);
   });
 });
 
@@ -294,17 +308,18 @@ describe('cross-site guard', () => {
   });
 });
 
-describe('email delivery (F-016)', () => {
-  let sent: MailMessage[];
+describe('email delivery (F-016, MSG91 since ADR-007)', () => {
+  let sent: { to: string; otp: string; purpose: OtpEmailPurpose; minutes: number }[];
   let failing: boolean;
   let logs: string[];
   const fakeMailer: Mailer = {
-    async send(message) {
-      if (failing) throw Object.assign(new Error('Invalid login: 535 bad credentials for secret-pass'), { code: 'EAUTH', responseCode: 535 });
-      sent.push(message);
+    async sendOtp(to, otp, purpose, minutes) {
+      if (failing) throw new EmailSendError('HTTP 401');
+      sent.push({ to, otp, purpose, minutes });
     },
+    sendsNewsletterWelcome: false,
+    async sendNewsletterWelcome() {},
   };
-  const codeFrom = (message: MailMessage) => message.subject.match(/^(\d{6}) is your Cartwise code$/)![1]!;
 
   beforeEach(() => {
     sent = [];
@@ -316,20 +331,12 @@ describe('email delivery (F-016)', () => {
   it('emails the sign-up code and never returns it', async () => {
     const agent = request.agent(app);
     const challenge = (await agent.post('/api/auth/signup').send(SIGNUP).expect(200)).body as ChallengeResponse;
-    expect(challenge).toEqual({ challengeId: expect.any(String), maskedEmail: 'k••••@example.com', delivery: 'email', resendAfterSeconds: 30, expiresInSeconds: 300 });
-    expect(sent).toHaveLength(1);
-    const [email] = sent;
-    expect(email!.to).toBe('karan@example.com');
-    const code = codeFrom(email!);
-    for (const body of [email!.text, email!.html]) {
-      expect(body).toContain(code);
-      expect(body).toContain('verify your email');
-      expect(body).toContain('valid for 5 minutes');
-      expect(body).toContain("If this wasn't you, ignore this email.");
-      // No links in a code email.
-      expect(body).not.toMatch(/https?:|href=/);
-    }
-    const verified = (await agent.post('/api/auth/verify').send({ challengeId: challenge.challengeId, code }).expect(200)).body as SignedInResponse;
+    expect(challenge).toEqual({ challengeId: expect.any(String), maskedEmail: 'k••••@example.com', delivery: 'email', resendAfterSeconds: 60, expiresInSeconds: 300 });
+    expect(sent).toEqual([{ to: 'karan@example.com', otp: expect.stringMatching(/^\d{6}$/), purpose: 'signup', minutes: 5 }]);
+    // Only a hash is stored.
+    const stored = db.prepare('SELECT code_hash FROM otp_challenges').get() as { code_hash: string };
+    expect(stored.code_hash).not.toContain(sent[0]!.otp);
+    const verified = (await agent.post('/api/auth/verify').send({ challengeId: challenge.challengeId, code: sent[0]!.otp }).expect(200)).body as SignedInResponse;
     expect(verified.user.email).toBe('karan@example.com');
   });
 
@@ -338,18 +345,19 @@ describe('email delivery (F-016)', () => {
     const agent = request.agent(app);
     const login = (await agent.post('/api/auth/otp').send({ purpose: 'login', email: 'karan@example.com' }).expect(200)).body as ChallengeResponse;
     expect(login.demoCode).toBeUndefined();
-    expect(sent.at(-1)!.text).toContain('sign in to Cartwise');
+    expect(sent.at(-1)!.purpose).toBe('login');
 
     db.prepare("UPDATE otp_challenges SET last_sent_at = '2000-01-01T00:00:00.000Z'").run();
     const resent = (await agent.post('/api/auth/otp/resend').send({ challengeId: login.challengeId }).expect(200)).body as ChallengeResponse;
     expect(resent).toMatchObject({ delivery: 'email' });
     expect(resent.demoCode).toBeUndefined();
     expect(sent).toHaveLength(2);
-    await agent.post('/api/auth/verify').send({ challengeId: login.challengeId, code: codeFrom(sent[1]!) }).expect(200);
+    await agent.post('/api/auth/verify').send({ challengeId: login.challengeId, code: sent[0]!.otp }).expect(401);
+    await agent.post('/api/auth/verify').send({ challengeId: login.challengeId, code: sent[1]!.otp }).expect(200);
 
     const reset = (await request(app).post('/api/auth/otp').send({ purpose: 'reset', email: 'karan@example.com' }).expect(200)).body as ChallengeResponse;
-    expect(sent.at(-1)!.text).toContain('reset your Cartwise password');
-    const token = (await request(app).post('/api/auth/verify').send({ challengeId: reset.challengeId, code: codeFrom(sent.at(-1)!) }).expect(200)).body;
+    expect(sent.at(-1)!.purpose).toBe('reset');
+    const token = (await request(app).post('/api/auth/verify').send({ challengeId: reset.challengeId, code: sent.at(-1)!.otp }).expect(200)).body;
     expect(token.resetToken).toEqual(expect.any(String));
   });
 
@@ -358,22 +366,24 @@ describe('email delivery (F-016)', () => {
     const res = await request(app).post('/api/auth/signup').send(SIGNUP).expect(502);
     expect(res.body.error).toMatchObject({ code: 'EMAIL_FAILED', message: "We couldn't send the code. Please try again." });
     expect(db.prepare('SELECT COUNT(*) AS n FROM otp_challenges').get()).toEqual({ n: 0 });
-    expect(logs).toEqual(['Could not email a signup code (EAUTH 535).']);
-    expect(logs.join()).not.toMatch(/secret|password/i);
+    expect(logs).toEqual(['Could not email a signup code (HTTP 401).']);
 
     for (let i = 0; i < 4; i++) await request(app).post('/api/auth/signup').send(SIGNUP).expect(502);
     failing = false;
     expect((await request(app).post('/api/auth/signup').send(SIGNUP).expect(429)).body.error.code).toBe('TOO_MANY_CODES');
   });
 
-  it('keeps the previous code usable when a resend fails', async () => {
+  it('invalidates the previous code even when the resend fails, and allows an immediate retry', async () => {
     const agent = request.agent(app);
     const challenge = (await agent.post('/api/auth/signup').send(SIGNUP).expect(200)).body as ChallengeResponse;
-    const first = codeFrom(sent[0]!);
+    const first = sent[0]!.otp;
     db.prepare("UPDATE otp_challenges SET last_sent_at = '2000-01-01T00:00:00.000Z'").run();
     failing = true;
     expect((await agent.post('/api/auth/otp/resend').send({ challengeId: challenge.challengeId }).expect(502)).body.error.code).toBe('EMAIL_FAILED');
-    await agent.post('/api/auth/verify').send({ challengeId: challenge.challengeId, code: first }).expect(200);
+    await agent.post('/api/auth/verify').send({ challengeId: challenge.challengeId, code: first }).expect(401);
+    failing = false;
+    await agent.post('/api/auth/otp/resend').send({ challengeId: challenge.challengeId }).expect(200);
+    await agent.post('/api/auth/verify').send({ challengeId: challenge.challengeId, code: sent.at(-1)!.otp }).expect(200);
   });
 });
 

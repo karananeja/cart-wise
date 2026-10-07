@@ -3,7 +3,6 @@ import { maskEmail, type NewsletterUnsubscribeLookup } from '@store/shared';
 import type { Db } from '../db/database.js';
 import { HttpError } from '../http/errors.js';
 import type { Mailer } from '../mail/mailer.js';
-import { newsletterWelcomeEmail } from '../mail/newsletterEmail.js';
 
 /** Sign-ups per client IP per hour (F-018 FR-3). In memory, like the sign-in limiter (ADR-003). */
 export const NEWSLETTER_MAX_PER_IP_PER_HOUR = 10;
@@ -12,7 +11,7 @@ export const DEFAULT_WEB_BASE_URL = 'http://localhost:5173';
 
 export interface NewsletterOptions {
   clock?: () => number;
-  /** Sends the welcome email when configured (F-016 mailer); without one nothing is sent. */
+  /** Sends the welcome email when MSG91 has a newsletter template (ADR-007); otherwise nothing is sent. */
   mailer?: Mailer;
   /** Where the shop runs, for the unsubscribe link. */
   webBaseUrl?: string;
@@ -21,10 +20,10 @@ export interface NewsletterOptions {
 
 const hashToken = (token: string) => createHash('sha256').update(token).digest('base64url');
 
-/** A short reason for the log: an SMTP error code, never the message (same rule as the code emails). */
+/** A short reason for the log (e.g. "HTTP 401"), never the response (same rule as the code emails). */
 function failureCode(error: unknown): string {
-  const { code, responseCode } = (error ?? {}) as { code?: unknown; responseCode?: unknown };
-  return [code, responseCode].filter((part) => typeof part === 'string' || typeof part === 'number').join(' ') || 'unknown error';
+  const { code } = (error ?? {}) as { code?: unknown };
+  return typeof code === 'string' ? code : 'unknown error';
 }
 
 export function createNewsletterService(db: Db, options: NewsletterOptions = {}) {
@@ -52,10 +51,10 @@ export function createNewsletterService(db: Db, options: NewsletterOptions = {})
   /** The welcome email goes out after the response; a failure is only logged (FR-3, §14). */
   function welcome(email: string, token: string) {
     const { mailer } = options;
-    if (!mailer) return;
+    if (!mailer?.sendsNewsletterWelcome) return;
     const url = `${webBaseUrl}/newsletter/unsubscribe?token=${encodeURIComponent(token)}`;
     Promise.resolve()
-      .then(() => mailer.send(newsletterWelcomeEmail(email, url)))
+      .then(() => mailer.sendNewsletterWelcome(email, url))
       .catch((error: unknown) => log(`Could not email a newsletter welcome (${failureCode(error)}).`));
   }
 
