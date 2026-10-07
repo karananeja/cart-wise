@@ -14,7 +14,7 @@ export function createSessionService(db: Db, clock: () => number = Date.now) {
   const iso = (ms: number) => new Date(ms).toISOString();
   const insert = db.prepare('INSERT INTO sessions (token_hash, user_id, created_at, expires_at, last_seen_at) VALUES (?, ?, ?, ?, ?)');
   const find = db.prepare(`
-    SELECT s.token_hash, s.expires_at, s.last_seen_at, u.id, u.name, u.email, u.mobile
+    SELECT s.token_hash, s.expires_at, s.last_seen_at, u.id, u.name, u.email, u.mobile, u.created_at AS createdAt
     FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ?`);
   const touch = db.prepare('UPDATE sessions SET expires_at = ?, last_seen_at = ? WHERE token_hash = ?');
   const remove = db.prepare('DELETE FROM sessions WHERE token_hash = ?');
@@ -42,7 +42,7 @@ export function createSessionService(db: Db, clock: () => number = Date.now) {
         return undefined;
       }
       if (now - Date.parse(row.last_seen_at) > TOUCH_INTERVAL_MS) touch.run(iso(now + SESSION_LIFETIME_DAYS * DAY_MS), iso(now), hash);
-      return { id: row.id, name: row.name, email: row.email, mobile: row.mobile };
+      return { id: row.id, name: row.name, email: row.email, mobile: row.mobile, createdAt: row.createdAt };
     },
 
     destroy(token: string | undefined) {

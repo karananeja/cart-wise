@@ -53,6 +53,7 @@ export const publicUser = (user: SessionUser): PublicUser => ({
   email: user.email,
   mobile: user.mobile,
   maskedMobile: user.mobile ? maskMobile(user.mobile) : null,
+  memberSince: user.createdAt,
 });
 
 /** The client address for the per-IP code limit (F-016). */
@@ -63,8 +64,8 @@ const NO_EMAIL = { fields: { email: 'Enter a valid email address' } };
 export function authRouter({ db, otp, sessions, merge, limiter }: Deps): Router {
   const router = Router();
 
-  const byId = db.prepare('SELECT id, name, email, mobile, password_hash FROM users WHERE id = ?');
-  const byEmail = db.prepare('SELECT id, name, email, mobile, password_hash FROM users WHERE email = ?');
+  const byId = db.prepare('SELECT id, name, email, mobile, created_at AS createdAt, password_hash FROM users WHERE id = ?');
+  const byEmail = db.prepare('SELECT id, name, email, mobile, created_at AS createdAt, password_hash FROM users WHERE email = ?');
   const insertUser = db.prepare('INSERT INTO users (name, email, mobile, password_hash, email_verified_at, created_at) VALUES (?, ?, ?, ?, ?, ?)');
   // Accounts from before F-016 prove their email on the first code sign-in.
   const markEmailVerified = db.prepare('UPDATE users SET email_verified_at = ? WHERE id = ? AND email_verified_at IS NULL');

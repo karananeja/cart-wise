@@ -42,11 +42,18 @@ export const routes: RouteObject[] = [
       { path: 'login', lazy: page(() => import('@/features/auth/LoginPage'), 'LoginPage') },
       { path: 'signup', lazy: page(() => import('@/features/auth/SignupPage'), 'SignupPage') },
       { path: 'forgot-password', lazy: page(() => import('@/features/auth/ForgotPasswordPage'), 'ForgotPasswordPage') },
-      { path: 'account', lazy: page(() => import('@/features/auth/AccountPage'), 'AccountPage') },
-      { path: 'account/orders', lazy: page(() => import('@/features/orders/OrdersPage'), 'OrdersPage') },
-      { path: 'account/addresses', lazy: page(() => import('@/features/addresses/AddressesPage'), 'AddressesPage') },
-      { path: 'account/addresses/new', lazy: page(() => import('@/features/addresses/AddressEditorPage'), 'AddressEditorPage') },
-      { path: 'account/addresses/:id/edit', lazy: page(() => import('@/features/addresses/AddressEditorPage'), 'AddressEditorPage') },
+      {
+        // F-017: the overview, orders and addresses share the account sidebar (wide screens).
+        path: 'account',
+        lazy: page(() => import('@/features/account/AccountLayout'), 'AccountLayout'),
+        children: [
+          { index: true, lazy: page(() => import('@/features/account/AccountPage'), 'AccountPage') },
+          { path: 'orders', lazy: page(() => import('@/features/orders/OrdersPage'), 'OrdersPage') },
+          { path: 'addresses', lazy: page(() => import('@/features/addresses/AddressesPage'), 'AddressesPage') },
+          { path: 'addresses/new', lazy: page(() => import('@/features/addresses/AddressEditorPage'), 'AddressEditorPage') },
+          { path: 'addresses/:id/edit', lazy: page(() => import('@/features/addresses/AddressEditorPage'), 'AddressEditorPage') },
+        ],
+      },
       { path: 'p/:productSlug', element: <ProductPage /> },
       { path: 'orders/:orderId', lazy: page(() => import('@/features/orders/OrderPage'), 'OrderPage') },
       {

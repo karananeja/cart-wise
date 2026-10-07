@@ -145,6 +145,20 @@ test('cancelling while Processing refunds at once and puts the stock back', asyn
   await expect(page.getByRole('article', { name: orderId })).toContainText('Cancelled');
 });
 
+test('the account overview shows the latest order and opens it (F-017)', async ({ page }) => {
+  const slug = 'apple-magsafe-battery-pack';
+  setStock(slug, 10);
+  await signedInCustomer(page);
+  const orderId = await paidOrder(page, [slug]);
+  await page.goto('/account');
+  await expect(page.getByRole('navigation', { name: 'Account' }).getByRole('link', { name: 'Overview' })).toHaveAttribute('aria-current', 'page');
+  const latest = page.getByRole('region', { name: 'Latest order' });
+  await expect(latest).toContainText('Order confirmed');
+  await expect(page.getByRole('region', { name: 'Default address' })).toContainText('Flat 4B, Indiranagar');
+  await latest.getByRole('link', { name: orderId }).click();
+  await expect(page).toHaveURL(`/orders/${orderId}`);
+});
+
 test.describe('mobile', () => {
   test.use({ viewport: { width: 360, height: 780 } });
 

@@ -11,6 +11,7 @@ interface User {
   email: string;
   mobile: string | null;
   password: string;
+  memberSince?: string;
 }
 
 let users: User[] = [];
@@ -55,7 +56,13 @@ export function addUser(user: User, options: { signedIn?: boolean } = {}) {
   if (options.signedIn) signedIn = user;
 }
 
-const publicUser = (u: User) => ({ name: u.name, email: u.email, mobile: u.mobile, maskedMobile: u.mobile ? maskMobile(u.mobile) : null });
+const publicUser = (u: User) => ({
+  name: u.name,
+  email: u.email,
+  mobile: u.mobile,
+  maskedMobile: u.mobile ? maskMobile(u.mobile) : null,
+  memberSince: u.memberSince ?? '2026-10-01T09:00:00.000Z',
+});
 const error = (status: number, code: string, details?: Record<string, unknown>) =>
   HttpResponse.json({ error: { code, message: code, ...(details ? { details } : {}) } }, { status });
 

@@ -42,7 +42,7 @@ describe('sign-up', () => {
 
     const verify = await agent.post('/api/auth/verify').send({ challengeId: challenge.challengeId, code: challenge.demoCode }).expect(200);
     expect(String(verify.headers['set-cookie'])).toMatch(/session=[\w-]{40,}.*HttpOnly/);
-    expect(verify.body.user).toEqual({ name: 'Karan Aneja', email: 'karan@example.com', mobile: '9876543210', maskedMobile: '••••••3210' });
+    expect(verify.body.user).toEqual({ name: 'Karan Aneja', email: 'karan@example.com', mobile: '9876543210', maskedMobile: '••••••3210', memberSince: expect.any(String) });
     expect((await agent.get('/api/auth/me')).body.user.name).toBe('Karan Aneja');
     // Entering the emailed code proves the email; the mobile is just a profile field now.
     expect(db.prepare('SELECT email_verified_at, mobile_verified_at FROM users').get()).toEqual({ email_verified_at: expect.any(String), mobile_verified_at: null });
@@ -50,7 +50,7 @@ describe('sign-up', () => {
 
   it('works without a mobile (F-016)', async () => {
     const { result } = await signUp(request.agent(app), { ...SIGNUP, mobile: '' });
-    expect(result.user).toEqual({ name: 'Karan Aneja', email: 'karan@example.com', mobile: null, maskedMobile: null });
+    expect(result.user).toEqual({ name: 'Karan Aneja', email: 'karan@example.com', mobile: null, maskedMobile: null, memberSince: expect.any(String) });
     const other = { name: 'Asha Rao', email: 'asha@example.com', password: 'correct horse battery' };
     expect((await signUp(request.agent(app), other as typeof SIGNUP)).result.user.mobile).toBeNull();
   });
@@ -399,7 +399,7 @@ describe('accounts from before F-016', () => {
     const verified = () => (db.prepare("SELECT email_verified_at FROM users WHERE email = 'old@example.com'").get() as { email_verified_at: string | null }).email_verified_at;
     expect(verified()).toBeNull();
     const result = await otpLogin(request.agent(app), 'old@example.com');
-    expect(result.user).toEqual({ name: 'Old Timer', email: 'old@example.com', mobile: '9876500000', maskedMobile: '••••••0000' });
+    expect(result.user).toEqual({ name: 'Old Timer', email: 'old@example.com', mobile: '9876500000', maskedMobile: '••••••0000', memberSince: 't' });
     const first = verified();
     expect(first).toEqual(expect.any(String));
     await otpLogin(request.agent(app), 'old@example.com');

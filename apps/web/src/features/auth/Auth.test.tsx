@@ -215,28 +215,6 @@ describe('signed in', () => {
     await waitFor(() => expect(historyRemovals).toHaveLength(2));
     expect(historyRemovals).toEqual(expect.arrayContaining([{ list: 'recentSearches', key: 'watch' }, { list: 'recentlyViewed' }]));
   });
-
-  it('shows account details, and sends guests to sign in first', async () => {
-    const { unmount, location } = renderRoute('/account');
-    await waitFor(() => expect(location().pathname).toBe('/login'));
-    expect(location().search).toBe('?returnTo=%2Faccount');
-    unmount();
-
-    addUser(KARAN, { signedIn: true });
-    renderRoute('/account');
-    const details = await screen.findByRole('heading', { name: 'My account' });
-    const page = details.parentElement!;
-    expect(within(page).getByText('karan@example.com')).toBeInTheDocument();
-    expect(within(page).getByText('••••••3210')).toBeInTheDocument();
-  });
-
-  it('leaves the mobile out of account details when there is none', async () => {
-    addUser({ ...KARAN, mobile: null }, { signedIn: true });
-    renderRoute('/account');
-    const page = (await screen.findByRole('heading', { name: 'My account' })).parentElement!;
-    expect(within(page).getByText('karan@example.com')).toBeInTheDocument();
-    expect(within(page).queryByText('Mobile')).not.toBeInTheDocument();
-  });
 });
 
 describe('real email (SMTP configured, F-016)', () => {

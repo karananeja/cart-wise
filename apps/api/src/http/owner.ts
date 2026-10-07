@@ -10,6 +10,8 @@ export interface SessionUser {
   email: string;
   /** Optional since F-016. */
   mobile: string | null;
+  /** When the account was created (F-017 "Member since"). */
+  createdAt: string;
 }
 
 export function currentUser(res: Response): SessionUser | undefined {

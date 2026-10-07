@@ -55,6 +55,9 @@ export function HeaderAccount() {
         <DropdownMenuItem asChild>
           <Link to="/account/addresses">Addresses</Link>
         </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to="/wishlist">Wishlist</Link>
+        </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => logout.mutate()}>
           <LogOut aria-hidden /> Sign out
         </DropdownMenuItem>

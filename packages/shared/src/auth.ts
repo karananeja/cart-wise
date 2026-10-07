@@ -74,6 +74,8 @@ export interface PublicUser {
   /** The account owner's own number, when given (pre-fills forms); shown masked in the UI. Optional since F-016. */
   mobile: string | null;
   maskedMobile: string | null;
+  /** When the account was created, ISO time (F-017). */
+  memberSince: string;
 }
 
 export interface MeResponse {

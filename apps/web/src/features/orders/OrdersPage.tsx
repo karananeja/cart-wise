@@ -77,7 +77,9 @@ function statusDetail(order: OrderSummary): string {
   return `${ORDER_STATUS_LABELS[order.status]} · arrives ${formatEstimate(order.estimate)}`;
 }
 
-function OrderCard({ order }: { order: OrderSummary }) {
+/** One order in a list; also the account overview's latest-order tile (F-017), where it sits under an h2. */
+export function OrderCard({ order, headingLevel = 2 }: { order: OrderSummary; headingLevel?: 2 | 3 }) {
+  const Heading = headingLevel === 2 ? 'h2' : 'h3';
   const shown = order.thumbnails.slice(0, 3);
   const more = order.thumbnails.length - shown.length;
   const badge = returnStateLabel(order.returnState);
@@ -85,11 +87,11 @@ function OrderCard({ order }: { order: OrderSummary }) {
     <article aria-labelledby={`order-${order.id}`} className="relative flex flex-col gap-3 rounded-xl border p-4 transition-colors hover:bg-muted/40">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex flex-col">
-          <h2 id={`order-${order.id}`} className="font-mono text-sm font-semibold">
+          <Heading id={`order-${order.id}`} className="font-mono text-sm font-semibold">
             <Link to={`/orders/${order.id}`} className="after:absolute after:inset-0 after:content-['']">
               {order.id}
             </Link>
-          </h2>
+          </Heading>
           <p className="text-xs text-muted-foreground">Placed {formatDate(order.createdAt)}</p>
         </div>
         <p className="text-sm font-semibold tabular-nums">{formatPrice(order.paidPaise)}</p>
