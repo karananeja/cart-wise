@@ -2,15 +2,17 @@ import type { Address } from './address.js';
 import type { CartView } from './cart.js';
 import type { OrderActions, OrderRefund, OrderReturn, ReturnState } from './orders.js';
 import type { OrderPayment } from './payment.js';
+import { ZONE_DAYS, type DeliveryZone } from './serviceability.js';
 
 /** Delivery rules (user decision Q8, 2026-10-06). */
 export const FREE_DELIVERY_THRESHOLD_PAISE = 999_00;
 export const DELIVERY_OPTIONS = ['standard', 'express'] as const;
 export type DeliveryOption = (typeof DELIVERY_OPTIONS)[number];
 
-const RULES: Record<DeliveryOption, { label: string; minDays: number; maxDays: number; pricePaise: number }> = {
-  standard: { label: 'Standard', minDays: 3, maxDays: 5, pricePaise: 49_00 },
-  express: { label: 'Express', minDays: 1, maxDays: 2, pricePaise: 149_00 },
+/** Prices are the same everywhere; days depend on the pincode's zone (F-015, `ZONE_DAYS`). */
+const RULES: Record<DeliveryOption, { label: string; pricePaise: number }> = {
+  standard: { label: 'Standard', pricePaise: 49_00 },
+  express: { label: 'Express', pricePaise: 149_00 },
 };
 
 /** Stock is held for 10 minutes once payment starts (user decision Q10). */
@@ -32,17 +34,23 @@ const isoDate = (base: Date, days: number) => {
   return d.toISOString().slice(0, 10);
 };
 
-export function deliveryOptions(subtotalPaise: number, now: Date): DeliveryQuote[] {
-  return DELIVERY_OPTIONS.map((option) => {
+/** The options offered in a zone (none when it isn't serviceable), with prices and arrival windows. */
+export function deliveryOptions(subtotalPaise: number, now: Date, zone: DeliveryZone): DeliveryQuote[] {
+  if (zone === 'unserviceable') return [];
+  return DELIVERY_OPTIONS.flatMap((option) => {
+    const days = ZONE_DAYS[zone][option];
+    if (!days) return [];
     const rule = RULES[option];
     const free = option === 'standard' && subtotalPaise >= FREE_DELIVERY_THRESHOLD_PAISE;
-    return {
-      option,
-      label: rule.label,
-      pricePaise: free ? 0 : rule.pricePaise,
-      estimate: { from: isoDate(now, rule.minDays), to: isoDate(now, rule.maxDays) },
-      ...(option === 'standard' ? { freeDeliveryShortfallPaise: Math.max(0, FREE_DELIVERY_THRESHOLD_PAISE - subtotalPaise) } : {}),
-    };
+    return [
+      {
+        option,
+        label: rule.label,
+        pricePaise: free ? 0 : rule.pricePaise,
+        estimate: { from: isoDate(now, days.minDays), to: isoDate(now, days.maxDays) },
+        ...(option === 'standard' ? { freeDeliveryShortfallPaise: Math.max(0, FREE_DELIVERY_THRESHOLD_PAISE - subtotalPaise) } : {}),
+      },
+    ];
   });
 }
 
@@ -58,14 +66,17 @@ export interface CheckoutTotals {
   totalPaise: number;
 }
 
-export type CheckoutBlocker = 'EMPTY_CART' | 'CART_ISSUES' | 'NO_ADDRESS';
+export type CheckoutBlocker = 'EMPTY_CART' | 'CART_ISSUES' | 'NO_ADDRESS' | 'NOT_SERVICEABLE';
 
 export interface CheckoutQuote {
   cart: CartView;
   /** The chosen address (or the default), or null when the customer has none. */
   address: Address | null;
+  /** Options offered at the address's pincode (F-015); empty when it isn't serviceable. */
   delivery: DeliveryQuote[];
   selectedDelivery: DeliveryOption;
+  /** True when Express was asked for but this address only gets Standard, so Standard was selected. */
+  expressUnavailable: boolean;
   totals: CheckoutTotals;
   blockers: CheckoutBlocker[];
 }

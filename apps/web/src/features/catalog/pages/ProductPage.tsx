@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router';
-import { Truck } from 'lucide-react';
 import type { ProductDetail } from '@store/shared';
 import {
   Breadcrumb,
@@ -14,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState, OfflineState } from '@/components/ErrorState';
 import { NotFound } from '@/components/NotFound';
 import { AddToCartButton } from '@/features/cart/AddToCartButton';
+import { DeliveryCheck } from '@/features/delivery/DeliveryCheck';
 import { ProductDiscovery } from '@/features/discovery/ProductDiscovery';
 import { EmiBanner } from '@/features/payment/EmiBanner';
 import { OfferBanner } from '@/features/payment/OfferBanner';
@@ -46,6 +46,8 @@ export function ProductPage() {
   }
 
   const p = product.data;
+  // F-015: delivery dates come from our own rules (Delivery panel), so the catalog's "Shipping" text would contradict them.
+  const specifications = p.specifications.filter((spec) => spec.label !== 'Shipping');
   return (
     <div className="flex flex-col gap-12">
       <div className="flex flex-col gap-6">
@@ -82,9 +84,9 @@ export function ProductPage() {
           </h2>
           <p className="leading-relaxed text-muted-foreground">{p.description}</p>
         </div>
-        {p.specifications.length > 0 && (
+        {specifications.length > 0 && (
           <dl className="grid h-fit grid-cols-[auto_1fr] gap-x-6 gap-y-2 rounded-xl border p-4 text-sm">
-            {p.specifications.map((spec) => (
+            {specifications.map((spec) => (
               <div key={spec.label} className="contents">
                 <dt className="text-muted-foreground">{spec.label}</dt>
                 <dd>{spec.value}</dd>
@@ -105,7 +107,6 @@ function PurchasePanel({ product: p }: { product: ProductDetail }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const selected = useSelectedSize(p);
   const option = useSelectedOption(p);
-  const shipping = p.specifications.find((s) => s.label === 'Shipping')?.value;
   const sizeGroup = useRef<HTMLFieldSetElement>(null);
   const [sizeError, setSizeError] = useState<string>();
 
@@ -162,11 +163,8 @@ function PurchasePanel({ product: p }: { product: ProductDetail }) {
         <AddToCartButton product={p} selectedSize={selected?.label} selectedOption={option?.label} onSizeRequired={requireSize} />
         <WishlistToggle product={p} variant="inline" />
       </div>
-      {shipping && (
-        <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Truck className="size-4" aria-hidden /> {shipping}
-        </p>
-      )}
+      {/* F-015: our own delivery rules replace the catalog's generic "Ships in…" line here. */}
+      <DeliveryCheck pricePaise={shown.pricePaise} />
     </div>
   );
 }

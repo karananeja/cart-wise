@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Loader2, MapPin, Plus } from 'lucide-react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router';
-import { formatPrice, isDeliveryOption, maskMobile, type Address, type CheckoutQuote, type DeliveryOption } from '@store/shared';
+import { deliveryZone, formatPrice, isDeliveryOption, maskMobile, normalizePincode, type Address, type CheckoutQuote, type DeliveryOption } from '@store/shared';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -61,12 +61,14 @@ export function CheckoutPage() {
     setParams(next, { replace: true, preventScrollReset: true });
   };
   const here = `/checkout?${params}`;
+  // F-015: an address without Express gets Standard; the radio and the order follow that.
+  const chosenDelivery: DeliveryOption = q.expressUnavailable ? q.selectedDelivery : delivery;
   const canContinue = q.blockers.length === 0 && online && !create.isPending;
 
   const onContinue = () => {
     if (!q.address) return;
     create.mutate(
-      { addressId: q.address.id, delivery },
+      { addressId: q.address.id, delivery: chosenDelivery },
       {
         onSuccess: (order) => navigate(`/checkout/pay/${order.id}`),
         onError: (e) => {
@@ -117,7 +119,7 @@ export function CheckoutPage() {
             <AddressSection quote={q} returnTo={here} onSelect={(id) => select({ addressId: id })} />
           </Section>
           <Section number={2} title="Delivery">
-            <DeliverySection quote={q} selected={delivery} onSelect={(option) => select({ delivery: option })} />
+            <DeliverySection quote={q} selected={chosenDelivery} onSelect={(option) => select({ delivery: option })} />
           </Section>
           <Section number={3} title="Review items" action={<Link to="/cart" className="text-sm font-medium hover:underline">Edit cart</Link>}>
             <ul className="flex flex-col divide-y">
@@ -141,7 +143,7 @@ export function CheckoutPage() {
           {q.address && (
             <p className="text-xs text-muted-foreground">
               Delivering to {q.address.fullName}, {q.address.city} {q.address.pincode} ·{' '}
-              {q.delivery.find((d) => d.option === delivery)?.label}
+              {q.delivery.find((d) => d.option === chosenDelivery)?.label ?? 'No delivery here'}
             </p>
           )}
           <div className="hidden lg:block">{continueButton}</div>
@@ -210,6 +212,7 @@ function AddressSection({ quote, returnTo, onSelect }: { quote: CheckoutQuote; r
             {quote.address.isDefault && <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs font-normal">Default</span>}
           </span>
           <AddressLines address={quote.address} />
+          {quote.blockers.includes('NOT_SERVICEABLE') && <NotServiceable />}
         </p>
         <Button variant="outline" size="sm" onClick={() => setChanging(true)}>
           Change
@@ -236,6 +239,7 @@ function AddressSection({ quote, returnTo, onSelect }: { quote: CheckoutQuote; r
           <span className="flex flex-col gap-0.5">
             <span className="font-medium">{address.fullName}</span>
             <AddressLines address={address} />
+            {!isServiceable(address.pincode) && <NotServiceable />}
           </span>
         </label>
       ))}
@@ -249,30 +253,51 @@ function AddressSection({ quote, returnTo, onSelect }: { quote: CheckoutQuote; r
   );
 }
 
+const isServiceable = (pincode: string) => {
+  const valid = normalizePincode(pincode);
+  return valid !== null && deliveryZone(valid) !== 'unserviceable';
+};
+
+function NotServiceable() {
+  return <span className="mt-1 text-sm font-medium text-amber-700 dark:text-amber-400">We don't deliver to this pincode yet</span>;
+}
+
 /** The radio follows the customer's choice immediately; prices refresh when the new quote arrives. */
 function DeliverySection({ quote, selected, onSelect }: { quote: CheckoutQuote; selected: DeliveryOption; onSelect: (option: DeliveryOption) => void }) {
+  if (quote.blockers.includes('NOT_SERVICEABLE')) {
+    return <p className="text-sm text-muted-foreground">Choose an address we deliver to, or add a new one.</p>;
+  }
   return (
-    <fieldset className="grid gap-3 sm:grid-cols-2">
-      <legend className="sr-only">Choose delivery speed</legend>
-      {quote.delivery.map((option) => (
-        <label
-          key={option.option}
-          className="flex cursor-pointer flex-col gap-1 rounded-lg border p-4 has-[:checked]:border-foreground has-[:checked]:ring-1 has-[:checked]:ring-foreground has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50"
-        >
-          <span className="flex items-center justify-between gap-2">
-            <span className="flex items-center gap-2 font-medium">
-              <input type="radio" name="delivery" value={option.option} checked={selected === option.option} onChange={() => onSelect(option.option)} />
-              {option.label}
+    <div className="flex flex-col gap-3">
+      {quote.expressUnavailable ? (
+        <p className="text-sm text-muted-foreground" role="status">
+          Express isn't available for this address, so Standard is selected.
+        </p>
+      ) : (
+        quote.delivery.length === 1 && <p className="text-sm text-muted-foreground">Only Standard delivery is available for this address.</p>
+      )}
+      <fieldset className="grid gap-3 sm:grid-cols-2">
+        <legend className="sr-only">Choose delivery speed</legend>
+        {quote.delivery.map((option) => (
+          <label
+            key={option.option}
+            className="flex cursor-pointer flex-col gap-1 rounded-lg border p-4 has-[:checked]:border-foreground has-[:checked]:ring-1 has-[:checked]:ring-foreground has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50"
+          >
+            <span className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-2 font-medium">
+                <input type="radio" name="delivery" value={option.option} checked={selected === option.option} onChange={() => onSelect(option.option)} />
+                {option.label}
+              </span>
+              <span className="font-medium tabular-nums">{option.pricePaise === 0 ? 'Free' : formatPrice(option.pricePaise)}</span>
             </span>
-            <span className="font-medium tabular-nums">{option.pricePaise === 0 ? 'Free' : formatPrice(option.pricePaise)}</span>
-          </span>
-          <span className="text-sm text-muted-foreground">Arrives {formatEstimate(option.estimate)}</span>
-          {option.freeDeliveryShortfallPaise ? (
-            <span className="text-xs text-emerald-700 dark:text-emerald-400">Add {formatPrice(option.freeDeliveryShortfallPaise)} more for free delivery</span>
-          ) : null}
-        </label>
-      ))}
-    </fieldset>
+            <span className="text-sm text-muted-foreground">Arrives {formatEstimate(option.estimate)}</span>
+            {option.freeDeliveryShortfallPaise ? (
+              <span className="text-xs text-emerald-700 dark:text-emerald-400">Add {formatPrice(option.freeDeliveryShortfallPaise)} more for free delivery</span>
+            ) : null}
+          </label>
+        ))}
+      </fieldset>
+    </div>
   );
 }
 

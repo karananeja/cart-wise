@@ -19,7 +19,7 @@ beforeEach(() => {
 
 type Agent = ReturnType<typeof request.agent>;
 
-async function customer(options: { address?: boolean } = { address: true }): Promise<Agent> {
+async function customer(options: { address?: boolean; pincode?: string } = { address: true }): Promise<Agent> {
   const agent = request.agent(app);
   counter += 1;
   const mobile = `97${String(counter).padStart(8, '0')}`;
@@ -28,7 +28,7 @@ async function customer(options: { address?: boolean } = { address: true }): Pro
   await agent.post('/api/auth/verify').send({ challengeId: c.challengeId, code: c.demoCode }).expect(200);
   if (options.address) {
     await agent.post('/api/addresses').send({
-      fullName: 'Asha Rao', mobile, pincode: '560038', line1: 'Flat 4B', line2: 'Indiranagar', landmark: '', city: 'Bengaluru', state: 'Karnataka', type: 'home', latitude: null, longitude: null,
+      fullName: 'Asha Rao', mobile, pincode: options.pincode ?? '560038', line1: 'Flat 4B', line2: 'Indiranagar', landmark: '', city: 'Bengaluru', state: 'Karnataka', type: 'home', latitude: null, longitude: null,
     }).expect(200);
   }
   return agent;
@@ -72,6 +72,42 @@ describe('checkout quote', () => {
     await add(agent, 'essence-mascara-lash-princess');
     q = (await agent.get('/api/checkout')).body as CheckoutQuote;
     expect(q.totals.deliveryPaise).toBe(0);
+  });
+});
+
+describe('delivery zones (F-015)', () => {
+  it('gives a metro address both options with metro dates', async () => {
+    const agent = await customer();
+    await add(agent, 'apple-magsafe-battery-pack');
+    const q = (await agent.get('/api/checkout')).body as CheckoutQuote;
+    expect(q.delivery.map((d) => [d.option, d.estimate])).toEqual([
+      ['standard', { from: '2026-10-08', to: '2026-10-09' }],
+      ['express', { from: '2026-10-07', to: '2026-10-08' }],
+    ]);
+    expect(q.expressUnavailable).toBe(false);
+  });
+
+  it('offers a remote address Standard only, switching an Express request to Standard', async () => {
+    const agent = await customer({ address: true, pincode: '795001' });
+    await add(agent, 'apple-magsafe-battery-pack');
+    const q = (await agent.get('/api/checkout?delivery=express')).body as CheckoutQuote;
+    expect(q.delivery.map((d) => d.option)).toEqual(['standard']);
+    expect(q.delivery[0]!.estimate).toEqual({ from: '2026-10-12', to: '2026-10-15' });
+    expect(q).toMatchObject({ selectedDelivery: 'standard', expressUnavailable: true, blockers: [] });
+    expect((await placeOrder(agent, 'express').expect(400)).body.error.code).toBe('EXPRESS_UNAVAILABLE');
+    await placeOrder(agent, 'standard').expect(201);
+  });
+
+  it('blocks an unserviceable address and refuses the order without holding stock', async () => {
+    const agent = await customer({ address: true, pincode: '744101' });
+    setStock('apple-magsafe-battery-pack', 5);
+    await add(agent, 'apple-magsafe-battery-pack');
+    const q = (await agent.get('/api/checkout')).body as CheckoutQuote;
+    expect(q.delivery).toEqual([]);
+    expect(q.blockers).toEqual(['NOT_SERVICEABLE']);
+    expect(q.totals.deliveryPaise).toBe(0);
+    expect((await placeOrder(agent).expect(422)).body.error.code).toBe('NOT_SERVICEABLE');
+    expect(stock('apple-magsafe-battery-pack')).toEqual({ onHand: 5, reserved: 0 });
   });
 });
 

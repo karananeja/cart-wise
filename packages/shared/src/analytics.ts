@@ -18,6 +18,7 @@ export const ANALYTICS_EVENTS = [
   'order_created',
   'order_cancelled',
   'recommendation_clicked',
+  'delivery_check_performed',
 ] as const;
 export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[number];
 

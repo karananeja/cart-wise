@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import { deliveryOptions, isDeliveryOption, PAYMENT_HOLD_MS, type CheckoutBlocker, type CheckoutQuote, type Order } from '@store/shared';
+import { deliveryOptions, deliveryZone, isDeliveryOption, normalizePincode, PAYMENT_HOLD_MS, type CheckoutBlocker, type CheckoutQuote, type Order } from '@store/shared';
 import { addressList } from './addressServer';
 import { view as cartView } from './cartServer';
 import { derive, orderDefaults } from './orderState';
@@ -27,18 +27,23 @@ function quote(addressId: number | undefined, delivery: 'standard' | 'express'):
   const cart = cartView();
   const list = addressList();
   const address = list.find((a) => a.id === addressId) ?? list.find((a) => a.isDefault) ?? null;
-  const options = deliveryOptions(cart.totals.subtotalPaise, new Date('2026-10-06T10:00:00.000Z'));
-  const chosen = options.find((o) => o.option === delivery)!;
+  const pincode = address ? normalizePincode(address.pincode) : null;
+  const zone = pincode ? deliveryZone(pincode) : address ? 'unserviceable' : 'regional';
+  const options = deliveryOptions(cart.totals.subtotalPaise, new Date('2026-10-06T10:00:00.000Z'), zone);
+  const chosen = options.find((o) => o.option === delivery) ?? options[0];
   const blockers: CheckoutBlocker[] = [];
   if (!cart.lines.length) blockers.push('EMPTY_CART');
   else if (cart.hasIssues) blockers.push('CART_ISSUES');
   if (!address) blockers.push('NO_ADDRESS');
+  else if (!chosen) blockers.push('NOT_SERVICEABLE');
+  const deliveryPaise = chosen?.pricePaise ?? 0;
   return {
     cart,
     address,
     delivery: options,
-    selectedDelivery: delivery,
-    totals: { ...cart.totals, deliveryPaise: chosen.pricePaise, totalPaise: cart.totals.subtotalPaise + chosen.pricePaise },
+    selectedDelivery: chosen?.option ?? delivery,
+    expressUnavailable: delivery === 'express' && chosen !== undefined && chosen.option !== 'express',
+    totals: { ...cart.totals, deliveryPaise, totalPaise: cart.totals.subtotalPaise + deliveryPaise },
     blockers,
   };
 }

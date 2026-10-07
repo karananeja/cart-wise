@@ -2,6 +2,8 @@ import { randomBytes } from 'node:crypto';
 import {
   CANCELLABLE_STATUSES,
   deliveryOptions,
+  deliveryZone,
+  normalizePincode,
   RETURN_WINDOW_MS,
   type OrderRefund,
   type OrderReturn,
@@ -240,23 +242,29 @@ export function createOrderService({ db, carts, addresses, record, clock = Date.
   function quote(userId: number, addressId: number | undefined, delivery: DeliveryOption): CheckoutQuote {
     const cart = carts.view({ userId });
     const address = pickAddress(userId, addressId);
-    const options = deliveryOptions(cart.totals.subtotalPaise, new Date(clock()));
-    const chosen = options.find((o) => o.option === delivery)!;
+    // F-015: the address's pincode decides the options; before there is an address, show the regional ones.
+    const pincode = address ? normalizePincode(address.pincode) : null;
+    const zone = pincode ? deliveryZone(pincode) : address ? 'unserviceable' : 'regional';
+    const options = deliveryOptions(cart.totals.subtotalPaise, new Date(clock()), zone);
+    const chosen = options.find((o) => o.option === delivery) ?? options[0];
     const blockers: CheckoutBlocker[] = [];
     if (cart.lines.length === 0) blockers.push('EMPTY_CART');
     else if (cart.hasIssues) blockers.push('CART_ISSUES');
     if (!address) blockers.push('NO_ADDRESS');
+    else if (!chosen) blockers.push('NOT_SERVICEABLE');
+    const deliveryPaise = chosen?.pricePaise ?? 0;
     return {
       cart,
       address,
       delivery: options,
-      selectedDelivery: delivery,
+      selectedDelivery: chosen?.option ?? delivery,
+      expressUnavailable: delivery === 'express' && chosen !== undefined && chosen.option !== 'express',
       totals: {
         itemCount: cart.totals.itemCount,
         mrpPaise: cart.totals.mrpPaise,
         discountPaise: cart.totals.discountPaise,
-        deliveryPaise: chosen.pricePaise,
-        totalPaise: cart.totals.subtotalPaise + chosen.pricePaise,
+        deliveryPaise,
+        totalPaise: cart.totals.subtotalPaise + deliveryPaise,
       },
       blockers,
     };
@@ -283,6 +291,8 @@ export function createOrderService({ db, carts, addresses, record, clock = Date.
       if (q.blockers.includes('EMPTY_CART')) throw new HttpError(400, 'EMPTY_CART', 'Your cart is empty');
       if (q.blockers.includes('CART_ISSUES')) throw new HttpError(409, 'CART_CHANGED', 'Some items in your cart changed');
       if (!q.address || (addressId !== undefined && q.address.id !== addressId)) throw new HttpError(400, 'NO_ADDRESS', 'Choose a delivery address');
+      if (q.blockers.includes('NOT_SERVICEABLE')) throw new HttpError(422, 'NOT_SERVICEABLE', "We don't deliver to this pincode yet");
+      if (q.selectedDelivery !== delivery) throw new HttpError(400, 'EXPRESS_UNAVAILABLE', "Express isn't available for this address");
 
       const now = clock();
       const raw = cartLines.all(userId) as { id: number; product_id: number; variant_id: number | null; quantity: number }[];

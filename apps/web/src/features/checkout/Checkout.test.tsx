@@ -15,8 +15,8 @@ const KARAN = { name: 'Karan Aneja', email: 'karan@example.com', mobile: '987654
 const post = (path: string, body: unknown) =>
   fetch(new URL(path, window.location.origin), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 
-const address = (line1: string) => ({
-  fullName: 'Karan Aneja', mobile: '9876543210', pincode: '560038', line1, line2: 'Indiranagar', landmark: '', city: 'Bengaluru', state: 'Karnataka', type: 'home', latitude: null, longitude: null,
+const address = (line1: string, pincode = '560038') => ({
+  fullName: 'Karan Aneja', mobile: '9876543210', pincode, line1, line2: 'Indiranagar', landmark: '', city: 'Bengaluru', state: 'Karnataka', type: 'home', latitude: null, longitude: null,
 });
 
 beforeEach(async () => {
@@ -25,9 +25,9 @@ beforeEach(async () => {
   receivedEvents.length = 0;
 });
 
-async function signedInWithCart({ addresses = ['Flat 4B'] }: { addresses?: string[] } = {}) {
+async function signedInWithCart({ addresses = ['Flat 4B'], pincode }: { addresses?: string[]; pincode?: string } = {}) {
   addUser(KARAN, { signedIn: true });
-  for (const line1 of addresses) await post('/api/addresses', address(line1));
+  for (const line1 of addresses) await post('/api/addresses', address(line1, pincode));
   await post('/api/cart/lines', { productSlug: 'product-2', quantity: 1 }); // Zenbook ₹80,000
 }
 
@@ -62,7 +62,7 @@ describe('checkout page', () => {
 
     const delivery = screen.getByRole('region', { name: 'Delivery' });
     expect(within(delivery).getByRole('radio', { name: /Standard/ })).toBeChecked();
-    expect(within(delivery).getByText('Arrives Fri, 9 Oct – Sun, 11 Oct')).toBeInTheDocument();
+    expect(within(delivery).getByText('Arrives Thu, 8 Oct – Fri, 9 Oct')).toBeInTheDocument();
 
     const summary = screen.getByRole('region', { name: 'Order summary' });
     expect(within(summary).getByText('Free')).toBeInTheDocument();
@@ -147,5 +147,27 @@ describe('payment page', () => {
     addUser(KARAN, { signedIn: true });
     renderRoute('/checkout/pay/ORD-NOPE');
     expect(await screen.findByRole('heading', { name: "We couldn't find that order" })).toBeInTheDocument();
+  });
+});
+
+describe('delivery zones (F-015)', () => {
+  it('offers a remote address Standard only and moves an Express choice to Standard', async () => {
+    await signedInWithCart({ pincode: '795001' });
+    renderRoute('/checkout?delivery=express');
+    const delivery = await screen.findByRole('region', { name: 'Delivery' });
+    expect(await within(delivery).findByText("Express isn't available for this address, so Standard is selected.")).toBeInTheDocument();
+    expect(within(delivery).getAllByRole('radio').map((r) => r.getAttribute('value'))).toEqual(['standard']);
+    expect(within(delivery).getByRole('radio', { name: /Standard/ })).toBeChecked();
+    expect(within(delivery).getByText('Arrives Mon, 12 Oct – Thu, 15 Oct')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Continue to payment' })[0]).toBeEnabled();
+  });
+
+  it("says when an address can't be served and keeps Continue disabled", async () => {
+    await signedInWithCart({ pincode: '744101' });
+    renderRoute('/checkout');
+    const addressSection = await screen.findByRole('region', { name: 'Delivery address' });
+    expect(within(addressSection).getByText("We don't deliver to this pincode yet")).toBeInTheDocument();
+    expect(screen.getByText('Choose an address we deliver to, or add a new one.')).toBeInTheDocument();
+    for (const button of screen.getAllByRole('button', { name: 'Continue to payment' })) expect(button).toBeDisabled();
   });
 });

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Loader2, MapPin } from 'lucide-react';
-import { ADDRESS_TYPES, checkAddress, INDIAN_STATES, type AddressErrors, type AddressInput } from '@store/shared';
+import { ADDRESS_TYPES, checkAddress, deliveryZone, INDIAN_STATES, normalizePincode, type AddressErrors, type AddressInput } from '@store/shared';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -9,6 +9,12 @@ import { cn } from '@/lib/utils';
 import { LazyMap } from './LazyMap';
 
 const TYPE_LABELS = { home: 'Home', work: 'Work', other: 'Other' } as const;
+
+/** F-015: saving is allowed, but say up front that orders can't be delivered there yet. */
+function pincodeHint(value: string): string | undefined {
+  const pincode = normalizePincode(value);
+  return pincode && deliveryZone(pincode) === 'unserviceable' ? "We don't deliver here yet. You can still save it." : undefined;
+}
 
 interface AddressFormProps {
   initial: AddressInput;
@@ -69,7 +75,7 @@ export function AddressForm({ initial, onSubmit, onChangeLocation, saving, serve
       <FormField label="Area, street, locality" name="line2" autoComplete="address-line2" value={values.line2} onChange={set('line2')} error={shown.line2} />
       <FormField label="Landmark (optional)" name="landmark" value={values.landmark} onChange={set('landmark')} error={shown.landmark} />
       <div className="grid gap-4 sm:grid-cols-3">
-        <FormField label="Pincode" name="pincode" inputMode="numeric" autoComplete="postal-code" maxLength={7} value={values.pincode} onChange={set('pincode')} error={shown.pincode} />
+        <FormField label="Pincode" name="pincode" inputMode="numeric" autoComplete="postal-code" maxLength={7} value={values.pincode} onChange={set('pincode')} error={shown.pincode} hint={pincodeHint(values.pincode)} />
         <FormField label="City" name="city" autoComplete="address-level2" value={values.city} onChange={set('city')} error={shown.city} />
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="address-state">State</Label>
