@@ -4,6 +4,7 @@ import type { ChallengeResponse } from '@store/shared';
 import { createApp } from '../app.js';
 import { openDatabase, type Db } from '../db/database.js';
 import { seedDatabase } from '../db/seed.js';
+import { operatorPasswordFrom } from './operator.js';
 
 let db: Db;
 let now: number;
@@ -64,4 +65,11 @@ it('limits wrong passwords: 5 in 15 minutes', async () => {
   expect(res.body.error).toMatchObject({ code: 'TOO_MANY_ATTEMPTS', details: { retryAfterSeconds: 900 } });
   now += 15 * 60 * 1000;
   await op.post('/api/sim/session').send({ password: 'test-operator' }).expect(200);
+});
+
+it('uses the demo default when SIM_OPERATOR_PASSWORD is blank, as copied from .env.example', () => {
+  expect(operatorPasswordFrom({})).toEqual({ password: 'demo-operator', isDefault: true });
+  expect(operatorPasswordFrom({ SIM_OPERATOR_PASSWORD: '' })).toEqual({ password: 'demo-operator', isDefault: true });
+  expect(operatorPasswordFrom({ SIM_OPERATOR_PASSWORD: '  ' })).toEqual({ password: 'demo-operator', isDefault: true });
+  expect(operatorPasswordFrom({ SIM_OPERATOR_PASSWORD: 'secret' })).toEqual({ password: 'secret', isDefault: false });
 });

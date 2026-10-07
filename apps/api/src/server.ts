@@ -10,6 +10,7 @@ import { createEventRecorder } from './analytics/record.js';
 import { isSeeded, repriceIfRateChanged, seedDatabase } from './db/seed.js';
 import { loadRazorpayConfig } from './payments/razorpay.js';
 import { DEFAULT_DB_PATH } from './paths.js';
+import { operatorPasswordFrom } from './sim/operator.js';
 
 // apps/api/.env (git-ignored), when present: Razorpay test keys and other settings (F-014).
 try {
@@ -51,7 +52,7 @@ const razorpay = loadRazorpayConfig(process.env);
 if (razorpay.enabled) console.log(`Razorpay test mode is on (key ${razorpay.config.keyId}).`);
 else if (razorpay.error) console.error(razorpay.error);
 
-if (!process.env.SIM_OPERATOR_PASSWORD) {
+if (operatorPasswordFrom(process.env).isDefault) {
   console.log('Demo operator page uses the default password "demo-operator" (set SIM_OPERATOR_PASSWORD to change it).');
 }
 

@@ -8,7 +8,7 @@ import { recommendationRouter } from './recommendations/routes.js';
 import { createRecommendationService } from './recommendations/service.js';
 import { createOrderService } from './orders/service.js';
 import { createInventorySimulation } from './sim/inventory.js';
-import { createOperatorAccess, DEFAULT_OPERATOR_PASSWORD } from './sim/operator.js';
+import { createOperatorAccess, operatorPasswordFrom } from './sim/operator.js';
 import { createSimScheduler } from './sim/scheduler.js';
 import { simRouter } from './sim/routes.js';
 import { paymentRouter } from './payments/routes.js';
@@ -88,7 +88,7 @@ export function createApp(db: Db, options: AppOptions = {}) {
   const lifecycle = createOrderLifecycle({ db, orders, record, clock: options.clock });
   const gatewayRefunds = createGatewayRefunds({ db, razorpay, clock: options.clock, log: options.log });
   api.use(orderRouter(orders, lifecycle, gatewayRefunds));
-  const operatorPassword = options.operatorPassword ?? process.env.SIM_OPERATOR_PASSWORD ?? DEFAULT_OPERATOR_PASSWORD;
+  const operatorPassword = options.operatorPassword ?? operatorPasswordFrom(process.env).password;
   const simulation = createInventorySimulation(db, { clock: options.clock, random: options.random });
   const scheduler = options.simScheduler ? createSimScheduler(simulation) : undefined;
   scheduler?.start();

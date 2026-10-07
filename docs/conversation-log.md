@@ -92,3 +92,6 @@ User decisions, approvals and material clarifications. Not a transcript.
 | 2026-10-06 | F-014 | Spec, intent and ADR-005 presented for Gate 1 | Decisions: EMI terms, offer stacking, Razorpay refunds |
 | 2026-10-06 | F-014 Gate 1 | **Approved**; ADR-005 accepted | |
 | 2026-10-06 | F-014 implementation | Implemented, tested, presented for Gate 2 | No-cost example corrected; manual Razorpay check pending user keys |
+| 2026-10-07 | F-014 Gate 2 | **Accepted** | |
+| 2026-10-07 | Bug: demo operator password rejected | Fixed: a blank `SIM_OPERATOR_PASSWORD=` (copied from `.env.example`) became an empty password while the log said the default was in use; blank now means `demo-operator` | Restart `pnpm dev` |
+| 2026-10-07 | New requests | Richer profile page; pincode delivery check on product page; MSG91 for OTP (replacing on-screen codes); site footer | To be specified for Gate 1 |

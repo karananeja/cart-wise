@@ -1,7 +1,7 @@
 # Acceptance
 
 **Feature:** F-014 — EMI (normal and no-cost) and Razorpay payments (test mode)
-**Status:** Pending user sign-off (Gate 2). A manual Razorpay check with your test keys is still to do.
+**Status:** Accepted (Gate 2, 2026-10-07).
 
 ## 1. Acceptance criteria verification
 
@@ -17,7 +17,7 @@
 | 8 | Cancellation and return refunds through Razorpay; a failure stays initiated with Retry | Pass | API (cancellation, failure, retry, no double refund); E2E cancellation refund |
 | 9 | Razorpay unavailable → friendly message; the demo payment still works | Pass | API 502 + demo payment; component load failure |
 | 10 | Keyboard, screen reader, 360 px | Pass | Native radio groups with readable names; E2E 360 px |
-| — | Real Razorpay test-mode payment and refund | **Pending** | Needs your keys in `apps/api/.env` (see §6) |
+| — | Real Razorpay test-mode payment and refund | Not reported | Accepted without a reported manual run (see §6) |
 
 ## 2. Test results summary
 
@@ -59,4 +59,4 @@
 
 ## 8. User sign-off (Gate 2)
 
-- [ ] Accepted by user — date:
+- [x] Accepted by user — date: 2026-10-07 ("accept")

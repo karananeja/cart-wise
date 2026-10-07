@@ -5,6 +5,12 @@ export const OPERATOR_COOKIE = 'sim_operator';
 export const DEFAULT_OPERATOR_PASSWORD = 'demo-operator';
 export const OPERATOR_SESSION_MS = 8 * 60 * 60 * 1000;
 
+/** The configured password; blank (e.g. `SIM_OPERATOR_PASSWORD=` copied from .env.example) means the demo default. */
+export function operatorPasswordFrom(env: { SIM_OPERATOR_PASSWORD?: string }): { password: string; isDefault: boolean } {
+  const configured = env.SIM_OPERATOR_PASSWORD?.trim();
+  return configured ? { password: configured, isDefault: false } : { password: DEFAULT_OPERATOR_PASSWORD, isDefault: true };
+}
+
 const digest = (value: string) => createHash('sha256').update(value).digest();
 
 /**
