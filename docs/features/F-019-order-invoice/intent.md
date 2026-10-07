@@ -1,8 +1,8 @@
 # Feature Intent
 
 **Feature:** F-019 — Order invoice (PDF)
-**Status:** Awaiting Approval
-**Approved by / date:** —
+**Status:** Approved (Gate 1, 2026-10-07)
+**Approved by / date:** User, 2026-10-07
 
 ---
 
@@ -52,8 +52,8 @@ Acceptance criteria 1–8 in `specification.md` §17.
 
 ## 6. Decisions needed before implementation
 
-D1: confirm the rate table and seller state (Karnataka).
+Resolved 2026-10-07: rate table and seller state (Karnataka) approved as proposed.
 
 ## 7. Approval
 
-- [ ] Approved for implementation (Gate 1)
+- [x] Approved for implementation (Gate 1) — 2026-10-07

@@ -48,7 +48,7 @@ Loading / empty / error / offline states (STATE-1) and analytics events (ANL-1) 
 | F-016 | Email OTP replaces mobile OTP (SMTP, demo fallback); ADR-006 | User request 2026-10-07 | F-006 | Accepted 2026-10-07 |
 | F-017 | Account overview hub | User request 2026-10-07 | F-005, F-006, F-007, F-010 | Accepted 2026-10-07 |
 | F-018 | Site footer: links, help pages, newsletter, decorative social/app badges | User request 2026-10-07 | F-016 (welcome email only) | Accepted 2026-10-07 |
-| F-019 | Order invoice (PDF) with GST by category | User request 2026-10-07 | F-009, F-010, F-014 | Spec + intent awaiting Gate 1 |
+| F-019 | Order invoice (PDF) with GST by category | User request 2026-10-07 | F-009, F-010, F-014 | Approved (Gate 1, 2026-10-07) |
 
 
 Reviews, related products, frequently bought together, continue shopping, order tracking timeline, notifications, price-drop / back-in-stock, improved discovery homepage. To be sequenced after MVP acceptance.

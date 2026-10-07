@@ -4,7 +4,7 @@
 
 **ID:** F-019
 **Name:** Order invoice (PDF)
-**Status:** Proposed
+**Status:** Approved (Gate 1, 2026-10-07)
 
 ---
 
@@ -169,4 +169,4 @@ F-009 payment, F-010 orders and refunds, F-014 payment labels and EMI. New depen
 
 ## 22. Decisions Required From User
 
-D1: confirm the category rate table in FR-5 and the seller state (Karnataka).
+None. Resolved 2026-10-07: D1 rate table and seller state (Karnataka) approved.
